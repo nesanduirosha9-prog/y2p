@@ -1,0 +1,415 @@
+/* ==========================================================
+   UCSC STAFF MANAGEMENT SYSTEM - SIGNUP STYLES
+   ========================================================== */
+
+/* ==========================================================
+   PART 1: LEFT PANEL (PROGRESS TRACKER)
+   ========================================================== */
+
+.progress-section {
+    margin-top: 40px;
+}
+
+.progress-label {
+    font-size: 11px;
+    font-weight: 700;
+    color: #3b82f6; 
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    margin-bottom: 20px;
+}
+
+/* The flex container that holds the circles and lines in a row */
+.progress-tracker {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    width: 100%;
+}
+
+/* Individual Step Container */
+.step {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 80px; 
+    z-index: 2;
+}
+
+/* The Number Circle (Default Inactive State) */
+.step-circle {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background-color: transparent; 
+    border: 2px solid #1e3a8a; 
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 14px;
+    font-weight: bold;
+    color: #94a3b8;
+    transition: all 0.3s ease;
+}
+
+/* The Text under the circle */
+.step-text {
+    font-size: 12px;
+    color: #94a3b8;
+    text-align: center;
+    margin-top: 10px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+/* The Connecting Line */
+.step-line {
+    flex-grow: 1;
+    height: 2px;
+    background-color: #1e3a8a;
+    margin-top: 17px; 
+    z-index: 1;
+}
+
+/* --- ACTIVE STATE (Currently on this step) --- */
+.step.active .step-circle {
+    background-color: #ffffff;
+    border-color: #ffffff;
+    color: #0d1e3c;
+}
+
+.step.active .step-text {
+    color: #ffffff;
+}
+
+/* --- COMPLETED STATE (Passed this step) --- */
+.step.completed .step-circle {
+    background-color: #10b981; 
+    border-color: #10b981;
+    color: #ffffff;
+}
+
+.step.completed .step-text {
+    color: #ffffff;
+}
+
+
+/* ==========================================================
+   PART 2: RIGHT PANEL (LAYOUT & FORMS)
+   ========================================================== */
+
+/* Flexbox to push nav up, footer down, and center the form */
+.right-panel {
+    padding: 40px 60px;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between; 
+}
+
+/* Top Navigation */
+.top-nav {
+    text-align: right;
+    font-size: 14px;
+    color: #64748b;
+}
+
+.top-nav a {
+    color: #1e3a8a; 
+    text-decoration: none;
+    font-weight: 600;
+}
+
+/* Main Form Container */
+.login-main {
+    max-width: 480px;
+    margin: 0 auto; 
+    width: 100%;
+}
+
+.welcome-text h2 {
+    font-size: 28px;
+    margin: 0 0 10px;
+    color: #1e293b;
+}
+
+.welcome-text p {
+    font-size: 15px;
+    margin: 0 0 30px;
+    color: #64748b;
+}
+
+/* The White Form Card */
+.login-card {
+    background-color: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 40px;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+}
+
+/* Form Inputs & Labels */
+.form-group {
+    margin-bottom: 20px;
+}
+
+label {
+    font-size: 14px;
+    font-weight: 600;
+    color: #1e293b;
+    display: block;
+    margin-bottom: 8px;
+}
+
+input[type="email"],
+input[type="password"] { 
+    width: 100%;
+    padding: 12px 16px;
+    font-size: 14px;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    box-sizing: border-box;
+    background-color: #f7f9fb;
+    color: #1e293b;
+}
+
+input[type="email"]:focus,
+input[type="password"]:focus {
+    border-color: #3b82f6;
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+}
+
+/* Primary Button */
+.btn-primary {
+    width: 100%;
+    padding: 14px;
+    border: none;
+    border-radius: 8px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    background-color: #7994c9; 
+    color: #ffffff;
+    transition: background-color 0.2s;
+    margin-top: 10px;
+}
+
+.btn-primary:hover {
+    background-color: #5c7eb8;
+}
+
+/* Footer */
+.right-footer {
+    font-size: 13px;
+    color: #94a3b8;
+    text-align: center;
+    margin-top: 20px;
+    display: flex;
+    justify-content: space-between;
+}
+
+/* ==========================================================
+   PART 3: RIGHT PANEL SPECIFICS (STEP BADGES & CUSTOM UI)
+   ========================================================== */
+
+/* --- Step 1: The Step Indicator Badge --- */
+.step-badge {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 13px;
+    font-weight: 600;
+    margin-bottom: 15px;
+}
+
+.badge-text {
+    background-color: #eff6ff; 
+    color: #3b82f6; 
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 12px;
+}
+
+.badge-divider {
+    color: #cbd5e1;
+}
+
+.badge-desc {
+    color: #64748b;
+    font-weight: 500;
+}
+
+/* --- Step 2: OTP Input Group --- */
+.otp-input-group {
+    display: flex;
+    justify-content: space-between;
+    gap: 8px;
+    margin-top: 15px;
+}
+
+.otp-input {
+    width: 45px;
+    height: 50px;
+    font-size: 20px;
+    text-align: center;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    background-color: #ffffff; 
+    color: #1e293b;
+    font-weight: 700;
+}
+
+.otp-input:focus {
+    border-color: #3b82f6; 
+    outline: none;
+    box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.2); 
+    transform: translateY(-2px); 
+    transition: all 0.2s ease;
+}
+
+.resend-wrapper {
+    text-align: center;
+    font-size: 13px;
+    margin-bottom: 25px;
+    color: #64748b;
+}
+
+.resend-link {
+    color: #3b82f6;
+    text-decoration: none;
+    font-weight: 600;
+}
+
+.btn-back {
+    width: 100%;
+    padding: 14px;
+    background: none;
+    border: none;
+    color: #64748b;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    margin-top: 5px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 8px;
+    transition: color 0.2s;
+}
+
+.btn-back:hover {
+    color: #1e293b;
+}
+
+/* --- Step 3: Passkey Toggle Switch --- */
+.passkey-toggle-box {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 15px;
+    background-color: #f7f9fb;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    margin-bottom: 25px;
+}
+
+.passkey-info {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.passkey-info i {
+    font-size: 20px;
+    color: #64748b;
+}
+
+.passkey-info div {
+    display: flex;
+    flex-direction: column;
+}
+
+.passkey-info strong {
+    font-size: 13px;
+    color: #1e293b;
+}
+
+.passkey-info span {
+    font-size: 11px;
+    color: #94a3b8;
+}
+
+.switch {
+    position: relative;
+    display: inline-block;
+    width: 40px;
+    height: 22px;
+}
+
+.switch input { 
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background-color: #cbd5e1;
+    transition: .3s;
+    border-radius: 34px;
+}
+
+.slider:before {
+    position: absolute;
+    content: "";
+    height: 16px; width: 16px;
+    left: 3px; bottom: 3px;
+    background-color: white;
+    transition: .3s;
+    border-radius: 50%;
+}
+
+input:checked + .slider {
+    background-color: #10b981; 
+}
+
+input:checked + .slider:before {
+    transform: translateX(18px);
+}
+
+/* ==============================
+   Dynamic Button States (All 3 Steps)
+   ============================== */
+
+/* Default State: Dimmed out and unclickable for all primary buttons */
+#btn-send-otp, 
+#btn-verify-otp, 
+#btn-complete {
+    background-color: #1e3a8a; 
+    opacity: 0.5; 
+    color: #ffffff;
+    cursor: not-allowed;
+    pointer-events: none; 
+    transition: opacity 0.3s ease, box-shadow 0.3s ease;
+    border: none;
+}
+
+/* Active State: Lights up to 100% solid color */
+#btn-send-otp.active-btn, 
+#btn-verify-otp.active-btn, 
+#btn-complete.active-btn {
+    opacity: 1; 
+    cursor: pointer;
+    pointer-events: auto; 
+    box-shadow: 0 4px 12px rgba(30, 58, 138, 0.3); 
+}
+
+/* Hover effect for active buttons */
+#btn-send-otp.active-btn:hover, 
+#btn-verify-otp.active-btn:hover, 
+#btn-complete.active-btn:hover {
+    background-color: #1a317e; 
+}

@@ -1,0 +1,10 @@
+# Machine-local config — copy config.php.example to config.php
+/config.php
+
+# Runtime scratch
+/app/runtime/*
+!/app/runtime/.gitignore
+
+# OS / editor noise
+.DS_Store
+*.swp

@@ -1,6 +1,7 @@
 <?php
 
 use app\core\Application;
+// Main layout: wraps individual view content. Expects `$content` and optional `$title`.
 ?>
 <!DOCTYPE html>
 <html lang="en">
