@@ -43,7 +43,19 @@ try {
     exit(1);
 }
 
+$preservedUsers = [];
 if ($fresh) {
+    try {
+        $pdo->exec("USE `$dbName`");
+        $stmt = $pdo->query("SELECT * FROM users");
+        if ($stmt) {
+            $preservedUsers = $stmt->fetchAll(PDO::FETCH_ASSOC);
+            echo "Preserved " . count($preservedUsers) . " user(s).\n";
+        }
+    } catch (PDOException $e) {
+        // Ignore if db or table doesn't exist yet
+    }
+
     $pdo->exec("DROP DATABASE IF EXISTS `$dbName`");
     echo "Dropped database `$dbName`.\n";
 }
@@ -109,6 +121,27 @@ if ($seed || $fresh) {
             exit(1);
         }
     }
+}
+
+if ($fresh && !empty($preservedUsers)) {
+    echo "\nRestoring preserved users...\n";
+    $pdo->exec("USE `$dbName`");
+    $stmt = $pdo->prepare("INSERT IGNORE INTO users (id, email, password, created_at) VALUES (:id, :email, :password, :created_at)");
+    $restored = 0;
+    foreach ($preservedUsers as $u) {
+        try {
+            $stmt->execute([
+                'id' => $u['id'],
+                'email' => $u['email'],
+                'password' => $u['password'],
+                'created_at' => $u['created_at']
+            ]);
+            $restored++;
+        } catch (PDOException $e) {
+            // ignore
+        }
+    }
+    echo "Restored $restored user(s).\n";
 }
 
 echo "\nDone.\n";

@@ -5,6 +5,9 @@
 /app/runtime/*
 !/app/runtime/.gitignore
 
+# Agent/project context doc (keep local, never commit)
+/PROJECT_CONTEXT.md
+
 # OS / editor noise
 .DS_Store
 *.swp

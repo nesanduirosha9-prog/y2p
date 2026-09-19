@@ -50,13 +50,13 @@ $lecturers = array_values(array_unique(array_map(fn($c) => $c['lecturer'], $cour
         </div>
 
         <div class="tt-actions">
-            <select class="tt-select" id="lecturerFilter">
+            <select class="tt-select" id="lecturerFilter" style="width: 200px; flex-shrink: 0; min-width: 200px;">
                 <option value="">All Lecturers</option>
                 <?php foreach ($lecturers as $l): ?>
                     <option value="<?= htmlspecialchars($l) ?>"><?= htmlspecialchars($l) ?></option>
                 <?php endforeach; ?>
             </select>
-            <select class="tt-select" id="roomFilter">
+            <select class="tt-select" id="roomFilter" style="width: 200px; flex-shrink: 0; min-width: 200px;">
                 <option value="">All Rooms</option>
                 <?php foreach ($locations as $loc): ?>
                     <option value="<?= htmlspecialchars($loc) ?>"><?= htmlspecialchars($loc) ?></option>

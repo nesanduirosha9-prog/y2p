@@ -58,12 +58,14 @@
 
 .tt-select {
     height: 35.75px;
+    width: 200px;
     border: 1px solid #dde3ee;
     border-radius: 7.5px;
     padding: 0 12px;
     font-size: 13px;
     color: #374151;
     background: #fff;
+    text-overflow: ellipsis;
 }
 
 .btn-dark {

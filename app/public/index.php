@@ -11,7 +11,7 @@ use app\controllers\AuthController;
 use app\controllers\timetable_officer\TimetableController;
 use app\controllers\timetable_officer\CoursesController;
 use app\controllers\timetable_officer\LecturersController;
-use app\controllers\timetable_officer\NotificationsController;
+
 use app\controllers\timetable_officer\SettingsController;
 use app\core\Request;
 use app\core\Response;
@@ -72,9 +72,7 @@ $router->get('/courses', function (Request $request, Response $response) {
 $router->get('/lecturers', function (Request $request, Response $response) {
     return (new LecturersController())->index($request);
 });
-$router->get('/notifications', function (Request $request, Response $response) {
-    return (new NotificationsController())->index($request);
-});
+
 $router->get('/settings', function (Request $request, Response $response) {
     return (new SettingsController())->index($request);
 });

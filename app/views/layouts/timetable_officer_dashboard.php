@@ -19,6 +19,7 @@ $userEmail = $_SESSION['user_email'] ?? 'officer@university.edu.gh';
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 
     <link rel="stylesheet" href="/css/dashboard.css">
+    <link rel="stylesheet" href="/css/notifications.css">
     <?php foreach ((array)($css_file ?? []) as $cssHref): ?>
         <link rel="stylesheet" href="<?= htmlspecialchars($cssHref) ?>">
     <?php endforeach; ?>
@@ -49,13 +50,7 @@ $userEmail = $_SESSION['user_email'] ?? 'officer@university.edu.gh';
                     <i class="fa-solid fa-users"></i>
                     <span>Lecturers</span>
                 </a>
-                <a href="/notifications" class="nav-item <?= $active === 'notifications' ? 'active' : '' ?>">
-                    <i class="fa-solid fa-bell"></i>
-                    <span>Notifications</span>
-                    <?php if (!empty($notificationCount)): ?>
-                        <span class="nav-badge"><?= (int)$notificationCount ?></span>
-                    <?php endif; ?>
-                </a>
+
                 <a href="/settings" class="nav-item <?= $active === 'settings' ? 'active' : '' ?>">
                     <i class="fa-solid fa-gear"></i>
                     <span>Settings</span>
@@ -74,16 +69,15 @@ $userEmail = $_SESSION['user_email'] ?? 'officer@university.edu.gh';
             <header class="dash-header">
                 <div class="header-titles">
                     <h1><?= $pageTitle ?? 'Dashboard' ?></h1>
-                    <p><?= $pageSubtitle ?? 'University of Colombo &middot; Faculty of Physical &amp; Computational Sciences' ?></p>
+                    <p><?= $pageSubtitle ?? 'University of Colombo' ?></p>
                 </div>
                 <div class="header-actions">
                     <button class="icon-btn" type="button" title="Toggle theme">
                         <i class="fa-solid fa-moon"></i>
                     </button>
-                    <button class="icon-btn" type="button" title="Notifications">
-                        <i class="fa-solid fa-bell"></i>
-                        <?php if (!empty($notificationCount)): ?><span class="icon-btn-dot"></span><?php endif; ?>
-                    </button>
+                    
+                    <?php require_once \app\core\Application::$ROOT_DIR . '/views/components/notifications.php'; ?>
+
                     <div class="user-chip">
                         <div class="user-avatar">TO</div>
                         <div class="user-meta">
@@ -101,5 +95,6 @@ $userEmail = $_SESSION['user_email'] ?? 'officer@university.edu.gh';
         </div>
     </div>
 
+    <script src="/js/notifications.js"></script>
 </body>
 </html>

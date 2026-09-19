@@ -1,7 +1,7 @@
 # Branch Status — `feature-login`
 
 **Base commit:** `b794a42 Initial commit`
-**Committed since then:** nothing — everything below is still in the working tree (`git status` shows it all as modified/untracked, nothing staged).
+**Committed since then:** The initial feature set has been committed (see commit `25eacb7`). The summary below details the features built on top of the original framework.
 
 ## Summary
 
@@ -40,7 +40,8 @@ None of it is committed yet — this doc is a snapshot to review before you star
 | File | Purpose |
 |---|---|
 | `config.php` | DB credentials (`DB_HOST`, `DB_USER`, `DB_PASS`, `DB_NAME=staffsync_db`) via `define()` |
-| `app/core/Database.php` | PDO singleton with **auto-setup**: on first connection it creates the `staffsync_db` database and the `users` table (`id`, `email` UNIQUE, `password`, `created_at`) if they don't exist — no manual migration step needed to get running |
+| `app/core/Database.php` | PDO singleton connection. The schema logic has been extracted from here and is now managed by a dedicated migration script (`database/migrate.php`). |
+| `database/` | Contains `migrate.php` script along with `migrations/` and `seeds/` folders for robust schema management. |
 | `app/controllers/AuthController.php` | Sets layout to `auth` in its constructor. GET handlers (`loginView`, `signupView`, `forgotPasswordView`) render the auth views (redirecting to `/dashboard` if already logged in). POST handlers: `login()` verifies the password with `password_verify` and sets `$_SESSION['user_id']`/`user_email`; `signup()` rejects an already-registered email, otherwise hashes + stores; `resetPassword()` looks the user up by email and overwrites the password hash; `logout()` destroys the session. All POST handlers respond with JSON via a private `jsonResponse()` helper |
 | `app/views/layouts/auth.php` + `app/views/auth/{login,signup,forgot_password}.php` | Dedicated auth-page layout and views (no main nav/footer), migrated from standalone HTML mockups — see `docs/auth_migration_log.md` for the full migration narrative |
 | `app/public/css/{login,signup,forgot_password}.css` | Page-specific styling for each auth page |
@@ -65,7 +66,7 @@ Built from the Figma wireframes page `Timetable_Officer` (file `QmyokbiCEdP3G6aQ
 - The auth frames → already covered by the existing `AuthController`/`auth` layout above.
 - Two frames named "University Staff Management System" → turned out to be steps 2–3 of the *password-reset* flow (OTP verification, new password), **not** a dashboard — no code needed, already covered by `forgot_password.php`.
 - All the "Timetable → CS/IS → Sem1/Sem2 → Y1–Y4" frames, plus "ScheduleCourse → SelectSlots → SelectDetails → AddedSlot" → **one single page** with different filter state and one interaction flow (select slots → confirm → fill a modal → block appears). That page is what got built.
-- Courses, Lecturers, Notifications, Settings → **not built yet**, out of scope for this pass. The sidebar already links to `/courses`, `/lecturers`, `/notifications`, `/settings` so nothing needs rewiring later.
+- Courses, Lecturers, Notifications → **UI and Read-only views built.** The pages display data from the database, but Create/Update/Delete actions are still client-side only and do not persist. Settings is still pending.
 
 | File | Purpose |
 |---|---|
@@ -139,9 +140,9 @@ Two ways to preview it. **Option A is simpler** and is what was used to verify t
    sudo mysql -e "CREATE USER IF NOT EXISTS 'staffsync'@'127.0.0.1' IDENTIFIED BY 'staffsync_dev_pw'; GRANT ALL PRIVILEGES ON staffsync_db.* TO 'staffsync'@'127.0.0.1'; FLUSH PRIVILEGES;"
    ```
    This has to match `config.php`'s `DB_USER`/`DB_PASS` — it already does, both are `staffsync` / `staffsync_dev_pw`.
-3. From the repo root, start the server: `php -S 127.0.0.1:8099 -t app/public`
-4. Open `http://127.0.0.1:8099/signup`, create an account, then log in at `/login`. You'll land on `/timetable`.
-5. `Database::getConnection()` auto-creates the `staffsync_db` database and `users` table on first connection — no manual SQL beyond step 2 is needed.
+3. From the repo root, run the database migrations and seed data: `php database/migrate.php --seed`
+4. Start the server: `php -S 127.0.0.1:8099 -t app/public`
+5. Open `http://127.0.0.1:8099/login`, log in with a seeded account (or signup). You'll land on `/timetable`.
 
 ### Option B — XAMPP / Apache
 
@@ -177,11 +178,10 @@ Two ways to preview it. **Option A is simpler** and is what was used to verify t
 ## 9. How the database is handled
 
 - **One PDO singleton.** `app/core/Database.php` holds a single static `PDO` instance; `Database::getConnection()` lazily creates it on first call and returns the same instance after that.
-- **Self-provisioning.** On that first connection, `Database::init()` doesn't just connect — it runs `CREATE DATABASE IF NOT EXISTS staffsync_db` and `CREATE TABLE IF NOT EXISTS users (...)` itself. There's no separate migration step or `.sql` file to run; the schema currently in existence (the `users` table) is defined entirely in that one method.
-- **Only `users` exists.** `UserModel` is the only model that actually talks to the database. The Timetable feature's `catalog()`/`sessions()` (in `TimetableController`) are plain hardcoded PHP arrays — **there is no `courses` or `timetable_sessions` table yet.** This means:
-  - Filtering by department/semester/year works (it's just array lookups), and matches the sample data visible in the Figma screens.
-  - The "Add to Timetable" flow only appends a DOM element client-side (see `timetable.js` above) — nothing is written back to the server, so it does not survive a page reload.
-  - Building real persistence for this would mean: adding `courses` and `timetable_sessions` tables (either by hand in `Database::setupTables()`, following the existing `users` table as a template, or a proper migration mechanism if the schema grows further), a `CourseModel`/`TimetableModel` following `UserModel`'s pattern, and replacing `TimetableController`'s two hardcoded array methods plus the "Add to Timetable" JS handler with real POST requests.
+- **Migration System.** The database schema is managed via `database/migrate.php`. You must run `php database/migrate.php --seed` manually to create the database, tables, and seed data.
+- **Multiple entities exist.** Models exist for `User`, `Course`, `Lecturer`, `Instructor`, `Notification`, and `TimetableSession`. The UI reads real data from these tables.
+- **CRUD is mostly Read-only.** While the data is fetched from the database, operations like "Add to Timetable", "Add Course", or "Edit Lecturer" only append elements client-side (e.g., via `timetable.js` or `courses.js`). Nothing is written back to the server yet, so changes do not survive a page reload.
+  - Building full persistence means adding `POST`/`PUT`/`DELETE` routes and updating the controllers (e.g., `CoursesController`, `TimetableController`) to handle submissions and update the respective tables.
 - **Credentials** live in `config.php` (`DB_HOST`, `DB_USER`, `DB_PASS`, `DB_NAME`), loaded once in `bootstrap.php` before anything else runs. This file is untracked/local (see section 5 for why the credentials in it changed on this machine).
 
 ---

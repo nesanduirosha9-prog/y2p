@@ -58,4 +58,16 @@ class UserModel
             'password' => $hashedPassword
         ]);
     }
+
+    /**
+     * Get all users
+     * 
+     * @return array
+     */
+    public function getAllUsers(): array
+    {
+        $pdo = Database::getConnection();
+        $stmt = $pdo->query("SELECT id, email, created_at FROM users ORDER BY id ASC");
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
 }

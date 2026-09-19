@@ -6,7 +6,7 @@
 
 <ul class="user-list">
     <?php foreach ($users ?? [] as $user): ?>
-        <li><?= htmlspecialchars($user['name']) ?></li>
+        <li><?= htmlspecialchars($user['email']) ?></li>
     <?php endforeach; ?>
 </ul>
 
