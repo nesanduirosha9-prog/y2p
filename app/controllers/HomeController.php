@@ -54,7 +54,7 @@ class HomeController extends Controller
     // Render the 404 page
     public function notFound()
     {
-        return $this->render('errors/notfound', [
+        return $this->renderPartial('errors/notfound', [
             'title' => 'Not Found'
         ]);
     }

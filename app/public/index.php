@@ -1,4 +1,6 @@
 <?php
+ini_set('display_errors', 1);
+error_reporting(E_ALL);
 // Public front-controller: boots the framework and registers routes.
 require_once __DIR__ . '/../../bootstrap.php';
 
@@ -6,10 +8,11 @@ use app\core\Application;
 use app\core\Router;
 use app\controllers\HomeController;
 use app\controllers\AuthController;
-use app\controllers\TimetableController;
-use app\controllers\CoursesController;
-use app\controllers\LecturersController;
-use app\controllers\NotificationsController;
+use app\controllers\timetable_officer\TimetableController;
+use app\controllers\timetable_officer\CoursesController;
+use app\controllers\timetable_officer\LecturersController;
+use app\controllers\timetable_officer\NotificationsController;
+use app\controllers\timetable_officer\SettingsController;
 use app\core\Request;
 use app\core\Response;
 
@@ -71,6 +74,9 @@ $router->get('/lecturers', function (Request $request, Response $response) {
 });
 $router->get('/notifications', function (Request $request, Response $response) {
     return (new NotificationsController())->index($request);
+});
+$router->get('/settings', function (Request $request, Response $response) {
+    return (new SettingsController())->index($request);
 });
 
 // API route returning JSON

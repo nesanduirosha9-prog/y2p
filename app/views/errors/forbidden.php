@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Page Not Found | StaffSync</title>
+    <title>Access Denied | StaffSync</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@700;800&display=swap" rel="stylesheet">
@@ -14,13 +14,13 @@
             --bg-strong: #eaf0f7;
             --card: rgba(255, 255, 255, 0.9);
             --card-border: rgba(148, 163, 184, 0.18);
-            --primary: #1f4f9d;
-            --primary-strong: #173c78;
-            --primary-soft: #e9f0ff;
+            --primary: #9d1f1f;
+            --primary-strong: #781717;
+            --primary-soft: #ffe9e9;
             --text: #101828;
             --muted: #667085;
             --line: #dbe3ef;
-            --shadow: 0 22px 60px rgba(19, 39, 77, 0.12);
+            --shadow: 0 22px 60px rgba(77, 19, 19, 0.12);
             --success: #0f766e;
         }
 
@@ -32,7 +32,7 @@
             display: grid;
             place-items: center;
             background:
-                radial-gradient(circle at top left, rgba(31, 79, 157, 0.14), transparent 30%),
+                radial-gradient(circle at top left, rgba(157, 31, 31, 0.14), transparent 30%),
                 linear-gradient(135deg, var(--bg) 0%, #edf3fb 50%, var(--bg-strong) 100%);
             font-family: 'Inter', sans-serif;
             color: var(--text);
@@ -61,7 +61,7 @@
             inset: 0 auto auto 0;
             width: 180px;
             height: 180px;
-            background: linear-gradient(135deg, rgba(31, 79, 157, 0.12), rgba(31, 79, 157, 0));
+            background: linear-gradient(135deg, rgba(157, 31, 31, 0.12), rgba(157, 31, 31, 0));
             border-radius: 50%;
             transform: translate(-35%, -35%);
         }
@@ -73,7 +73,7 @@
             bottom: -70px;
             width: 220px;
             height: 220px;
-            background: linear-gradient(135deg, rgba(15, 118, 110, 0.08), rgba(31, 79, 157, 0));
+            background: linear-gradient(135deg, rgba(15, 118, 110, 0.08), rgba(157, 31, 31, 0));
             border-radius: 50%;
         }
 
@@ -86,7 +86,7 @@
             padding: 10px 18px;
             border-radius: 999px;
             background: var(--primary-soft);
-            border: 1px solid rgba(31, 79, 157, 0.12);
+            border: 1px solid rgba(157, 31, 31, 0.12);
             color: var(--primary-strong);
             font-size: 0.82rem;
             font-weight: 700;
@@ -102,7 +102,7 @@
             font-size: clamp(4.5rem, 10vw, 9rem);
             line-height: 0.9;
             letter-spacing: -0.06em;
-            color: rgba(31, 79, 157, 0.12);
+            color: rgba(157, 31, 31, 0.12);
         }
 
         h1 {
@@ -151,7 +151,7 @@
         .primary-btn {
             background: linear-gradient(135deg, var(--primary), var(--primary-strong));
             color: #fff;
-            box-shadow: 0 14px 28px rgba(31, 79, 157, 0.22);
+            box-shadow: 0 14px 28px rgba(157, 31, 31, 0.22);
         }
 
         .secondary-btn {
@@ -207,23 +207,19 @@
     <div class="page-shell">
         <div class="error-card">
             <div class="error-badge">
-                <i class="fa-solid fa-triangle-exclamation"></i>
-                Error 404
+                <i class="fa-solid fa-lock"></i>
+                Error 403
             </div>
 
-            <div class="error-code">404</div>
-            <h1>Page Not Found</h1>
+            <div class="error-code">403</div>
+            <h1>Access Denied</h1>
             <p>
-                The page you are looking for may have been moved, deleted, or never existed.
-                Please return to the StaffSync portal and continue from the main dashboard.
+                You do not have the required permissions to view this page. If you believe this is a mistake, please contact the system administrator.
             </p>
 
             <div class="actions">
                 <a class="primary-btn" href="/">
                     <i class="fa-solid fa-house" style="margin-right: 10px;"></i>Back to Home
-                </a>
-                <a class="secondary-btn" href="/timetable">
-                    <i class="fa-solid fa-arrow-right-to-bracket" style="margin-right: 10px;"></i>Open Dashboard
                 </a>
             </div>
 
