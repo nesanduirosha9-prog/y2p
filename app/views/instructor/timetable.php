@@ -5,7 +5,7 @@
 // (Request Support Staff / Request Time Change / My Requests) are DOM-only demo
 // flows — nothing persists server-side.
 $days = ['mon' => 'Monday', 'tue' => 'Tuesday', 'wed' => 'Wednesday', 'thu' => 'Thursday', 'fri' => 'Friday'];
-$hours = [8, 9, 10, 11, 12, 13, 14, 15, 16];
+$hours = [8, 9, 10, 11, 12, 13, 14, 15, 16, 17];
 
 function hourLabel(int $h): string
 {
@@ -14,17 +14,27 @@ function hourLabel(int $h): string
     return "{$display} {$suffix}";
 }
 
-function ttUrl(string $dept, int $sem, int $year): string
-{
-    return '/instructor/timetable?dept=' . urlencode($dept) . '&sem=' . $sem . '&year=' . $year;
-}
-
-function weekDateFor(string $dayKey): string
+function weekDateObj(string $dayKey): DateTime
 {
     static $offset = ['mon' => 0, 'tue' => 1, 'wed' => 2, 'thu' => 3, 'fri' => 4];
     $monday = new DateTime('monday this week');
     $monday->modify('+' . $offset[$dayKey] . ' days');
-    return $monday->format('D, j M Y');
+    return $monday;
+}
+
+function weekDateFor(string $dayKey): string
+{
+    return weekDateObj($dayKey)->format('D, j M Y');
+}
+
+function weekRangeLabel(): string
+{
+    $monday = weekDateObj('mon');
+    $friday = weekDateObj('fri');
+    if ($monday->format('M') === $friday->format('M')) {
+        return $monday->format('j') . ' – ' . $friday->format('j M Y');
+    }
+    return $monday->format('j M') . ' – ' . $friday->format('j M Y');
 }
 
 $occupied = [];
@@ -49,21 +59,23 @@ if ($dept === 'cs' && empty($occupied[$demoAssignment['day']][$demoAssignment['s
 
 $batchLabel = 'Y' . $year . ' ' . strtoupper($dept);
 $myCourseCodes = array_values(array_unique(array_column($sessions, 'code')));
+$weekStart = weekDateObj('mon')->format('Y-m-d');
 ?>
 
-<div class="tt-view" data-dept="<?= htmlspecialchars($dept) ?>" data-sem="<?= $sem ?>" data-year="<?= $year ?>">
+<div class="tt-view" data-dept="<?= htmlspecialchars($dept) ?>" data-sem="<?= $sem ?>" data-year="<?= $year ?>" data-week-start="<?= $weekStart ?>">
 
     <div class="tt-toolbar">
-        <div class="tt-filters">
+        <div class="tt-toolbar-left">
             <div class="segmented" id="ttModeToggle">
                 <button type="button" class="segmented-btn active" data-mode="my">My Timetable</button>
                 <button type="button" class="segmented-btn" data-mode="student">Student Timetable</button>
             </div>
-            <div class="v-divider"></div>
+
             <div class="tt-inline-filters" id="myTimetableFilters">
-                <div class="segmented segmented-dark">
-                    <a class="segmented-btn <?= $sem === 1 ? 'active' : '' ?>" href="<?= ttUrl($dept, 1, $year) ?>">Sem 1</a>
-                    <a class="segmented-btn <?= $sem === 2 ? 'active' : '' ?>" href="<?= ttUrl($dept, 2, $year) ?>">Sem 2</a>
+                <div class="tt-week-nav" id="ttWeekNav">
+                    <button type="button" class="tt-week-nav-btn" id="weekPrevBtn" aria-label="Previous week"><i class="fa-solid fa-chevron-left"></i></button>
+                    <span class="tt-week-label" id="weekRangeLabel"><?= htmlspecialchars(weekRangeLabel()) ?></span>
+                    <button type="button" class="tt-week-nav-btn" id="weekNextBtn" aria-label="Next week"><i class="fa-solid fa-chevron-right"></i></button>
                 </div>
             </div>
             <div class="tt-inline-filters" id="studentTimetableFilters" hidden>
@@ -78,33 +90,37 @@ $myCourseCodes = array_values(array_unique(array_column($sessions, 'code')));
                     <button type="button" class="segmented-btn" data-year="4">Y4</button>
                 </div>
             </div>
+
+            <div class="tt-actions" id="ttActionsMy">
+                <button type="button" class="btn-outline-sm" id="selectSlotsBtn">
+                    <i class="fa-solid fa-list-check"></i> Select Slots
+                </button>
+                <button type="button" class="btn-dark" id="myRequestsBtn">
+                    <i class="fa-solid fa-clipboard-list"></i> My Requests
+                    <span class="req-badge" id="myRequestsBadge" hidden></span>
+                </button>
+            </div>
         </div>
 
-        <div class="tt-actions" id="ttActionsMy">
-            <button type="button" class="btn-outline-sm" id="selectSlotsBtn">
-                <i class="fa-solid fa-list-check"></i> Select Slots
-            </button>
-            <button type="button" class="btn-dark" id="myRequestsBtn">
-                <i class="fa-solid fa-clipboard-list"></i> My Requests
-                <span class="req-badge" id="myRequestsBadge" hidden></span>
-            </button>
+        <div class="tt-legend-inline" id="ttLegendInline">
+            <span class="legend-chip"><i class="legend-chip-dot chip-lab"></i>Lab</span>
+            <span class="legend-chip"><i class="legend-chip-dot chip-practical"></i>Practical</span>
+            <span class="legend-chip"><i class="legend-chip-dot chip-lecture"></i>Lecture</span>
+            <span class="legend-chip"><i class="legend-chip-dot chip-assignment"></i>Assignment</span>
         </div>
     </div>
 
     <div class="tt-body" id="ttBody">
         <div id="myTimetableSection" class="tt-section">
           <div class="tt-grid-row">
-            <div class="tt-year-tabs">
-                <?php foreach ([1, 2, 3, 4] as $y): ?>
-                    <a class="year-tab <?= $year === $y ? 'active' : '' ?>" href="<?= ttUrl($dept, $sem, $y) ?>">Y<?= $y ?></a>
-                <?php endforeach; ?>
-            </div>
-
             <div class="tt-grid-card">
                 <div class="tt-grid">
                     <div class="tt-grid-corner"></div>
-                    <?php foreach ($days as $label): ?>
-                        <div class="tt-grid-day-head"><?= $label ?></div>
+                    <?php foreach ($days as $dayKey => $label): ?>
+                        <div class="tt-grid-day-head" data-day-key="<?= $dayKey ?>">
+                            <span class="tt-day-abbr"><?= strtoupper(substr($label, 0, 3)) ?></span>
+                            <span class="tt-day-num"><?= weekDateObj($dayKey)->format('j') ?></span>
+                        </div>
                     <?php endforeach; ?>
 
                     <?php foreach ($hours as $rowIndex => $h): ?>
@@ -147,12 +163,7 @@ $myCourseCodes = array_values(array_unique(array_column($sessions, 'code')));
             </div>
           </div>
 
-            <div class="tt-legend">
-                <span class="legend-item"><i class="legend-dot dot-lecture"></i>Lecture</span>
-                <span class="legend-item"><i class="legend-dot dot-tutorial"></i>Tutorial</span>
-                <span class="legend-item"><i class="legend-dot dot-lab"></i>Lab</span>
-                <span class="legend-item"><i class="legend-dot dot-practical"></i>Practical</span>
-                <span class="legend-item"><i class="legend-dot dot-assignment"></i>Assignment</span>
+            <div class="tt-legend tt-legend-hint-only">
                 <span class="legend-hint" id="legendHint">Click any session for details · use Select Slots to request support staff</span>
             </div>
         </div>

@@ -7,7 +7,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const ttView = document.querySelector('.tt-view');
     const days = { mon: 'Monday', tue: 'Tuesday', wed: 'Wednesday', thu: 'Thursday', fri: 'Friday' };
     const dayKeys = Object.keys(days);
-    const hours = [8, 9, 10, 11, 12, 13, 14, 15, 16];
+    const hours = [8, 9, 10, 11, 12, 13, 14, 15, 16, 17];
     const workingHours = hours.filter(h => h !== 12);
     const myCourseCodes = window.__ttMyCourseCodes || [];
 
@@ -324,6 +324,40 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('myRequestsBtn').addEventListener('click', openMyRequests);
 
     // ------------------------------------------------------------------
+    // Week navigator (cosmetic only — demo data always reflects "this week")
+    // ------------------------------------------------------------------
+    const weekStartStr = ttView.dataset.weekStart;
+    const weekLabelEl = document.getElementById('weekRangeLabel');
+    const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    let weekOffset = 0;
+
+    function addDays(date, n) {
+        const d = new Date(date);
+        d.setDate(d.getDate() + n);
+        return d;
+    }
+
+    function formatWeekRange(monday, friday) {
+        const sameMonth = monday.getMonth() === friday.getMonth();
+        const startPart = sameMonth ? `${monday.getDate()}` : `${monday.getDate()} ${monthNames[monday.getMonth()]}`;
+        return `${startPart} – ${friday.getDate()} ${monthNames[friday.getMonth()]} ${friday.getFullYear()}`;
+    }
+
+    function updateWeekDisplay() {
+        if (!weekStartStr) return;
+        const baseMonday = addDays(new Date(`${weekStartStr}T00:00:00`), weekOffset * 7);
+        const friday = addDays(baseMonday, 4);
+        weekLabelEl.textContent = formatWeekRange(baseMonday, friday);
+        dayKeys.forEach((key, i) => {
+            const head = document.querySelector(`.tt-grid-day-head[data-day-key="${key}"] .tt-day-num`);
+            if (head) head.textContent = addDays(baseMonday, i).getDate();
+        });
+    }
+
+    document.getElementById('weekPrevBtn').addEventListener('click', () => { weekOffset -= 1; updateWeekDisplay(); });
+    document.getElementById('weekNextBtn').addEventListener('click', () => { weekOffset += 1; updateWeekDisplay(); });
+
+    // ------------------------------------------------------------------
     // Grid click delegation: session blocks + free-cell picking
     // ------------------------------------------------------------------
     document.querySelector('.tt-grid')?.addEventListener('click', (e) => {
@@ -405,6 +439,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const myFilters = document.getElementById('myTimetableFilters');
     const stFilters = document.getElementById('studentTimetableFilters');
     const ttActionsMy = document.getElementById('ttActionsMy');
+    const ttLegendInline = document.getElementById('ttLegendInline');
     const myTimetableSection = document.getElementById('myTimetableSection');
     const studentTimetableSection = document.getElementById('studentTimetableSection');
 
@@ -420,6 +455,7 @@ document.addEventListener('DOMContentLoaded', () => {
         myFilters.hidden = isStudent;
         stFilters.hidden = !isStudent;
         ttActionsMy.hidden = isStudent;
+        ttLegendInline.hidden = isStudent;
         myTimetableSection.hidden = isStudent;
         studentTimetableSection.hidden = !isStudent;
         if (isStudent) renderStudentTimetable();

@@ -14,6 +14,127 @@
     display: none;
 }
 
+/* Toolbar layout: mode toggle + week nav/filters + actions on the left,
+   legend pinned to the far right (matches the Figma "My Timetable" header) */
+.tt-toolbar {
+    justify-content: flex-start;
+}
+
+.tt-toolbar-left {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.tt-legend-inline {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-left: auto;
+    flex-wrap: wrap;
+}
+
+.tt-legend-inline[hidden] {
+    display: none;
+}
+
+.legend-chip {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 11px;
+    font-weight: 500;
+    color: #6b7c96;
+    white-space: nowrap;
+}
+
+.legend-chip-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 4px;
+    flex-shrink: 0;
+}
+
+.chip-lab { background: #a684ff; }
+.chip-practical { background: #00d492; }
+.chip-lecture { background: #51a2ff; }
+.chip-assignment { background: #f97316; }
+
+/* Week navigator (replaces Sem1/Sem2 toggle in My Timetable mode) */
+.tt-week-nav {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: #f4f6f9;
+    border: 1px solid #dde3ee;
+    border-radius: 12px;
+    padding: 7px 9px;
+}
+
+.tt-week-nav-btn {
+    width: 24px;
+    height: 24px;
+    border-radius: 8px;
+    border: none;
+    background: none;
+    color: #6b7c96;
+    font-size: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+}
+
+.tt-week-nav-btn:hover {
+    background: #e8edf5;
+}
+
+.tt-week-label {
+    min-width: 148px;
+    font-size: 12px;
+    font-weight: 600;
+    color: #0f1c2e;
+    text-align: center;
+    white-space: nowrap;
+}
+
+/* Two-line day headers: abbreviated weekday + day-of-month (matches Figma) */
+.tt-grid-corner,
+.tt-grid-day-head {
+    height: 52px;
+}
+
+.tt-grid-day-head {
+    flex-direction: column;
+    gap: 2px;
+    text-transform: none;
+}
+
+.tt-day-abbr {
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.6px;
+    text-transform: uppercase;
+    color: #9ca3af;
+}
+
+.tt-day-num {
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-weight: 700;
+    font-size: 15px;
+    color: #0f1c2e;
+}
+
+/* Bottom hint-only legend (dots moved into the toolbar) */
+.tt-legend-hint-only {
+    justify-content: center;
+}
+
+.tt-legend-hint-only .legend-hint {
+    margin-left: 0;
+}
+
 .tt-section {
     display: flex;
     flex-direction: column;
@@ -79,8 +200,8 @@
     justify-content: center;
 }
 
-.type-assignment { background: #ffe2e2; border-left-color: #ff6467; color: #82181a; }
-.dot-assignment { background: #fb2c36; }
+.type-assignment { background: #ffedd5; border-left-color: #f97316; color: #7c2d12; }
+.dot-assignment { background: #f97316; }
 .dot-mine { background: #f0b100; }
 
 /* ==============================
