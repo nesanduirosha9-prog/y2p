@@ -16,6 +16,15 @@ $profile = [
 $passkeys = [
     ['id' => 1, 'name' => 'MacBook Pro Touch ID', 'added' => '3 Jan 2025']
 ];
+
+$notificationPrefs = [
+    ['key' => 'workload', 'label' => 'Workload Assignments', 'sub' => 'Notify when new assignments are sent for acceptance', 'on' => true],
+    ['key' => 'leave', 'label' => 'Leave Approvals', 'sub' => 'Notify when your leave requests are approved or rejected', 'on' => true],
+    ['key' => 'messages', 'label' => 'New Messages', 'sub' => 'Notify on direct messages and group mentions', 'on' => true],
+    ['key' => 'timetable', 'label' => 'Timetable Updates', 'sub' => 'Notify when your timetable is changed or finalized', 'on' => true],
+    ['key' => 'staff_requests', 'label' => 'Staff Request Updates', 'sub' => 'Notify on status changes to your support requests', 'on' => false],
+    ['key' => 'digest', 'label' => 'Weekly Summary Digest', 'sub' => 'Receive a weekly summary of your workload and schedule', 'on' => false],
+];
 ?>
 
 <div class="set-container">
@@ -68,7 +77,7 @@ $passkeys = [
                 </div>
             </div>
             <div class="set-card-footer">
-                <button type="button" class="btn-primary-sm">Save Changes</button>
+                <button type="button" class="btn-primary-sm" id="setSaveChanges">Save Changes</button>
             </div>
         </div>
 
@@ -76,10 +85,10 @@ $passkeys = [
         <div class="set-card">
             <div class="set-card-header flex-between">
                 <p>Passkeys</p>
-                <button type="button" class="set-text-btn"><i class="fa-solid fa-plus"></i> Add Passkey</button>
+                <button type="button" class="set-text-btn" id="setAddPasskey"><i class="fa-solid fa-plus"></i> Add Passkey</button>
             </div>
             <div class="set-card-body">
-                <div class="set-passkeys-list">
+                <div class="set-passkeys-list" id="setPasskeysList">
                     <?php foreach($passkeys as $pk): ?>
                         <div class="set-passkey-item">
                             <div class="set-passkey-info">
@@ -95,5 +104,30 @@ $passkeys = [
                 </div>
             </div>
         </div>
+
+        <!-- Notification Preferences Section -->
+        <div class="set-card">
+            <div class="set-card-header">
+                <p>Notification Preferences</p>
+            </div>
+            <div class="set-card-body">
+                <div class="set-notif-list">
+                    <?php foreach ($notificationPrefs as $pref): ?>
+                        <div class="set-notif-item">
+                            <div>
+                                <p class="set-notif-label"><?= htmlspecialchars($pref['label']) ?></p>
+                                <p class="set-notif-sub"><?= htmlspecialchars($pref['sub']) ?></p>
+                            </div>
+                            <label class="set-toggle">
+                                <input type="checkbox" data-pref="<?= htmlspecialchars($pref['key']) ?>" <?= $pref['on'] ? 'checked' : '' ?>>
+                                <span class="set-toggle-track"></span>
+                            </label>
+                        </div>
+                    <?php endforeach; ?>
+                </div>
+            </div>
+        </div>
     </div>
 </div>
+
+<script src="/js/instructor/settings.js"></script>

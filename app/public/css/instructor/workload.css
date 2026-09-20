@@ -24,8 +24,23 @@
     font-weight: 700;
     color: #9ca3af;
     text-decoration: none;
+    border: none;
+    background: none;
     border-bottom: 2px solid transparent;
+    cursor: pointer;
     transition: all 0.2s;
+}
+
+.wk-tab-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: #f0b100;
+    display: none;
+}
+
+.wk-tab-dot.show {
+    display: inline-block;
 }
 
 .wk-tab:hover {
@@ -43,6 +58,10 @@
     display: flex;
     flex-direction: column;
     gap: 20px;
+}
+
+.wk-body[hidden] {
+    display: none;
 }
 
 .wk-filter-bar {
@@ -239,4 +258,331 @@
     font-size: 10px;
     color: #9ca3af;
     margin-top: 6px;
+}
+
+/* ==============================
+   Breakdown / history tables
+   ============================== */
+.wk-table-card {
+    background: #fff;
+    border: 1px solid #dde3ee;
+    border-radius: 12px;
+    overflow: hidden;
+}
+
+.wk-table-header {
+    padding: 14px 20px;
+    border-bottom: 1px solid #dde3ee;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.wk-table-header p {
+    font-size: 13px;
+    font-weight: 700;
+    color: #0f1c2e;
+}
+
+.wk-table-header-hint {
+    font-size: 11px;
+    color: #9ca3af;
+}
+
+.wk-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.wk-table th {
+    text-align: left;
+    padding: 10px 20px;
+    font-size: 10.5px;
+    font-weight: 700;
+    color: #9ca3af;
+    letter-spacing: 0.5px;
+    border-bottom: 1px solid #dde3ee;
+}
+
+.wk-table td {
+    padding: 12px 20px;
+    font-size: 12.5px;
+    color: #6b7c96;
+    border-bottom: 1px solid #eef1f6;
+}
+
+.wk-table tr:last-child td {
+    border-bottom: none;
+}
+
+.wk-td-label {
+    color: #0f1c2e;
+    font-weight: 600;
+}
+
+.wk-row-progress {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.wk-row-progress .wk-progress-track {
+    width: 90px;
+}
+
+.wk-row-progress span {
+    font-size: 11px;
+    font-weight: 600;
+    color: #0f1c2e;
+}
+
+.wk-code-pill {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    font-weight: 700;
+    color: #1a3a6b;
+    background: #eef1f6;
+    padding: 2px 7px;
+    border-radius: 5px;
+}
+
+.wk-history-status {
+    background: #dbeafe;
+    color: #1c398e;
+    font-size: 10.5px;
+    font-weight: 700;
+    padding: 3px 9px;
+    border-radius: 5px;
+}
+
+/* ==============================
+   Cover Staff Requests
+   ============================== */
+.wk-cover-card {
+    background: #fefce8;
+    border: 1px solid #fde68a;
+    border-radius: 12px;
+    overflow: hidden;
+}
+
+.wk-cover-header {
+    padding: 12px 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    flex-wrap: wrap;
+    border-bottom: 1px solid #fde68a;
+}
+
+.wk-cover-header i {
+    color: #ca8a04;
+    margin-right: 8px;
+}
+
+.wk-cover-header strong {
+    font-size: 13px;
+    color: #0f1c2e;
+}
+
+.wk-pending-pill {
+    background: #fde68a;
+    color: #854d0e;
+    font-size: 10.5px;
+    font-weight: 700;
+    padding: 2px 8px;
+    border-radius: 999px;
+    margin-left: 8px;
+}
+
+.wk-cover-hint {
+    font-size: 11.5px;
+    color: #92702c;
+}
+
+.wk-cover-list {
+    display: flex;
+    flex-direction: column;
+}
+
+.wk-cover-item {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 14px 20px;
+    border-top: 1px solid #fde68a;
+    background: #fff;
+}
+
+.wk-cover-item:first-child {
+    border-top: none;
+}
+
+.wk-cover-icon {
+    width: 34px;
+    height: 34px;
+    border-radius: 9px;
+    background: #fef3c7;
+    color: #ca8a04;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.wk-cover-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.wk-cover-title {
+    font-size: 13px;
+    font-weight: 600;
+    color: #0f1c2e;
+}
+
+.wk-cover-meta {
+    font-size: 11.5px;
+    color: #6b7c96;
+    margin-top: 2px;
+}
+
+.wk-cover-actions {
+    display: flex;
+    gap: 8px;
+    flex-shrink: 0;
+}
+
+.wk-btn-accept, .wk-btn-reject {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    border: none;
+    border-radius: 7px;
+    padding: 7px 12px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.wk-btn-accept {
+    background: #d0fae5;
+    color: #004f3b;
+}
+
+.wk-btn-accept:hover {
+    background: #a7f3cf;
+}
+
+.wk-btn-reject {
+    background: #fee2e2;
+    color: #991b1b;
+}
+
+.wk-btn-reject:hover {
+    background: #fecaca;
+}
+
+.wk-cover-item.resolved {
+    opacity: 0.5;
+    pointer-events: none;
+}
+
+/* ==============================
+   Assigned Work list
+   ============================== */
+.wk-assigned-list {
+    display: flex;
+    flex-direction: column;
+}
+
+.wk-assigned-item {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 14px 20px;
+    border-top: 1px solid #eef1f6;
+}
+
+.wk-assigned-item:first-child {
+    border-top: none;
+}
+
+.wk-assigned-icon {
+    width: 34px;
+    height: 34px;
+    border-radius: 9px;
+    background: #eef1f6;
+    color: #1a3a6b;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.wk-assigned-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.wk-assigned-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.wk-assigned-badge {
+    background: #dbeafe;
+    color: #1c398e;
+    font-size: 10px;
+    font-weight: 700;
+    padding: 2px 7px;
+    border-radius: 5px;
+}
+
+.wk-assigned-sub {
+    font-size: 12.5px;
+    font-weight: 600;
+    color: #0f1c2e;
+    margin-top: 3px;
+}
+
+.wk-assigned-meta {
+    font-size: 11px;
+    color: #9ca3af;
+    margin-top: 2px;
+}
+
+.wk-assigned-hours {
+    text-align: right;
+    flex-shrink: 0;
+}
+
+.wk-assigned-hours p:first-child {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 16px;
+    font-weight: 700;
+    color: #0f1c2e;
+}
+
+.wk-assigned-hours span {
+    font-size: 10px;
+    font-weight: 400;
+    color: #9ca3af;
+    margin-left: 2px;
+}
+
+.wk-assigned-date {
+    font-size: 10.5px;
+    color: #9ca3af;
+    margin-top: 2px;
+}
+
+.wk-footnote {
+    padding: 12px 20px;
+    font-size: 11px;
+    color: #9ca3af;
+    border-top: 1px solid #eef1f6;
 }

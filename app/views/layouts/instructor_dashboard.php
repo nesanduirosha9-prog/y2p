@@ -20,6 +20,7 @@ $userEmail = $_SESSION['user_email'] ?? 'tmf@ucsc.cmb.ac.lk';
 
     <link rel="stylesheet" href="/css/dashboard.css">
     <link rel="stylesheet" href="/css/notifications.css">
+    <link rel="stylesheet" href="/css/instructor/common.css">
     <?php foreach ((array)($css_file ?? []) as $cssHref): ?>
         <link rel="stylesheet" href="<?= htmlspecialchars($cssHref) ?>">
     <?php endforeach; ?>
@@ -44,11 +45,7 @@ $userEmail = $_SESSION['user_email'] ?? 'tmf@ucsc.cmb.ac.lk';
                 </a>
                 <a href="/instructor/workload" class="nav-item <?= $active === 'workload' ? 'active' : '' ?>">
                     <i class="fa-solid fa-layer-group"></i>
-                    <span>Workload</span>
-                </a>
-                <a href="/instructor/requests" class="nav-item <?= $active === 'requests' ? 'active' : '' ?>">
-                    <i class="fa-solid fa-clipboard-list"></i>
-                    <span>Requests</span>
+                    <span>My Workload</span>
                 </a>
                 <a href="/instructor/leave" class="nav-item <?= $active === 'leave' ? 'active' : '' ?>">
                     <i class="fa-regular fa-calendar-minus"></i>
@@ -104,5 +101,6 @@ $userEmail = $_SESSION['user_email'] ?? 'tmf@ucsc.cmb.ac.lk';
     </div>
 
     <script src="/js/notifications.js"></script>
+    <script src="/js/instructor/common.js"></script>
 </body>
 </html>

@@ -312,3 +312,116 @@
 }
 
 .msg-send-btn:hover { background: #0f2a55; }
+
+.msg-list-item.filtered-out { display: none; }
+
+/* ==============================
+   Group Info panel
+   ============================== */
+.msg-group-info {
+    width: 260px;
+    flex-shrink: 0;
+    background: #fff;
+    border-left: 1px solid #dde3ee;
+    display: flex;
+    flex-direction: column;
+}
+
+.msg-group-info[hidden] { display: none; }
+
+.msg-group-info-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 18px;
+    border-bottom: 1px solid #dde3ee;
+}
+
+.msg-group-info-header h2 {
+    font-size: 14px;
+    font-weight: 700;
+    color: #0f1c2e;
+}
+
+.msg-group-info-body {
+    padding: 20px 18px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 4px;
+    overflow-y: auto;
+}
+
+.msg-group-avatar {
+    width: 56px;
+    height: 56px;
+    border-radius: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    font-size: 18px;
+    font-weight: 700;
+    margin-bottom: 8px;
+}
+
+.msg-group-name {
+    font-size: 14px;
+    font-weight: 700;
+    color: #0f1c2e;
+}
+
+.msg-group-sub {
+    font-size: 11.5px;
+    color: #9ca3af;
+    margin-bottom: 16px;
+}
+
+.msg-group-members-label {
+    align-self: flex-start;
+    font-size: 10.5px;
+    font-weight: 700;
+    color: #9ca3af;
+    letter-spacing: 0.5px;
+    margin-bottom: 8px;
+}
+
+.msg-group-members-list {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.msg-group-member {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    text-align: left;
+}
+
+.msg-group-member .msg-avatar {
+    width: 28px;
+    height: 28px;
+    font-size: 10.5px;
+}
+
+.msg-group-member span {
+    font-size: 12.5px;
+    font-weight: 500;
+    color: #0f1c2e;
+}
+
+.modal-close {
+    background: none;
+    border: none;
+    width: 26px;
+    height: 26px;
+    border-radius: 7px;
+    color: #6b7c96;
+    cursor: pointer;
+    flex-shrink: 0;
+}
+
+.modal-close:hover { background: #f4f6f9; }

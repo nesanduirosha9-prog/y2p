@@ -124,3 +124,62 @@ $historyLeaves = [
         </div>
     </div>
 </div>
+
+<!-- Request Leave modal (DOM-only demo — nothing persists server-side) -->
+<div class="lv-modal-overlay" id="requestLeaveModal" hidden>
+    <div class="lv-modal">
+        <div class="lv-modal-header">
+            <div>
+                <h2>Request Leave</h2>
+                <p>Select dates and fill in the details below</p>
+            </div>
+            <button type="button" class="modal-close" id="closeLeaveModal"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+        <div class="lv-modal-body">
+            <div class="form-group full-width">
+                <label>LEAVE TYPE</label>
+                <div class="req-select-wrapper">
+                    <select class="req-select" id="lvType">
+                        <option value="">Select type</option>
+                        <option>Annual Leave</option>
+                        <option>Casual Leave</option>
+                        <option>Sick Leave</option>
+                        <option>Conference Leave</option>
+                    </select>
+                    <i class="fa-solid fa-chevron-down chevron"></i>
+                </div>
+            </div>
+
+            <div class="form-group full-width">
+                <label>SELECT DATES &mdash; click dates on the calendar or type manually</label>
+                <div class="lv-calendar" id="lvCalendar">
+                    <div class="lv-calendar-header">
+                        <button type="button" id="lvPrevMonth"><i class="fa-solid fa-chevron-left"></i></button>
+                        <span id="lvCalendarLabel"></span>
+                        <button type="button" id="lvNextMonth"><i class="fa-solid fa-chevron-right"></i></button>
+                    </div>
+                    <div class="lv-calendar-weekdays">
+                        <span>Mo</span><span>Tu</span><span>We</span><span>Th</span><span>Fr</span><span>Sa</span><span>Su</span>
+                    </div>
+                    <div class="lv-calendar-grid" id="lvCalendarGrid"></div>
+                </div>
+                <div class="lv-manual-date">
+                    <input type="text" class="req-input" id="lvManualDate" placeholder="Or type a date, e.g. 2026-09-28">
+                    <button type="button" class="btn-outline" id="lvAddManualDate">Add</button>
+                </div>
+                <div class="lv-selected-dates" id="lvSelectedDates"></div>
+            </div>
+
+            <div class="form-group full-width">
+                <label>REASON</label>
+                <textarea class="req-input req-textarea" id="lvReason" rows="3" placeholder="Briefly describe the reason for leave..."></textarea>
+            </div>
+        </div>
+        <div class="lv-modal-footer">
+            <button type="button" class="btn-outline" id="cancelLeaveModal">Cancel</button>
+            <button type="button" class="btn-primary-sm" id="submitLeaveRequest">Submit Request</button>
+        </div>
+    </div>
+</div>
+
+<script src="/js/instructor/leave.js"></script>
