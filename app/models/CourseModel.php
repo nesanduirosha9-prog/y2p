@@ -23,12 +23,12 @@ class CourseModel
         $pdo = Database::getConnection();
         $stmt = $pdo->prepare(
             "SELECT c.code, c.title,
-                    COALESCE(GROUP_CONCAT(l.name ORDER BY l.name SEPARATOR ', '), '') AS lecturer
+                    COALESCE(GROUP_CONCAT(s.name ORDER BY s.name SEPARATOR ', '), '') AS lecturer
              FROM courses c
-             LEFT JOIN course_lecturers cl ON cl.course_id = c.id
-             LEFT JOIN lecturers l         ON l.id = cl.lecturer_id
+             LEFT JOIN course_staff cs ON cs.course_code = c.code AND cs.assignment_role = 'lecturer'
+             LEFT JOIN staff s         ON s.code = cs.staff_code
              WHERE c.department = :dept AND c.year_of_study = :year
-             GROUP BY c.id, c.code, c.title
+             GROUP BY c.code, c.title
              ORDER BY c.code"
         );
         $stmt->execute(['dept' => $dept, 'year' => $year]);
@@ -61,15 +61,15 @@ class CourseModel
     {
         $pdo = Database::getConnection();
         $rows = $pdo->query(
-            "SELECT id, code, title, credits, year_of_study, department
+            "SELECT code, title, credits, year_of_study, department
              FROM courses ORDER BY code"
         )->fetchAll(PDO::FETCH_ASSOC);
         if (!$rows) {
             return [];
         }
 
-        $lecturers = $this->linkCodes('course_lecturers', 'lecturer_id', 'lecturers');
-        $instructors = $this->linkCodes('course_instructors', 'instructor_id', 'instructors');
+        $lecturers = $this->linkCodes('lecturer');
+        $instructors = $this->linkCodes('instructor');
 
         $out = [];
         foreach ($rows as $r) {
@@ -79,27 +79,29 @@ class CourseModel
                 'credits' => (int) $r['credits'],
                 'year' => (int) $r['year_of_study'],
                 'program' => strtoupper($r['department']),
-                'lecturers' => $lecturers[$r['id']] ?? [],
-                'instructors' => $instructors[$r['id']] ?? [],
+                'lecturers' => $lecturers[$r['code']] ?? [],
+                'instructors' => $instructors[$r['code']] ?? [],
             ];
         }
         return $out;
     }
 
-    /** course id => [staff codes], from a course_* join table. */
-    private function linkCodes(string $joinTable, string $fkColumn, string $staffTable): array
+    /** course code => [staff codes], for a given course_staff.assignment_role. */
+    private function linkCodes(string $assignmentRole): array
     {
         $pdo = Database::getConnection();
-        $rows = $pdo->query(
-            "SELECT j.course_id, s.code
-             FROM {$joinTable} j
-             JOIN {$staffTable} s ON s.id = j.{$fkColumn}
+        $stmt = $pdo->prepare(
+            "SELECT cs.course_code, s.code
+             FROM course_staff cs
+             JOIN staff s ON s.code = cs.staff_code
+             WHERE cs.assignment_role = :role
              ORDER BY s.code"
-        )->fetchAll(PDO::FETCH_ASSOC);
+        );
+        $stmt->execute(['role' => $assignmentRole]);
 
         $map = [];
-        foreach ($rows as $row) {
-            $map[(int) $row['course_id']][] = $row['code'];
+        foreach ($stmt->fetchAll(PDO::FETCH_ASSOC) as $row) {
+            $map[$row['course_code']][] = $row['code'];
         }
         return $map;
     }

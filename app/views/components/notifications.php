@@ -1,7 +1,8 @@
 <?php
-// Fetch notifications globally for the UI
-$globalNotifs = (new \app\models\NotificationModel())->all();
-$notificationCount = (new \app\models\NotificationModel())->unreadCount();
+// Fetch notifications for the logged-in staff member
+$notificationModel = new \app\models\NotificationModel();
+$globalNotifs = $_SESSION['staff_code'] ?? null ? $notificationModel->all($_SESSION['staff_code']) : [];
+$notificationCount = $_SESSION['staff_code'] ?? null ? $notificationModel->unreadCount($_SESSION['staff_code']) : 0;
 $icons = ['info' => 'fa-circle-info', 'success' => 'fa-circle-check', 'warning' => 'fa-triangle-exclamation'];
 $displayNotifs = array_slice($globalNotifs, 0, 5); // Show top 5
 ?>

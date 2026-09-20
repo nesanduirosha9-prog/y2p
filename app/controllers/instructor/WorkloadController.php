@@ -15,7 +15,7 @@ class WorkloadController extends Controller
 
     public function index(Request $request)
     {
-        if (!isset($_SESSION['user_id']) || ($_SESSION['role'] ?? '') !== 'instructor') {
+        if (!isset($_SESSION['staff_code']) || ($_SESSION['role'] ?? '') !== 'academic_staff') {
             $this->redirect('/login');
             return;
         }
@@ -25,7 +25,7 @@ class WorkloadController extends Controller
             'css_file' => ['/css/instructor/workload.css'],
             'active' => 'workload',
             'pageTitle' => 'My Workload',
-            'notificationCount' => (new NotificationModel())->unreadCount(),
+            'notificationCount' => (new NotificationModel())->unreadCount($_SESSION['staff_code']),
         ]);
     }
 }

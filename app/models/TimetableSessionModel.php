@@ -6,7 +6,10 @@ use app\core\Database;
 use PDO;
 
 // TimetableSessionModel: reads/writes the scheduled class sessions that
-// render as blocks on the weekly grid.
+// render as blocks on the weekly grid. A session's key is now
+// (room_code, day_of_week, start_hour) instead of a surrogate id — a room
+// physically can't host two sessions at once, so that combination doubles
+// as a hard "no double-booking" constraint at the database level.
 class TimetableSessionModel
 {
     /**
@@ -15,15 +18,17 @@ class TimetableSessionModel
      *     'title' => '...', 'location' => '...', 'type' => 'lab'], ...]
      *
      * Shape matches what timetable/index.php expects (was TimetableController::sessions()).
+     * `location` is now the room's own code (joined from `rooms`).
      */
     public function forDeptSemYear(string $dept, int $sem, int $year): array
     {
         $pdo = Database::getConnection();
         $stmt = $pdo->prepare(
             "SELECT ts.day_of_week, ts.start_hour, ts.duration_hours,
-                    ts.location, ts.session_type, c.code, c.title
+                    r.code AS room_code, ts.session_type, c.code, c.title
              FROM timetable_sessions ts
-             JOIN courses c ON c.id = ts.course_id
+             JOIN courses c ON c.code = ts.course_code
+             JOIN rooms r   ON r.code = ts.room_code
              WHERE ts.department = :dept AND ts.semester = :sem AND ts.year_of_study = :year
              ORDER BY ts.day_of_week, ts.start_hour"
         );
@@ -37,7 +42,7 @@ class TimetableSessionModel
                 'duration' => (int) $row['duration_hours'],
                 'code' => $row['code'],
                 'title' => $row['title'],
-                'location' => $row['location'],
+                'location' => $row['room_code'],
                 'type' => $row['session_type'],
             ];
         }
@@ -46,32 +51,33 @@ class TimetableSessionModel
 
     /**
      * Insert a scheduled session. $data keys:
-     *   course_id, department, semester, year_of_study,
-     *   day_of_week, start_hour, duration_hours, location, session_type
-     * Returns the new row id.
+     *   room_code, course_code, department, semester, year_of_study,
+     *   day_of_week, start_hour, duration_hours, session_type, managed_by_code
+     * Returns true on success; fails (unique constraint) if the room is
+     * already booked for that day/hour.
      */
-    public function create(array $data): int
+    public function create(array $data): bool
     {
         $pdo = Database::getConnection();
         $stmt = $pdo->prepare(
             "INSERT INTO timetable_sessions
-                (course_id, department, semester, year_of_study,
-                 day_of_week, start_hour, duration_hours, location, session_type)
+                (room_code, day_of_week, start_hour, course_code, department,
+                 semester, year_of_study, duration_hours, session_type, managed_by_code)
              VALUES
-                (:course_id, :department, :semester, :year_of_study,
-                 :day_of_week, :start_hour, :duration_hours, :location, :session_type)"
+                (:room_code, :day_of_week, :start_hour, :course_code, :department,
+                 :semester, :year_of_study, :duration_hours, :session_type, :managed_by_code)"
         );
-        $stmt->execute([
-            'course_id' => $data['course_id'],
+        return $stmt->execute([
+            'room_code' => $data['room_code'],
+            'day_of_week' => $data['day_of_week'],
+            'start_hour' => $data['start_hour'],
+            'course_code' => $data['course_code'],
             'department' => $data['department'],
             'semester' => $data['semester'],
             'year_of_study' => $data['year_of_study'],
-            'day_of_week' => $data['day_of_week'],
-            'start_hour' => $data['start_hour'],
             'duration_hours' => $data['duration_hours'],
-            'location' => $data['location'],
             'session_type' => $data['session_type'],
+            'managed_by_code' => $data['managed_by_code'] ?? null,
         ]);
-        return (int) $pdo->lastInsertId();
     }
 }

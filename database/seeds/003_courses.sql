@@ -1,7 +1,6 @@
--- 100_24002275_courses.sql — sample course catalogue (Timetable Officer).
--- Re-runnable: `code` is unique so rows are upserted. All sample data is
--- semester 1. Course -> lecturer / instructor links are seeded separately in
--- 104 / 105.
+-- 003_courses.sql — sample course catalogue. Re-runnable: `code` is the
+-- primary key, so rows are upserted. All sample data is semester 1.
+-- Course -> staff links are seeded separately in 004_course_staff.sql.
 
 INSERT INTO courses (code, title, credits, department, year_of_study, semester) VALUES
     ('CS1101', 'Introduction to Programming',  3, 'cs', 1, 1),

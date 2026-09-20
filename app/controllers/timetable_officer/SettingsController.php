@@ -15,7 +15,7 @@ class SettingsController extends Controller
 
     public function index(Request $request)
     {
-        if (!isset($_SESSION['user_id']) || ($_SESSION['role'] ?? '') !== 'timetable_officer') {
+        if (!isset($_SESSION['staff_code']) || ($_SESSION['role'] ?? '') !== 'timetable_officer') {
             $this->redirect('/login');
             return;
         }
@@ -24,7 +24,7 @@ class SettingsController extends Controller
             'title' => 'Settings',
             'active' => 'settings',
             'pageTitle' => 'Settings',
-            'notificationCount' => (new NotificationModel())->unreadCount(),
+            'notificationCount' => (new NotificationModel())->unreadCount($_SESSION['staff_code']),
         ]);
     }
 }

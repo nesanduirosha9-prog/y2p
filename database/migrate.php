@@ -47,10 +47,10 @@ $preservedUsers = [];
 if ($fresh) {
     try {
         $pdo->exec("USE `$dbName`");
-        $stmt = $pdo->query("SELECT * FROM users");
+        $stmt = $pdo->query("SELECT * FROM staff");
         if ($stmt) {
             $preservedUsers = $stmt->fetchAll(PDO::FETCH_ASSOC);
-            echo "Preserved " . count($preservedUsers) . " user(s).\n";
+            echo "Preserved " . count($preservedUsers) . " staff row(s).\n";
         }
     } catch (PDOException $e) {
         // Ignore if db or table doesn't exist yet
@@ -124,17 +124,33 @@ if ($seed || $fresh) {
 }
 
 if ($fresh && !empty($preservedUsers)) {
-    echo "\nRestoring preserved users...\n";
+    echo "\nRestoring preserved staff rows...\n";
     $pdo->exec("USE `$dbName`");
-    $stmt = $pdo->prepare("INSERT IGNORE INTO users (id, email, password, role, created_at) VALUES (:id, :email, :password, :role, :created_at)");
+    $stmt = $pdo->prepare(
+        "INSERT IGNORE INTO staff
+            (code, email, password, name, role, academic_rank, position,
+             department, designation, office, extension, bio, availability_status, created_at)
+         VALUES
+            (:code, :email, :password, :name, :role, :academic_rank, :position,
+             :department, :designation, :office, :extension, :bio, :availability_status, :created_at)"
+    );
     $restored = 0;
     foreach ($preservedUsers as $u) {
         try {
             $stmt->execute([
-                'id' => $u['id'],
+                'code' => $u['code'],
                 'email' => $u['email'],
                 'password' => $u['password'],
+                'name' => $u['name'] ?? $u['code'],
                 'role' => $u['role'] ?? 'timetable_officer',
+                'academic_rank' => $u['academic_rank'] ?? null,
+                'position' => $u['position'] ?? null,
+                'department' => $u['department'] ?? null,
+                'designation' => $u['designation'] ?? null,
+                'office' => $u['office'] ?? null,
+                'extension' => $u['extension'] ?? null,
+                'bio' => $u['bio'] ?? null,
+                'availability_status' => $u['availability_status'] ?? 'available',
                 'created_at' => $u['created_at']
             ]);
             $restored++;
@@ -142,7 +158,7 @@ if ($fresh && !empty($preservedUsers)) {
             // ignore
         }
     }
-    echo "Restored $restored user(s).\n";
+    echo "Restored $restored staff row(s).\n";
 }
 
 echo "\nDone.\n";

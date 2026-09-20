@@ -17,7 +17,7 @@ class TimetableController extends Controller
 
     public function index(Request $request)
     {
-        if (!isset($_SESSION['user_id']) || ($_SESSION['role'] ?? '') !== 'instructor') {
+        if (!isset($_SESSION['staff_code']) || ($_SESSION['role'] ?? '') !== 'academic_staff') {
             $this->redirect('/login');
             return;
         }
@@ -38,7 +38,7 @@ class TimetableController extends Controller
             'css_file' => ['/css/timetable.css', '/css/instructor/timetable.css'],
             'active' => 'timetable',
             'pageTitle' => 'My Timetable',
-            'notificationCount' => (new NotificationModel())->unreadCount(),
+            'notificationCount' => (new NotificationModel())->unreadCount($_SESSION['staff_code']),
             'dept' => $dept,
             'sem' => $sem,
             'year' => $year,

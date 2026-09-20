@@ -40,26 +40,17 @@ skip the migrate step, the first page that touches the DB will tell you to run i
 ## Naming convention
 
 ```
-migrations/<NNN>_<owner>_<description>.sql
-seeds/<NNN>_<owner>_<description>.sql
+migrations/<NNN>_create_<table>.sql
+seeds/<NNN>_<table>.sql
 ```
 
-- `<NNN>` — 3-digit number that sets run order. Use **your assigned range** so two
-  people never pick the same number.
-- `<owner>` — your student index, or `common` for shared tables.
-- `<description>` — `snake_case`, e.g. `create_courses`, `add_room_to_sessions`.
-
-### Range assignments
-
-| Range | Owner | Area |
-|---|---|---|
-| `000`–`099` | `common` | Shared tables every role needs (`users`, …). Change only by team agreement. |
-| `100`–`199` | `24002275` | Timetable Officer — courses, timetable sessions |
-| `200`–`299` | _(unassigned)_ | |
-| `300`–`399` | _(unassigned)_ | |
-| `400`–`499` | _(unassigned)_ | |
-
-Fill in your index and area when you take a range.
+The schema was rebuilt from scratch to match `docs/eer_diagram.drawio` (see
+that file's revision notes for why) — every table now gets one migration and
+one seed file, numbered in dependency order (`001` has no foreign keys into
+anything else; every later file only references tables numbered before it).
+The old per-owner index-range convention (`<NNN>_<owner>_<description>.sql`)
+no longer applies now that the whole schema is a single coordinated design;
+a new table still just takes the next free number.
 
 ## Rules
 
@@ -75,21 +66,36 @@ Fill in your index and area when you take a range.
 
 ## Current tables
 
-| Table | Migration | Owner |
-|---|---|---|
-| `users` | `001_common_create_users.sql` | common |
-| `courses` | `100` + `104` (adds `credits`, drops `lecturer_name`) | 24002275 |
-| `timetable_sessions` | `101_24002275_create_timetable_sessions.sql` | 24002275 |
-| `lecturers` | `102_24002275_create_lecturers.sql` | 24002275 |
-| `instructors` | `103_24002275_create_instructors.sql` | 24002275 |
-| `course_lecturers` | `105_24002275_create_course_lecturers.sql` | 24002275 |
-| `course_instructors` | `106_24002275_create_course_instructors.sql` | 24002275 |
-| `notifications` | `107_24002275_create_notifications.sql` | 24002275 |
+No table uses an auto-increment id — every primary key is either a real
+natural/business key (`staff.code`, `courses.code`, `rooms.code`, a
+timetable slot's `(room_code, day_of_week, start_hour)`) or, where no
+attribute is genuinely unique, a generated UUID. See each migration file's
+header comment for the reasoning behind its specific key.
 
-Every Timetable Officer screen now reads from these tables — there is no
-hardcoded sample data in the controllers. The screens render fine against an
-empty database; `--seed` loads the sample rows. The "Schedule Course" /
-"Add Course" write paths are still client-side only (no `INSERT` yet).
+| Table | Migration | Notes |
+|---|---|---|
+| `staff` | `001_create_staff.sql` | Merges the old `users`+`lecturers`+`instructors`; PK `code` |
+| `rooms` | `002_create_rooms.sql` | PK `code` |
+| `courses` | `003_create_courses.sql` | PK `code` |
+| `course_staff` | `004_create_course_staff.sql` | Replaces `course_lecturers`+`course_instructors`; `assignment_role` per course |
+| `timetable_sessions` | `005_create_timetable_sessions.sql` | PK `(room_code, day_of_week, start_hour)` — makes double-booking impossible |
+| `assignments` | `006_create_assignments.sql` | Weekly topic per session |
+| `notifications` | `007_create_notifications.sql` | PK is a UUID; no `is_read` here |
+| `notification_recipients` | `008_create_notification_recipients.sql` | Per-recipient `is_read` |
+| `leave_requests` | `009_create_leave_requests.sql` | PK is a UUID |
+| `workload_tasks` | `010_create_workload_tasks.sql` | PK is a UUID |
+| `chat_rooms` | `011_create_chat_rooms.sql` | PK is a UUID; scoped to a course |
+| `chat_participants` | `012_create_chat_participants.sql` | Chat membership |
+| `messages` | `013_create_messages.sql` | PK is a UUID |
+| `reschedule_requests` | `014_create_reschedule_requests.sql` | PK is a UUID |
+| `support_requests` | `015_create_support_requests.sql` | PK is a UUID |
+
+Every Timetable Officer screen reads from these tables — there is no
+hardcoded sample data in those controllers. The screens render fine against
+an empty database; `--seed` loads the sample rows. The instructor-side
+`leave`/`workload`/`messages`/`requests` pages still render hardcoded PHP
+arrays (per `docs/DESIGN_PATTERNS_PLAN.md` item 8) — their tables exist now,
+but wiring each page to a real Model is separate follow-up work.
 
 ## Seeing the data
 

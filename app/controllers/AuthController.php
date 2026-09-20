@@ -5,7 +5,7 @@ namespace app\controllers;
 use app\core\Controller;
 use app\core\Request;
 use app\core\Response;
-use app\models\UserModel;
+use app\models\StaffModel;
 
 class AuthController extends Controller
 {
@@ -20,8 +20,8 @@ class AuthController extends Controller
     public function loginView()
     {
         // If already logged in, redirect to dashboard
-        if (isset($_SESSION['user_id'])) {
-            $redirectUrl = ($_SESSION['role'] === 'instructor') ? '/instructor/timetable' : '/timetable';
+        if (isset($_SESSION['staff_code'])) {
+            $redirectUrl = ($_SESSION['role'] === 'academic_staff') ? '/instructor/timetable' : '/timetable';
             $this->redirect($redirectUrl);
             return;
         }
@@ -30,8 +30,8 @@ class AuthController extends Controller
 
     public function signupView()
     {
-        if (isset($_SESSION['user_id'])) {
-            $redirectUrl = ($_SESSION['role'] === 'instructor') ? '/instructor/timetable' : '/timetable';
+        if (isset($_SESSION['staff_code'])) {
+            $redirectUrl = ($_SESSION['role'] === 'academic_staff') ? '/instructor/timetable' : '/timetable';
             $this->redirect($redirectUrl);
             return;
         }
@@ -51,16 +51,16 @@ class AuthController extends Controller
         $email = $body['username'] ?? ''; // Using 'username' because of the HTML input name
         $password = $body['password'] ?? '';
 
-        $userModel = new UserModel();
-        $user = $userModel->findByEmail($email);
+        $staffModel = new StaffModel();
+        $user = $staffModel->findByEmail($email);
 
         if ($user && password_verify($password, $user['password'])) {
             // Login successful
-            $_SESSION['user_id'] = $user['id'];
+            $_SESSION['staff_code'] = $user['code'];
             $_SESSION['user_email'] = $user['email'];
             $_SESSION['role'] = $user['role'];
 
-            $redirectUrl = ($user['role'] === 'instructor') ? '/instructor/timetable' : '/timetable';
+            $redirectUrl = ($user['role'] === 'academic_staff') ? '/instructor/timetable' : '/timetable';
 
             // Respond with JSON for AJAX request, or redirect for normal form post
             return $this->jsonResponse($response, ['success' => true, 'message' => 'Login successful', 'redirect' => $redirectUrl]);
@@ -84,15 +84,15 @@ class AuthController extends Controller
             return $this->jsonResponse($response, ['success' => false, 'message' => 'Email and password are required'], 400);
         }
 
-        $userModel = new UserModel();
+        $staffModel = new StaffModel();
         
         // Check if user already exists
-        if ($userModel->findByEmail($email)) {
+        if ($staffModel->findByEmail($email)) {
             return $this->jsonResponse($response, ['success' => false, 'message' => 'Email is already registered'], 409);
         }
 
         // Create new user
-        if ($userModel->create($email, $password)) {
+        if ($staffModel->create($email, $password)) {
             return $this->jsonResponse($response, ['success' => true, 'message' => 'Registration successful', 'redirect' => '/login']);
         }
 
@@ -109,14 +109,14 @@ class AuthController extends Controller
             return $this->jsonResponse($response, ['success' => false, 'message' => 'Email and new password are required'], 400);
         }
 
-        $userModel = new UserModel();
+        $staffModel = new StaffModel();
         
         // Ensure user actually exists
-        if (!$userModel->findByEmail($email)) {
+        if (!$staffModel->findByEmail($email)) {
             return $this->jsonResponse($response, ['success' => false, 'message' => 'No account found with this email'], 404);
         }
 
-        if ($userModel->updatePassword($email, $newPassword)) {
+        if ($staffModel->updatePassword($email, $newPassword)) {
             return $this->jsonResponse($response, ['success' => true, 'message' => 'Password reset successfully', 'redirect' => '/login']);
         }
 

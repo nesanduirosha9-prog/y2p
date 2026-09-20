@@ -3,7 +3,7 @@
 namespace app\controllers;
 
 use app\core\Controller;
-use app\models\UserModel;
+use app\models\StaffModel;
 use app\core\Response;
 
 // HomeController: example controller that demonstrates typical actions.
@@ -17,7 +17,7 @@ class HomeController extends Controller
     // Show the home page with a list of users from the model
     public function index(): string
     {
-        $model = new UserModel();
+        $model = new StaffModel();
         $users = $model->getAllUsers();
 
         return $this->render('home/index', [
@@ -37,7 +37,7 @@ class HomeController extends Controller
     // Example: JSON API endpoint using Response
     public function usersJson(Response $response): void
     {
-        $model = new UserModel();
+        $model = new StaffModel();
         // Response::json sets headers and echoes body then exits
         $response->json([
             'success' => true,

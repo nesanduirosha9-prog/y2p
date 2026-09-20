@@ -17,8 +17,8 @@ use app\core\Application;
     <?php if (isset($css_file)): ?>
         <link rel="stylesheet" href="<?= $css_file ?>">
     <?php endif; ?>
-    
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css
+    <link rel="stylesheet" href="/all.min.css">
 </head>
 <body>
 

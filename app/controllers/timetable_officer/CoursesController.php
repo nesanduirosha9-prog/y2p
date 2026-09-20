@@ -18,7 +18,7 @@ class CoursesController extends Controller
 
     public function index(Request $request)
     {
-        if (!isset($_SESSION['user_id']) || ($_SESSION['role'] ?? '') !== 'timetable_officer') {
+        if (!isset($_SESSION['staff_code']) || ($_SESSION['role'] ?? '') !== 'timetable_officer') {
             $this->redirect('/login');
             return;
         }
@@ -28,7 +28,7 @@ class CoursesController extends Controller
             'css_file' => ['/css/directory.css', '/css/courses.css'],
             'active' => 'courses',
             'pageTitle' => 'Course Management',
-            'notificationCount' => (new NotificationModel())->unreadCount(),
+            'notificationCount' => (new NotificationModel())->unreadCount($_SESSION['staff_code']),
             'courses' => (new CourseModel())->listing(),
             'lecturers' => (new LecturerModel())->all(),
             'instructors' => (new InstructorModel())->all(),
