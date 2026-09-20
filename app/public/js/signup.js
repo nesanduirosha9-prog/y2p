@@ -248,7 +248,7 @@ document.addEventListener('DOMContentLoaded', function() {
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
-                    alert("Registration complete! You can now sign in.");
+                    alert(data.message || "Registration submitted!");
                     window.location.href = data.redirect || '/login';
                 } else {
                     alert("Registration failed: " + data.message);

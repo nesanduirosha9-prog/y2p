@@ -97,6 +97,31 @@ an empty database; `--seed` loads the sample rows. The instructor-side
 arrays (per `docs/DESIGN_PATTERNS_PLAN.md` item 8) — their tables exist now,
 but wiring each page to a real Model is separate follow-up work.
 
+## Seeded accounts
+
+`seeds/001_staff.sql` loads one login per role/position so every dashboard
+can be exercised without registering a new account. **Every seeded account
+shares the same placeholder password: `Password123!`** (bcrypt hash baked
+into the seed file — see its header comment).
+
+`role`/`academic_rank` are the base identity; `position` is an **additive**
+extra on top of `academic_staff` (a Coordinator is still `academic_rank =
+'junior'`, an In-Charge is still `'senior'`) — see `001_create_staff.sql`'s
+header for the full reasoning, and `016_alter_staff_registration.sql` for
+the `status`/`phone` columns added for the registration-approval workflow.
+
+| Role / position | Dashboard | Email | Name |
+|---|---|---|---|
+| Timetable Officer | `/timetable` | `tmo@ucsc.cmb.ac.lk` | T. M. Officer |
+| Coordinator (`academic_staff`, junior + `position=coordinator`) | `/instructor/timetable` + **Staff** tab | `mka@ucsc.cmb.ac.lk` | Mr. Kwame Addo |
+| In-Charge (`academic_staff`, senior + `position=in_charge`) | `/instructor/timetable` + **Staff** + **Accounts** tabs | `dsc@ucsc.cmb.ac.lk` | Dr. Sarah Chen |
+| Lecturer / junior staff (`academic_staff`, junior, no position) | `/instructor/timetable` | `mad@`, `mab@`, `mat@`, `mko@`, `mem@`, `meq@`, `mna@`, `tmf@`, `myd@`, `myb@` `ucsc.cmb.ac.lk` | Ato Baidoo, Adom Boateng, Atta Tetteh, Kojo Amoah, Efua Mensah, Esi Quaye, Nana Ama, Thilini Fernando, Yaa Darko, Yaw Bediako |
+| Senior Lecturer (`academic_staff`, senior, no position) | `/instructor/timetable` | `dad@`, `dep@`, `dfa@`, `dka@`, `dlo@`, `dlw@`, `pdn@`, `pjo@`, `pka@`, `prm@` `ucsc.cmb.ac.lk` | Amara Diallo, Elena Petrov, Fatima Ahmed, Kofi Anning, Linda Osei, Liu Wei, David Nkrumah, James Osei, Kweku Asante, Richard Mensah |
+
+New self-registrations via `/signup` are **not** in this table — they land
+with `status = 'pending'` and no role until a Coordinator or In-Charge
+approves them from `/coordinator/staff`.
+
 ## Seeing the data
 
 XAMPP bundles phpMyAdmin: <http://localhost/phpmyadmin> → `staffsync_db`.

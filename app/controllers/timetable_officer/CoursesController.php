@@ -13,7 +13,7 @@ class CoursesController extends Controller
 {
     public function __construct()
     {
-        $this->setLayout('timetable_officer_dashboard');
+        $this->setLayout('dashboard');
     }
 
     public function index(Request $request)

@@ -11,6 +11,8 @@ use app\core\Application;
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?= $title ?? 'My MVC App' ?></title>
 
+    <link rel="stylesheet" href="/css/tokens.css">
+    <link rel="stylesheet" href="/css/components.css">
     <link rel="stylesheet" href="/css/style.css">
     <link rel="manifest" href="/manifest.json">
     <meta name="theme-color" content="#1f2937">

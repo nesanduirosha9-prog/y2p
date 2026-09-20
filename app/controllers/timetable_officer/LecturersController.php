@@ -5,6 +5,7 @@ namespace app\controllers\timetable_officer;
 use app\core\Controller;
 use app\core\Request;
 use app\models\CourseModel;
+use app\models\InstructorModel;
 use app\models\LecturerModel;
 use app\models\NotificationModel;
 
@@ -12,7 +13,7 @@ class LecturersController extends Controller
 {
     public function __construct()
     {
-        $this->setLayout('timetable_officer_dashboard');
+        $this->setLayout('dashboard');
     }
 
     public function index(Request $request)
@@ -28,12 +29,13 @@ class LecturersController extends Controller
         }
 
         return $this->render('timetable_officer/lecturers', [
-            'title' => 'Lecturer Details',
+            'title' => 'Staff Details',
             'css_file' => ['/css/directory.css', '/css/lecturers.css'],
             'active' => 'lecturers',
-            'pageTitle' => 'Lecturer Details',
+            'pageTitle' => 'Staff Details',
             'notificationCount' => (new NotificationModel())->unreadCount($_SESSION['staff_code']),
             'lecturers' => (new LecturerModel())->all(),
+            'juniorStaff' => (new InstructorModel())->directory(),
             'courseMeta' => $courseMeta,
         ]);
     }

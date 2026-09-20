@@ -10,7 +10,7 @@ class WorkloadController extends Controller
 {
     public function __construct()
     {
-        $this->setLayout('instructor_dashboard');
+        $this->setLayout('dashboard');
     }
 
     public function index(Request $request)

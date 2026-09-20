@@ -11,8 +11,11 @@ use app\controllers\AuthController;
 use app\controllers\timetable_officer\TimetableController;
 use app\controllers\timetable_officer\CoursesController;
 use app\controllers\timetable_officer\LecturersController;
+use app\controllers\timetable_officer\LectureHallsController;
 
 use app\controllers\timetable_officer\SettingsController;
+use app\controllers\coordinator\StaffController;
+use app\controllers\in_charge\AccountsController;
 use app\core\Request;
 use app\core\Response;
 
@@ -72,6 +75,12 @@ $router->get('/courses', function (Request $request, Response $response) {
 $router->get('/lecturers', function (Request $request, Response $response) {
     return (new LecturersController())->index($request);
 });
+$router->get('/lecture-halls', function (Request $request, Response $response) {
+    return (new LectureHallsController())->index($request);
+});
+$router->put('/lecture-halls/{code}', function (Request $request, Response $response, array $params) {
+    return (new LectureHallsController())->update($request, $response, $params);
+});
 
 $router->get('/settings', function (Request $request, Response $response) {
     return (new SettingsController())->index($request);
@@ -105,6 +114,41 @@ $router->get('/instructor/messages', function (Request $request, Response $respo
 });
 $router->get('/instructor/settings', function (Request $request, Response $response) {
     return (new \app\controllers\instructor\SettingsController())->index($request);
+});
+
+// Coordinator Routes (also reachable by In-Charge, which carries every
+// coordinator ability plus its own Accounts screen below)
+$router->get('/coordinator/staff', function (Request $request, Response $response) {
+    return (new StaffController())->index($request);
+});
+$router->post('/coordinator/staff/{code}/approve', function (Request $request, Response $response, array $params) {
+    return (new StaffController())->approve($request, $response, $params);
+});
+$router->post('/coordinator/staff/{code}/reject', function (Request $request, Response $response, array $params) {
+    return (new StaffController())->reject($request, $response, $params);
+});
+
+// In-Charge Routes
+$router->get('/in-charge/accounts', function (Request $request, Response $response) {
+    return (new AccountsController())->index($request);
+});
+$router->get('/in-charge/accounts/change/{position}/{code}', function (Request $request, Response $response, array $params) {
+    return (new AccountsController())->change($request, $response, $params);
+});
+$router->get('/in-charge/accounts/select/{position}/{code}', function (Request $request, Response $response, array $params) {
+    return (new AccountsController())->selectView($request, $response, $params);
+});
+$router->post('/in-charge/accounts/select', function (Request $request, Response $response) {
+    return (new AccountsController())->selectSubmit($request, $response);
+});
+$router->get('/in-charge/accounts/verify', function (Request $request, Response $response) {
+    return (new AccountsController())->verifyView($request);
+});
+$router->post('/in-charge/accounts/verify', function (Request $request, Response $response) {
+    return (new AccountsController())->verifySubmit($request, $response);
+});
+$router->get('/in-charge/accounts/updated', function (Request $request, Response $response) {
+    return (new AccountsController())->updatedView($request);
 });
 
 $app->useRouter($router);

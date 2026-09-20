@@ -1,48 +1,45 @@
-document.addEventListener('DOMContentLoaded', () => {
-    // Dropdown Logic
-    const toggleBtn = document.getElementById('notificationToggleBtn');
-    const dropdown = document.getElementById('notificationDropdown');
+// dashboard.js — sidebar drawer toggle for the shared dashboard shell
+// (app/views/layouts/dashboard.php). Only relevant below the 1024px
+// breakpoint (see dashboard.css) where the sidebar becomes an off-canvas
+// drawer instead of a fixed column.
+(function () {
+    const sidebar = document.getElementById('dashSidebar');
+    const backdrop = document.getElementById('sidebarBackdrop');
+    const toggleBtn = document.getElementById('sidebarToggleBtn');
 
-    if (toggleBtn && dropdown) {
-        toggleBtn.addEventListener('click', (e) => {
-            e.stopPropagation();
-            dropdown.hidden = !dropdown.hidden;
-        });
-
-        // Close dropdown when clicking outside
-        document.addEventListener('click', (e) => {
-            if (!dropdown.contains(e.target) && e.target !== toggleBtn) {
-                dropdown.hidden = true;
-            }
-        });
-        
-        // Prevent closing when clicking inside dropdown
-        dropdown.addEventListener('click', (e) => {
-            e.stopPropagation();
-        });
+    if (!sidebar || !backdrop || !toggleBtn) {
+        return;
     }
 
-    // Modal Logic
-    const seeAllBtn = document.getElementById('seeAllNotifsBtn');
-    const modal = document.getElementById('allNotifsModal');
-    const closeModalBtn = document.getElementById('closeAllNotifsBtn');
-
-    if (seeAllBtn && modal && closeModalBtn) {
-        seeAllBtn.addEventListener('click', (e) => {
-            e.preventDefault();
-            dropdown.hidden = true; // Close dropdown when opening modal
-            modal.hidden = false;
-        });
-
-        closeModalBtn.addEventListener('click', () => {
-            modal.hidden = true;
-        });
-
-        // Close modal when clicking outside of the modal content
-        modal.addEventListener('click', (e) => {
-            if (e.target === modal) {
-                modal.hidden = true;
-            }
-        });
+    function openSidebar() {
+        sidebar.classList.add('open');
+        backdrop.classList.add('visible');
     }
-});
+
+    function closeSidebar() {
+        sidebar.classList.remove('open');
+        backdrop.classList.remove('visible');
+    }
+
+    toggleBtn.addEventListener('click', function () {
+        if (sidebar.classList.contains('open')) {
+            closeSidebar();
+        } else {
+            openSidebar();
+        }
+    });
+
+    backdrop.addEventListener('click', closeSidebar);
+
+    // A nav link click navigates away anyway, but close first so back/forward
+    // navigation doesn't leave the drawer open.
+    sidebar.querySelectorAll('.nav-item').forEach(function (link) {
+        link.addEventListener('click', closeSidebar);
+    });
+
+    window.addEventListener('resize', function () {
+        if (window.innerWidth > 1024) {
+            closeSidebar();
+        }
+    });
+})();

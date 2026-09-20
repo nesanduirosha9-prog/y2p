@@ -30,18 +30,10 @@
     margin-top: 3px;
 }
 
+/* This page's CTA uses a navy variant instead of the shared blue —
+   base shape/sizing comes from components.css. */
 .btn-primary {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
     background: #1a3a6b;
-    color: #fff;
-    border: none;
-    border-radius: 8px;
-    padding: 10px 16px;
-    font-size: 13px;
-    font-weight: 600;
-    cursor: pointer;
     box-shadow: 0 1px 1.5px rgba(0, 0, 0, 0.1), 0 1px 1px rgba(0, 0, 0, 0.1);
 }
 
@@ -262,6 +254,76 @@
     color: #fb2c36;
 }
 
+/* ---- Modal form fields (shared by every Add/Edit modal) ---- */
+.field-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+}
+
+.form-row {
+    margin-bottom: 14px;
+}
+
+.form-row label {
+    display: block;
+    font-size: 12.5px;
+    font-weight: 500;
+    color: #374151;
+    margin-bottom: 6px;
+}
+
+.form-row input,
+.form-row select {
+    width: 100%;
+    height: 40px;
+    border: 1px solid #dde3ee;
+    border-radius: 8px;
+    padding: 0 12px;
+    font-size: 13px;
+    color: #0f1c2e;
+    background: #fff;
+    appearance: none;
+}
+
+.form-row select {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%239ca3af' stroke-width='3'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+    padding-right: 32px;
+}
+
+.form-row input:focus,
+.form-row select:focus {
+    outline: none;
+    border-color: #2563eb;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+}
+
+.form-row input::placeholder {
+    color: #9ca3af;
+}
+
+.form-row input:disabled {
+    background: #f4f6f9;
+    color: #6b7c96;
+}
+
+.section-label {
+    font-size: 10.5px;
+    font-weight: 700;
+    letter-spacing: 0.7px;
+    text-transform: uppercase;
+    color: #9ca3af;
+    margin: 4px 0 12px;
+}
+
+.form-error {
+    font-size: 12px;
+    color: var(--color-danger);
+    margin-top: 8px;
+}
+
 /* ---- Modal shell ---- */
 .modal-overlay {
     position: fixed;
@@ -372,4 +434,5 @@
 @media (max-width: 640px) {
     .search-box { max-width: none; }
     .dir-controls { gap: 8px; }
+    .field-grid { grid-template-columns: 1fr; }
 }

@@ -354,15 +354,14 @@
     cursor: pointer;
 }
 
+/* This page's action button is green instead of the shared blue — base
+   shape/sizing comes from components.css. */
 .btn-primary-sm {
-    background: #00bc7d;
-    color: #fff;
-    border: none;
-    border-radius: 7px;
-    padding: 8px 16px;
-    font-size: 13px;
-    font-weight: 600;
-    cursor: pointer;
+    background: var(--color-success);
+}
+
+.btn-primary-sm:hover {
+    background: var(--color-success-dark);
 }
 
 .btn-primary-sm:disabled {

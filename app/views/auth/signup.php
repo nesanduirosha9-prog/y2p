@@ -75,12 +75,12 @@
             
                 <div class="login-card">
                     <form id="emailForm" action="/signup/send-otp" method="POST">
-                        
+
                         <div class="form-group">
                             <label for="signup-email">Staff Email Address</label>
                             <input type="email" id="signup-email" name="signup-email" required placeholder="you@ucsc.cmb.ac.lk">
                         </div>
-                    
+
                         <button type="submit" class="btn-primary" id="btn-send-otp">Send OTP</button>
                     </form>
                 </div>

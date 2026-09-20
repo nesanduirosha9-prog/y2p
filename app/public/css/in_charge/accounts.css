@@ -1,0 +1,116 @@
+/* in_charge/accounts.css — page-specific extras for the Role Assignment /
+ * handover flow. Table/card/form furniture comes from directory.css. */
+
+.accounts-note {
+    margin-top: 14px;
+    font-size: 12.5px;
+    color: #6b7c96;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.handover-card {
+    padding: 20px;
+}
+
+.handover-current {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding-bottom: 16px;
+    margin-bottom: 16px;
+    border-bottom: 1px solid #eef1f6;
+}
+
+.handover-name {
+    font-weight: 600;
+    font-size: 14px;
+    color: #0f1c2e;
+}
+
+.handover-actions {
+    padding: 0;
+    margin-top: 16px;
+    border-top: none;
+}
+
+.handover-actions-center {
+    display: flex;
+    justify-content: center;
+    margin-top: 20px;
+}
+
+.handover-search {
+    max-width: none;
+    margin-bottom: 12px;
+}
+
+.candidate-list {
+    max-height: 320px;
+    overflow-y: auto;
+    border: 1px solid #eef1f6;
+    border-radius: 10px;
+}
+
+.candidate-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 14px;
+    cursor: pointer;
+    border-bottom: 1px solid #eef1f6;
+}
+
+.candidate-row:last-child {
+    border-bottom: none;
+}
+
+.candidate-row:hover {
+    background: #f9fafc;
+}
+
+.candidate-row input[type="radio"] {
+    accent-color: var(--color-primary);
+}
+
+.handover-rank-row {
+    margin-top: 16px;
+}
+
+.handover-dev-otp {
+    background: #eff6ff;
+    color: #1447e6;
+    border-radius: 8px;
+    padding: 10px 12px;
+    font-size: 12.5px;
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+#handoverOtp {
+    letter-spacing: 6px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 18px;
+    text-align: center;
+}
+
+.handover-success {
+    text-align: center;
+    padding: 20px 0 26px;
+}
+
+.handover-success i {
+    font-size: 40px;
+    color: var(--color-success, #007a55);
+    margin-bottom: 10px;
+}
+
+.handover-success h2 {
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-weight: 800;
+    font-size: 20px;
+    color: #0f1c2e;
+}

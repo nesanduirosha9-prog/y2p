@@ -172,23 +172,12 @@ input:focus, select:focus {
     outline: none;
 }
 
-/* Primary Button */
+/* Full-width auth CTA — base shape/color now shared via components.css */
 .btn-primary {
     width: 100%;
     padding: 14px;
-    border: none;
-    border-radius: 8px;
     font-size: 15px;
-    font-weight: 600;
-    cursor: pointer;
     margin-top: 10px;
-    background-color: #1e3a8a; 
-    color: #ffffff;
-    transition: background-color 0.2s;
-}
-
-.btn-primary:hover {
-    background-color: #1a317e;
 }
 
 /* 'Or' Divider trick */

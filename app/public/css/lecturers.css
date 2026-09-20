@@ -1,5 +1,11 @@
-/* lecturers.css — Lecturer Details specifics (the name cell). Shared table /
-   filter styling is in directory.css. */
+/* lecturers.css — Staff Details specifics: the name cell and spacing for
+   the Lecturer/Junior Staff tab bar (reuses the shared .seg/.seg-btn
+   component from directory.css — same look as the Program/Year filters). */
+
+#staffTabGroup {
+    width: fit-content;
+    margin-bottom: 18px;
+}
 
 .lec-identity {
     display: flex;

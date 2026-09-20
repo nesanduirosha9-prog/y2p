@@ -155,18 +155,7 @@
     padding: 16px 20px;
     border-top: 1px solid #e5e7eb;
 }
-.btn-primary-sm {
-    background: #2563eb;
-    color: #fff;
-    border: none;
-    padding: 8px 16px;
-    border-radius: 6px;
-    font-weight: 500;
-    cursor: pointer;
-}
-.btn-primary-sm:hover {
-    background: #1d4ed8;
-}
+/* .btn-primary-sm now shared via components.css */
 /* override notif items for modal light theme */
 .modal .notif-item { border-bottom: 1px solid #e5e7eb; background: #fff; }
 .modal .notif-item:hover { background: #f9fafb; }

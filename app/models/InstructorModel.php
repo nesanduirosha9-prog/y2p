@@ -37,4 +37,47 @@ class InstructorModel
         }
         return $out;
     }
+
+    /**
+     * Every instructor (junior staff) with full directory details, keyed by
+     * code, same shape as LecturerModel::all() for the "Junior Staff
+     * Details" tab on the Staff Details screen:
+     *   ['MKA' => ['name'=>..., 'dept'=>..., 'email'=>..., 'courses'=>['CS1101', ...]], ...]
+     */
+    public function directory(): array
+    {
+        $pdo = Database::getConnection();
+        $rows = $pdo->query(
+            "SELECT DISTINCT s.code, s.name, s.department, s.email
+             FROM staff s
+             JOIN course_staff cs ON cs.staff_code = s.code AND cs.assignment_role = 'instructor'
+             ORDER BY s.name"
+        )->fetchAll(PDO::FETCH_ASSOC);
+        if (!$rows) {
+            return [];
+        }
+
+        $courses = $pdo->query(
+            "SELECT staff_code, course_code
+             FROM course_staff
+             WHERE assignment_role = 'instructor'
+             ORDER BY course_code"
+        )->fetchAll(PDO::FETCH_ASSOC);
+
+        $byStaff = [];
+        foreach ($courses as $row) {
+            $byStaff[$row['staff_code']][] = $row['course_code'];
+        }
+
+        $out = [];
+        foreach ($rows as $r) {
+            $out[$r['code']] = [
+                'name' => $r['name'],
+                'dept' => $r['department'],
+                'email' => $r['email'],
+                'courses' => $byStaff[$r['code']] ?? [],
+            ];
+        }
+        return $out;
+    }
 }

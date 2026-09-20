@@ -1,0 +1,55 @@
+/* tokens.css — shared design tokens (CSS custom properties).
+ *
+ * Loaded before every other stylesheet so pages/components can reference
+ * these instead of hardcoding colors/spacing. `app/public/css/errors.css`
+ * already referenced --color-primary, --color-primary-dark, --radius-md,
+ * etc. before this file existed — those names are kept as-is here so that
+ * file starts working rather than silently falling back to nothing.
+ *
+ * Adding a theme later (e.g. dark mode) means overriding these variables
+ * under a `[data-theme="dark"]` selector — no other code needs to change.
+ * Breakpoints can't be expressed as custom properties inside a plain-CSS
+ * `@media` condition (that needs a preprocessor/build step, which this
+ * project deliberately doesn't have — see PROJECT_CONTEXT.md), so they're
+ * documented here as the convention every `@media` rule should use:
+ *   480px  — phone
+ *   768px  — tablet
+ *   1024px — small desktop / where the dashboard sidebar can fit
+ */
+
+:root {
+    /* Brand / action color, unified from the several near-duplicate blues
+       previously hardcoded across login.css/signup.css/directory.css/etc. */
+    --color-primary: #2563eb;
+    --color-primary-dark: #1d4ed8;
+    --color-navy: #0f1c2e;
+
+    --color-success: #00bc7d;
+    --color-success-dark: #059669;
+    --color-danger: #fb2c36;
+    --color-warning: #f59e0b;
+    --color-info: #3b82f6;
+
+    --color-bg: #f4f6f9;
+    --color-surface: #ffffff;
+    --color-border: #e2e8f0;
+
+    --color-text: #0f1c2e;
+    --color-text-dark: #1e293b;
+    --color-text-muted: #64748b;
+
+    --radius-sm: 6px;
+    --radius-md: 8px;
+    --radius-lg: 12px;
+
+    --space-1: 4px;
+    --space-2: 8px;
+    --space-3: 12px;
+    --space-4: 16px;
+    --space-5: 24px;
+    --space-6: 32px;
+
+    --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+    --font-display: 'Plus Jakarta Sans', sans-serif;
+    --font-mono: 'JetBrains Mono', monospace;
+}

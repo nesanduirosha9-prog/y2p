@@ -54,30 +54,36 @@ class AuthController extends Controller
         $staffModel = new StaffModel();
         $user = $staffModel->findByEmail($email);
 
-        if ($user && password_verify($password, $user['password'])) {
-            // Login successful
-            $_SESSION['staff_code'] = $user['code'];
-            $_SESSION['user_email'] = $user['email'];
-            $_SESSION['role'] = $user['role'];
-
-            $redirectUrl = ($user['role'] === 'academic_staff') ? '/instructor/timetable' : '/timetable';
-
-            // Respond with JSON for AJAX request, or redirect for normal form post
-            return $this->jsonResponse($response, ['success' => true, 'message' => 'Login successful', 'redirect' => $redirectUrl]);
+        if (!$user || !password_verify($password, $user['password'])) {
+            return $this->jsonResponse($response, ['success' => false, 'message' => 'Invalid email or password'], 401);
         }
 
-        // Login failed
-        return $this->jsonResponse($response, ['success' => false, 'message' => 'Invalid email or password'], 401);
+        if (($user['status'] ?? 'active') === 'pending') {
+            return $this->jsonResponse($response, [
+                'success' => false,
+                'message' => 'Your account is awaiting approval from a coordinator. You will be able to sign in once it is approved.',
+            ], 403);
+        }
+
+        // Login successful
+        $_SESSION['staff_code'] = $user['code'];
+        $_SESSION['user_email'] = $user['email'];
+        $_SESSION['role'] = $user['role'];
+        $_SESSION['academic_rank'] = $user['academic_rank'];
+        $_SESSION['position'] = $user['position'];
+
+        $redirectUrl = ($user['role'] === 'academic_staff') ? '/instructor/timetable' : '/timetable';
+
+        // Respond with JSON for AJAX request, or redirect for normal form post
+        return $this->jsonResponse($response, ['success' => true, 'message' => 'Login successful', 'redirect' => $redirectUrl]);
     }
 
     public function signup(Request $request, Response $response)
     {
-        // For the multi-step signup, we expect 'email' and 'password' in the final payload
-        // You'll need to make sure your JS sends both when the final step completes.
-        
-        // Reading JSON body or standard POST body
+        // For the multi-step signup, we expect 'email' and 'password' in
+        // the final payload — name/phone are filled in later from Settings.
         $body = $request->getBody();
-        $email = $body['email'] ?? '';
+        $email = trim($body['email'] ?? '');
         $password = $body['password'] ?? '';
 
         if (empty($email) || empty($password)) {
@@ -85,15 +91,20 @@ class AuthController extends Controller
         }
 
         $staffModel = new StaffModel();
-        
+
         // Check if user already exists
         if ($staffModel->findByEmail($email)) {
             return $this->jsonResponse($response, ['success' => false, 'message' => 'Email is already registered'], 409);
         }
 
-        // Create new user
+        // Create a pending account — a Coordinator/In-Charge assigns the
+        // role via the Staff approval screen before this account can log in.
         if ($staffModel->create($email, $password)) {
-            return $this->jsonResponse($response, ['success' => true, 'message' => 'Registration successful', 'redirect' => '/login']);
+            return $this->jsonResponse($response, [
+                'success' => true,
+                'message' => 'Registration submitted! A coordinator will review your account before you can sign in.',
+                'redirect' => '/login',
+            ]);
         }
 
         return $this->jsonResponse($response, ['success' => false, 'message' => 'Registration failed due to a server error'], 500);

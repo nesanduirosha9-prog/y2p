@@ -180,23 +180,12 @@ input[type="password"]:focus {
     box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
 }
 
-/* Primary Button */
+/* Full-width auth CTA — base shape/color now shared via components.css */
 .btn-primary {
     width: 100%;
     padding: 14px;
-    border: none;
-    border-radius: 8px;
     font-size: 15px;
-    font-weight: 600;
-    cursor: pointer;
-    background-color: #7994c9; 
-    color: #ffffff;
-    transition: background-color 0.2s;
     margin-top: 10px;
-}
-
-.btn-primary:hover {
-    background-color: #5c7eb8;
 }
 
 /* Footer */
@@ -223,22 +212,7 @@ input[type="password"]:focus {
     margin-bottom: 15px;
 }
 
-.badge-text {
-    background-color: #eff6ff; 
-    color: #3b82f6; 
-    padding: 4px 10px;
-    border-radius: 20px;
-    font-size: 12px;
-}
-
-.badge-divider {
-    color: #cbd5e1;
-}
-
-.badge-desc {
-    color: #64748b;
-    font-weight: 500;
-}
+/* .badge-text / .badge-divider / .badge-desc now shared via components.css */
 
 /* --- Step 2: OTP Input Group --- */
 .otp-input-group {
