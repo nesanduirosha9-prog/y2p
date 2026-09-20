@@ -87,5 +87,25 @@ $router->get('/oldabout', function (Request $request, Response $response) {
     (new HomeController())->oldAbout($response);
 });
 
+// Instructor Routes
+$router->get('/instructor/timetable', function (Request $request, Response $response) {
+    return (new \app\controllers\instructor\TimetableController())->index($request);
+});
+$router->get('/instructor/workload', function (Request $request, Response $response) {
+    return (new \app\controllers\instructor\WorkloadController())->index($request);
+});
+$router->get('/instructor/requests', function (Request $request, Response $response) {
+    return (new \app\controllers\instructor\RequestsController())->index($request);
+});
+$router->get('/instructor/leave', function (Request $request, Response $response) {
+    return (new \app\controllers\instructor\LeaveController())->index($request);
+});
+$router->get('/instructor/messages', function (Request $request, Response $response) {
+    return (new \app\controllers\instructor\MessagesController())->index($request);
+});
+$router->get('/instructor/settings', function (Request $request, Response $response) {
+    return (new \app\controllers\instructor\SettingsController())->index($request);
+});
+
 $app->useRouter($router);
 $app->run();

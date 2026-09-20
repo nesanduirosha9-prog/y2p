@@ -126,7 +126,7 @@ if ($seed || $fresh) {
 if ($fresh && !empty($preservedUsers)) {
     echo "\nRestoring preserved users...\n";
     $pdo->exec("USE `$dbName`");
-    $stmt = $pdo->prepare("INSERT IGNORE INTO users (id, email, password, created_at) VALUES (:id, :email, :password, :created_at)");
+    $stmt = $pdo->prepare("INSERT IGNORE INTO users (id, email, password, role, created_at) VALUES (:id, :email, :password, :role, :created_at)");
     $restored = 0;
     foreach ($preservedUsers as $u) {
         try {
@@ -134,6 +134,7 @@ if ($fresh && !empty($preservedUsers)) {
                 'id' => $u['id'],
                 'email' => $u['email'],
                 'password' => $u['password'],
+                'role' => $u['role'] ?? 'timetable_officer',
                 'created_at' => $u['created_at']
             ]);
             $restored++;

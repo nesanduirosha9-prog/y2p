@@ -1,6 +1,6 @@
 <?php
 
-namespace app\controllers\timetable_officer;
+namespace app\controllers\instructor;
 
 use app\core\Controller;
 use app\core\Request;
@@ -12,12 +12,12 @@ class TimetableController extends Controller
 {
     public function __construct()
     {
-        $this->setLayout('timetable_officer_dashboard');
+        $this->setLayout('instructor_dashboard');
     }
 
     public function index(Request $request)
     {
-        if (!isset($_SESSION['user_id']) || ($_SESSION['role'] ?? '') !== 'timetable_officer') {
+        if (!isset($_SESSION['user_id']) || ($_SESSION['role'] ?? '') !== 'instructor') {
             $this->redirect('/login');
             return;
         }
@@ -33,11 +33,11 @@ class TimetableController extends Controller
         $courses = (new CourseModel())->forDeptYear($dept, $year);
         $sessions = (new TimetableSessionModel())->forDeptSemYear($dept, $sem, $year);
 
-        return $this->render('timetable_officer/timetable', [
-            'title' => 'Timetable Management',
-            'css_file' => '/css/timetable.css',
+        return $this->render('instructor/timetable', [
+            'title' => 'My Timetable',
+            'css_file' => ['/css/timetable.css', '/css/instructor/timetable.css'],
             'active' => 'timetable',
-            'pageTitle' => 'Timetable Management',
+            'pageTitle' => 'My Timetable',
             'notificationCount' => (new NotificationModel())->unreadCount(),
             'dept' => $dept,
             'sem' => $sem,

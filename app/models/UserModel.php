@@ -28,15 +28,16 @@ class UserModel
      * @param string $password The raw password (will be hashed)
      * @return bool True on success, false on failure
      */
-    public function create(string $email, string $password): bool
+    public function create(string $email, string $password, string $role = 'timetable_officer'): bool
     {
         $pdo = Database::getConnection();
         $hashedPassword = password_hash($password, PASSWORD_DEFAULT);
         
-        $stmt = $pdo->prepare("INSERT INTO users (email, password) VALUES (:email, :password)");
+        $stmt = $pdo->prepare("INSERT INTO users (email, password, role) VALUES (:email, :password, :role)");
         return $stmt->execute([
             'email' => $email,
-            'password' => $hashedPassword
+            'password' => $hashedPassword,
+            'role' => $role
         ]);
     }
 

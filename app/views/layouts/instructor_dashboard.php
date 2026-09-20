@@ -1,17 +1,17 @@
 <?php
 
 use app\core\Application;
-// Dashboard layout: sidebar + header shell shared by all Timetable Officer screens.
-// Expects `$content`, optional `$title`, `$css_file`, and `$active` (nav key: timetable|courses|lecturers|notifications|settings).
+// Dashboard layout: sidebar + header shell shared by all Instructor screens.
+// Expects `$content`, optional `$title`, `$css_file`, and `$active` (nav key: timetable|workload|requests|leave|messages|settings).
 $active = $active ?? 'timetable';
-$userEmail = $_SESSION['user_email'] ?? 'tmo@ucsc.cmb.ac.lk';
+$userEmail = $_SESSION['user_email'] ?? 'tmf@ucsc.cmb.ac.lk';
 ?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title><?= $title ?? 'StaffSync' ?></title>
+    <title><?= $title ?? 'StaffSync - Instructor' ?></title>
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -38,20 +38,28 @@ $userEmail = $_SESSION['user_email'] ?? 'tmo@ucsc.cmb.ac.lk';
 
             <nav class="sidebar-nav">
                 <p class="nav-label">Navigation</p>
-                <a href="/timetable" class="nav-item <?= $active === 'timetable' ? 'active' : '' ?>">
+                <a href="/instructor/timetable" class="nav-item <?= $active === 'timetable' ? 'active' : '' ?>">
                     <i class="fa-solid fa-calendar-days"></i>
                     <span>Timetable</span>
                 </a>
-                <a href="/courses" class="nav-item <?= $active === 'courses' ? 'active' : '' ?>">
-                    <i class="fa-solid fa-book-open"></i>
-                    <span>Courses</span>
+                <a href="/instructor/workload" class="nav-item <?= $active === 'workload' ? 'active' : '' ?>">
+                    <i class="fa-solid fa-layer-group"></i>
+                    <span>Workload</span>
                 </a>
-                <a href="/lecturers" class="nav-item <?= $active === 'lecturers' ? 'active' : '' ?>">
-                    <i class="fa-solid fa-users"></i>
-                    <span>Lecturers</span>
+                <a href="/instructor/requests" class="nav-item <?= $active === 'requests' ? 'active' : '' ?>">
+                    <i class="fa-solid fa-clipboard-list"></i>
+                    <span>Requests</span>
+                </a>
+                <a href="/instructor/leave" class="nav-item <?= $active === 'leave' ? 'active' : '' ?>">
+                    <i class="fa-regular fa-calendar-minus"></i>
+                    <span>Leave</span>
+                </a>
+                <a href="/instructor/messages" class="nav-item <?= $active === 'messages' ? 'active' : '' ?>">
+                    <i class="fa-regular fa-message"></i>
+                    <span>Messages</span>
                 </a>
 
-                <a href="/settings" class="nav-item <?= $active === 'settings' ? 'active' : '' ?>">
+                <a href="/instructor/settings" class="nav-item <?= $active === 'settings' ? 'active' : '' ?>">
                     <i class="fa-solid fa-gear"></i>
                     <span>Settings</span>
                 </a>
@@ -79,9 +87,9 @@ $userEmail = $_SESSION['user_email'] ?? 'tmo@ucsc.cmb.ac.lk';
                     <?php require_once \app\core\Application::$ROOT_DIR . '/views/components/notifications.php'; ?>
 
                     <div class="user-chip">
-                        <div class="user-avatar">TO</div>
+                        <div class="user-avatar" style="background: #4d179a;">IN</div>
                         <div class="user-meta">
-                            <p class="user-name">Timetable Officer</p>
+                            <p class="user-name">Instructor</p>
                             <p class="user-email"><?= htmlspecialchars($userEmail) ?></p>
                         </div>
                         <i class="fa-solid fa-chevron-down"></i>

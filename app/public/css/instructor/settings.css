@@ -1,0 +1,250 @@
+/* Instructor Settings CSS */
+
+.set-container {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+
+.set-header {
+    background: #fff;
+    border-bottom: 1px solid #dde3ee;
+    padding: 16px 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-shrink: 0;
+}
+
+.set-title {
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-weight: 700;
+    color: #0f1c2e;
+    font-size: 18px;
+}
+
+.set-sub {
+    font-size: 12px;
+    color: #9ca3af;
+    margin-top: 2px;
+}
+
+.set-body {
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    max-width: 800px;
+}
+
+.set-card {
+    background: #fff;
+    border: 1px solid #dde3ee;
+    border-radius: 12px;
+    overflow: hidden;
+}
+
+.set-card-header {
+    padding: 12px 20px;
+    border-bottom: 1px solid #dde3ee;
+    background: #f4f6f9;
+}
+
+.set-card-header.flex-between {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.set-card-header p {
+    font-size: 14px;
+    font-weight: 600;
+    color: #0f1c2e;
+}
+
+.set-text-btn {
+    background: none;
+    border: none;
+    color: #2563eb;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.set-text-btn:hover {
+    text-decoration: underline;
+}
+
+.set-card-body {
+    padding: 20px;
+}
+
+.set-profile-layout {
+    display: flex;
+    gap: 24px;
+    align-items: flex-start;
+}
+
+.set-avatar-col {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    flex-shrink: 0;
+}
+
+.set-avatar-box {
+    width: 80px;
+    height: 80px;
+    border-radius: 16px;
+    background: #1a3a6b;
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    font-weight: 700;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+}
+
+.set-upload-btn {
+    background: none;
+    border: none;
+    color: #2563eb;
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.set-upload-btn:hover {
+    text-decoration: underline;
+}
+
+.set-form-grid {
+    flex: 1;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+}
+
+.form-group.full-width {
+    grid-column: 1 / -1;
+}
+
+.form-group label {
+    font-size: 12px;
+    font-weight: 600;
+    color: #6b7c96;
+    margin-bottom: 6px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.set-input {
+    width: 100%;
+    padding: 10px 14px;
+    border-radius: 8px;
+    border: 1px solid #dde3ee;
+    background: #f4f6f9;
+    font-size: 14px;
+    color: #0f1c2e;
+    outline: none;
+    transition: all 0.2s;
+}
+
+.set-input:focus {
+    border-color: #2563eb;
+    box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.2);
+}
+
+.set-textarea {
+    resize: none;
+}
+
+.set-readonly {
+    width: 100%;
+    padding: 10px 14px;
+    border-radius: 8px;
+    border: 1px solid #dde3ee;
+    background: #eef1f6;
+    font-size: 14px;
+    color: #6b7c96;
+}
+
+.set-card-footer {
+    padding: 12px 20px;
+    border-top: 1px solid #dde3ee;
+    display: flex;
+    justify-content: flex-end;
+}
+
+.set-passkeys-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.set-passkey-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px;
+    background: #f4f6f9;
+    border: 1px solid #dde3ee;
+    border-radius: 8px;
+}
+
+.set-passkey-info {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.set-pk-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 8px;
+    background: #1a3a6b;
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+}
+
+.set-pk-name {
+    font-size: 14px;
+    font-weight: 600;
+    color: #0f1c2e;
+}
+
+.set-pk-date {
+    font-size: 12px;
+    color: #9ca3af;
+    margin-top: 2px;
+}
+
+.set-remove-btn {
+    background: none;
+    border: none;
+    color: #ef4444;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.set-remove-btn:hover {
+    color: #b91c1c;
+    text-decoration: underline;
+}

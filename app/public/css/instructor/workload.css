@@ -1,0 +1,242 @@
+/* Instructor Workload CSS */
+
+.wk-container {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+
+.wk-tabs {
+    background: #fff;
+    border-bottom: 1px solid #dde3ee;
+    padding: 0 24px;
+    display: flex;
+    gap: 0;
+    flex-shrink: 0;
+}
+
+.wk-tab {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 12px 20px;
+    font-size: 12px;
+    font-weight: 700;
+    color: #9ca3af;
+    text-decoration: none;
+    border-bottom: 2px solid transparent;
+    transition: all 0.2s;
+}
+
+.wk-tab:hover {
+    color: #6b7c96;
+    border-bottom-color: #dde3ee;
+}
+
+.wk-tab.active {
+    color: #1a3a6b;
+    border-bottom-color: #1a3a6b;
+}
+
+.wk-body {
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.wk-filter-bar {
+    background: #fff;
+    border: 1px solid #dde3ee;
+    border-radius: 12px;
+    padding: 12px 20px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.wk-filter-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 12px;
+    font-weight: 700;
+    color: #0f1c2e;
+}
+
+.v-divider {
+    width: 1px;
+    height: 20px;
+    background: #dde3ee;
+}
+
+.wk-btn-reset {
+    background: #f4f6f9;
+    border: 1px solid #dde3ee;
+    color: #6b7c96;
+    font-size: 11px;
+    font-weight: 700;
+    padding: 6px 10px;
+    border-radius: 8px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.wk-btn-reset:hover {
+    background: #eef1f6;
+}
+
+.wk-filter-group {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.wk-filter-group label {
+    font-size: 11px;
+    font-weight: 700;
+    color: #9ca3af;
+    letter-spacing: 0.5px;
+}
+
+.wk-select-wrapper {
+    position: relative;
+}
+
+.wk-select {
+    appearance: none;
+    background: #fff;
+    border: 1px solid #dde3ee;
+    padding: 6px 28px 6px 12px;
+    border-radius: 8px;
+    font-size: 12px;
+    color: #0f1c2e;
+    cursor: pointer;
+    outline: none;
+}
+
+.wk-select:focus {
+    border-color: #1a3a6b;
+}
+
+.wk-select-wrapper .chevron {
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 11px;
+    color: #9ca3af;
+    pointer-events: none;
+}
+
+.wk-overview-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+}
+
+.wk-card {
+    background: #fff;
+    border: 1px solid #dde3ee;
+    border-radius: 12px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+.wk-card-header {
+    padding: 12px 20px;
+    border-bottom: 1px solid #dde3ee;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.wk-icon-box {
+    width: 28px;
+    height: 28px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+}
+
+.wk-card-label {
+    font-size: 11px;
+    font-weight: 700;
+    color: #6b7c96;
+    letter-spacing: 0.5px;
+}
+
+.wk-card-sub {
+    font-size: 10px;
+    color: #9ca3af;
+    margin-top: 2px;
+}
+
+.wk-card-body {
+    padding: 16px 20px;
+    display: flex;
+    align-items: stretch;
+    justify-content: space-between;
+    gap: 16px;
+}
+
+.wk-stat {
+    flex: 1;
+    text-align: center;
+}
+
+.wk-stat-label {
+    font-size: 10px;
+    font-weight: 700;
+    color: #9ca3af;
+    letter-spacing: 0.5px;
+    margin-bottom: 4px;
+}
+
+.wk-stat-value {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 24px;
+    font-weight: 700;
+}
+
+.wk-stat-unit {
+    font-size: 10px;
+    color: #9ca3af;
+}
+
+.text-blue { color: #1a3a6b; }
+.text-green { color: #0f766e; }
+.text-purple { color: #7c3aed; }
+.text-yellow { color: #ca8a04; }
+
+.wk-card-footer {
+    padding: 0 20px 16px;
+}
+
+.wk-progress-track {
+    height: 6px;
+    background: #eef1f6;
+    border-radius: 3px;
+    overflow: hidden;
+}
+
+.wk-progress-fill {
+    height: 100%;
+    border-radius: 3px;
+}
+
+.bg-blue { background: #1a3a6b; }
+.bg-purple { background: #7c3aed; }
+.bg-yellow { background: #ca8a04; }
+
+.wk-progress-text {
+    font-size: 10px;
+    color: #9ca3af;
+    margin-top: 6px;
+}

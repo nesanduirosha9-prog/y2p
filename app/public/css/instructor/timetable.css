@@ -1,0 +1,23 @@
+/* Instructor Timetable CSS */
+/* Reusing global timetable.css styles, adding anything specific here */
+
+.dashboard-content-placeholder {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    color: #6b7c96;
+    text-align: center;
+    padding: 40px;
+}
+
+.dashboard-content-placeholder h2 {
+    color: #0f1c2e;
+    margin-bottom: 8px;
+    font-size: 20px;
+}
+
+.dashboard-content-placeholder p {
+    font-size: 14px;
+}

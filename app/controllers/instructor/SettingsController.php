@@ -1,6 +1,6 @@
 <?php
 
-namespace app\controllers\timetable_officer;
+namespace app\controllers\instructor;
 
 use app\core\Controller;
 use app\core\Request;
@@ -10,18 +10,19 @@ class SettingsController extends Controller
 {
     public function __construct()
     {
-        $this->setLayout('timetable_officer_dashboard');
+        $this->setLayout('instructor_dashboard');
     }
 
     public function index(Request $request)
     {
-        if (!isset($_SESSION['user_id']) || ($_SESSION['role'] ?? '') !== 'timetable_officer') {
+        if (!isset($_SESSION['user_id']) || ($_SESSION['role'] ?? '') !== 'instructor') {
             $this->redirect('/login');
             return;
         }
 
-        return $this->render('timetable_officer/settings', [
+        return $this->render('instructor/settings', [
             'title' => 'Settings',
+            'css_file' => ['/css/instructor/settings.css'],
             'active' => 'settings',
             'pageTitle' => 'Settings',
             'notificationCount' => (new NotificationModel())->unreadCount(),

@@ -21,7 +21,8 @@ class AuthController extends Controller
     {
         // If already logged in, redirect to dashboard
         if (isset($_SESSION['user_id'])) {
-            $this->redirect('/dashboard');
+            $redirectUrl = ($_SESSION['role'] === 'instructor') ? '/instructor/timetable' : '/timetable';
+            $this->redirect($redirectUrl);
             return;
         }
         return $this->render('auth/login', ['title' => 'Login', 'css_file' => '/css/login.css']);
@@ -30,7 +31,8 @@ class AuthController extends Controller
     public function signupView()
     {
         if (isset($_SESSION['user_id'])) {
-            $this->redirect('/dashboard');
+            $redirectUrl = ($_SESSION['role'] === 'instructor') ? '/instructor/timetable' : '/timetable';
+            $this->redirect($redirectUrl);
             return;
         }
         return $this->render('auth/signup', ['title' => 'Sign Up', 'css_file' => '/css/signup.css']);
@@ -56,9 +58,12 @@ class AuthController extends Controller
             // Login successful
             $_SESSION['user_id'] = $user['id'];
             $_SESSION['user_email'] = $user['email'];
+            $_SESSION['role'] = $user['role'];
+
+            $redirectUrl = ($user['role'] === 'instructor') ? '/instructor/timetable' : '/timetable';
 
             // Respond with JSON for AJAX request, or redirect for normal form post
-            return $this->jsonResponse($response, ['success' => true, 'message' => 'Login successful', 'redirect' => '/dashboard']);
+            return $this->jsonResponse($response, ['success' => true, 'message' => 'Login successful', 'redirect' => $redirectUrl]);
         }
 
         // Login failed
