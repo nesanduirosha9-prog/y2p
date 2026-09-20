@@ -1,0 +1,14 @@
+<?php
+// config.php.example
+//
+// Copy this file to config.php and adjust for your machine:
+//     cp config.php.example config.php
+//
+// config.php is gitignored — it holds machine-local credentials and must
+// never be committed.
+
+// XAMPP defaults: user "root", empty password.
+define('DB_HOST', '127.0.0.1');
+define('DB_USER', 'root');
+define('DB_PASS', '');
+define('DB_NAME', 'staffsync_db');

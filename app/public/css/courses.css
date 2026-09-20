@@ -1,0 +1,184 @@
+/* courses.css — Course Management specifics: the Add/Edit modal form and
+   its multi-select pickers. Shared table / filter / modal-shell styling is
+   in directory.css. */
+
+.field-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+}
+
+.form-row {
+    margin-bottom: 14px;
+}
+
+.form-row label {
+    display: block;
+    font-size: 12.5px;
+    font-weight: 500;
+    color: #374151;
+    margin-bottom: 6px;
+}
+
+.form-row input,
+.form-row select {
+    width: 100%;
+    height: 40px;
+    border: 1px solid #dde3ee;
+    border-radius: 8px;
+    padding: 0 12px;
+    font-size: 13px;
+    color: #0f1c2e;
+    background: #fff;
+    appearance: none;
+}
+
+.form-row select {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%239ca3af' stroke-width='3'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+    padding-right: 32px;
+}
+
+.form-row input:focus,
+.form-row select:focus {
+    outline: none;
+    border-color: #2563eb;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+}
+
+.form-row input::placeholder {
+    color: #9ca3af;
+}
+
+.section-label {
+    font-size: 10.5px;
+    font-weight: 700;
+    letter-spacing: 0.7px;
+    text-transform: uppercase;
+    color: #9ca3af;
+    margin: 4px 0 12px;
+}
+
+/* ---- Multi-select ---- */
+.multi-select {
+    position: relative;
+}
+
+.multi-trigger {
+    width: 100%;
+    min-height: 40px;
+    border: 1px solid #dde3ee;
+    border-radius: 8px;
+    background: #fff;
+    padding: 5px 32px 5px 10px;
+    font-size: 13px;
+    color: #0f1c2e;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 5px;
+    text-align: left;
+}
+
+.multi-trigger > i {
+    position: absolute;
+    right: 12px;
+    top: 13px;
+    color: #9ca3af;
+    font-size: 11px;
+    pointer-events: none;
+}
+
+.multi-select.open .multi-trigger {
+    border-color: #2563eb;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+}
+
+.multi-placeholder {
+    color: #9ca3af;
+    padding: 4px 0;
+}
+
+.multi-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    background: #0f1c2e;
+    color: #fff;
+    border-radius: 6px;
+    padding: 3px 6px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10.5px;
+    font-weight: 700;
+}
+
+.multi-chip button {
+    background: none;
+    border: none;
+    color: rgba(255, 255, 255, 0.7);
+    cursor: pointer;
+    font-size: 11px;
+    line-height: 1;
+    padding: 0;
+}
+
+.multi-chip button:hover {
+    color: #fff;
+}
+
+.multi-menu {
+    position: absolute;
+    top: calc(100% + 4px);
+    left: 0;
+    right: 0;
+    background: #fff;
+    border: 1px solid #dde3ee;
+    border-radius: 8px;
+    box-shadow: 0 12px 24px -8px rgba(15, 28, 46, 0.25);
+    max-height: 200px;
+    overflow-y: auto;
+    z-index: 20;
+    padding: 5px;
+}
+
+.multi-menu[hidden] {
+    display: none;
+}
+
+.multi-option {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    padding: 8px 9px;
+    border-radius: 6px;
+    font-size: 12.5px;
+    color: #374151;
+    cursor: pointer;
+}
+
+.multi-option:hover {
+    background: #f4f6f9;
+}
+
+.multi-option .opt-meta {
+    font-size: 11px;
+    color: #9ca3af;
+}
+
+.multi-option.selected {
+    color: #1a3a6b;
+    font-weight: 600;
+}
+
+.multi-option.selected::after {
+    content: "\2713";
+    color: #2563eb;
+    font-weight: 700;
+}
+
+@media (max-width: 480px) {
+    .field-grid { grid-template-columns: 1fr; }
+}

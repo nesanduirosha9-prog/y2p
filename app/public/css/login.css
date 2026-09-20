@@ -1,0 +1,247 @@
+
+/* ==============================
+   Left Panel Content Styles
+   ============================== */
+.left-panel {
+    /* Adding padding to push content away from the edges */
+    padding: 80px 60px; 
+    color: #ffffff;
+    box-sizing: border-box; /* Ensures padding doesn't break the 40% width */
+}
+
+/* Branding Section */
+.branding {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    margin-bottom: 40px;
+}
+
+.logo-icon {
+    font-size: 36px;
+    color: #3b82f6; /* Accent blue */
+}
+
+.logo-text h1 {
+    font-size: 24px;
+    margin: 0;
+    font-weight: 700;
+}
+
+.logo-text p {
+    font-size: 14px;
+    margin: 5px 0 0;
+    color: #94a3b8;
+}
+
+/* Typography for Features */
+.feature-title h2 {
+    font-size: 40px;
+    margin: 0;
+    line-height: 1.2;
+}
+
+.feature-description {
+    font-size: 16px;
+    margin: 20px 0 40px;
+    line-height: 1.6;
+    color: #cbd5e1;
+}
+
+/* Feature List */
+.feature-list {
+    list-style: none; /* Removes default bullet points */
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 15px; /* Spaces out the list items */
+}
+
+.feature-list li {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 15px;
+    color: #e2e8f0;
+}
+
+.feature-list li i {
+    color: #3b82f6; /* Accent blue for list icons */
+    width: 20px;
+    text-align: center;
+}
+
+/* ==============================
+   Right Panel Content Styles
+   ============================== */
+.right-panel {
+    padding: 40px 60px;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between; /* Pushes nav up, footer down, form center */
+}
+
+.top-nav {
+    text-align: right;
+    font-size: 14px;
+}
+
+.top-nav span {
+    color: #64748b;
+}
+
+.top-nav a {
+    color: #1e3a8a;
+    text-decoration: none;
+    font-weight: 600;
+}
+
+.login-main {
+    max-width: 480px;
+    margin: 0 auto; /* Centers the form horizontally */
+    width: 100%;
+}
+
+.welcome-text h2 {
+    font-size: 28px;
+    margin: 0 0 10px;
+    color: #1e293b;
+}
+
+.welcome-text p {
+    font-size: 15px;
+    margin: 0 0 30px;
+    color: #64748b;
+}
+
+/* The white card effect */
+.login-card {
+    background-color: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 40px;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+}
+
+.form-group {
+    margin-bottom: 20px;
+}
+
+.label-wrapper {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+}
+
+label {
+    font-size: 14px;
+    font-weight: 600;
+    color: #1e293b;
+    display: block; /* Ensures label sits above input */
+    margin-bottom: 8px;
+}
+
+.label-wrapper label {
+    margin-bottom: 0;
+}
+
+.forgot-password {
+    font-size: 13px;
+    color: #3b82f6;
+    text-decoration: none;
+}
+
+/* Inputs and Selects */
+input[type="email"],
+input[type="password"],
+select {
+    width: 100%;
+    padding: 12px 16px;
+    font-size: 14px;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    box-sizing: border-box;
+    background-color: #f7f9fb;
+}
+
+input:focus, select:focus {
+    border-color: #3b82f6;
+    outline: none;
+}
+
+/* Primary Button */
+.btn-primary {
+    width: 100%;
+    padding: 14px;
+    border: none;
+    border-radius: 8px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    margin-top: 10px;
+    background-color: #1e3a8a; 
+    color: #ffffff;
+    transition: background-color 0.2s;
+}
+
+.btn-primary:hover {
+    background-color: #1a317e;
+}
+
+/* 'Or' Divider trick */
+.divider-wrapper {
+    margin: 25px 0;
+    text-align: center;
+    border-bottom: 1px solid #e2e8f0;
+    line-height: 0.1em;
+}
+
+.divider-text {
+    background: #ffffff;
+    padding: 0 10px;
+    color: #94a3b8;
+    font-size: 13px;
+}
+
+/* Passkey Button */
+.btn-passkey {
+    width: 100%;
+    padding: 14px;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    background-color: #ffffff;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    color: #1e293b;
+    transition: background-color 0.2s;
+}
+
+.btn-passkey:hover {
+    background-color: #f7f9fb;
+}
+
+.agreement-text {
+    font-size: 13px;
+    color: #94a3b8;
+    margin-top: 25px;
+    text-align: center;
+}
+
+.agreement-text a {
+    color: #64748b;
+}
+
+.right-footer {
+    font-size: 13px;
+    color: #94a3b8;
+    text-align: center;
+    margin-top: 20px;
+}

@@ -1,0 +1,82 @@
+/* notifications.css — the notification feed cards. */
+
+.notif-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    max-width: 640px;
+}
+
+.notif-card {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    background: #fff;
+    border: 1px solid #dde3ee;
+    border-left-width: 3px;
+    border-radius: 12px;
+    padding: 14px 16px;
+    position: relative;
+}
+
+.notif-card.is-read {
+    border-left-color: #dde3ee;
+}
+
+/* Unread cards get a tinted ground + a coloured left rule keyed to type. */
+.notif-card.is-unread.notif-info    { background: #eff6ff; border-left-color: #1447e6; }
+.notif-card.is-unread.notif-success { background: #ecfdf5; border-left-color: #007a55; }
+.notif-card.is-unread.notif-warning { background: #fff7ed; border-left-color: #ca3500; }
+
+.notif-icon {
+    width: 30px;
+    height: 30px;
+    flex-shrink: 0;
+    border-radius: 9px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+}
+
+.notif-info .notif-icon    { background: #dbeafe; color: #1447e6; }
+.notif-success .notif-icon { background: #d0fae5; color: #007a55; }
+.notif-warning .notif-icon { background: #ffedd5; color: #ca3500; }
+
+.notif-content {
+    flex: 1;
+    min-width: 0;
+}
+
+.notif-title {
+    font-size: 13px;
+    font-weight: 700;
+    color: #0f1c2e;
+}
+
+.notif-body {
+    font-size: 12.5px;
+    color: #6b7c96;
+    margin-top: 3px;
+    line-height: 1.5;
+}
+
+.notif-time {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10.5px;
+    color: #9ca3af;
+    margin-top: 6px;
+}
+
+.notif-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #2563eb;
+    flex-shrink: 0;
+    margin-top: 4px;
+}
+
+.notif-card.is-read .notif-dot {
+    visibility: hidden;
+}
