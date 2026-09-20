@@ -1,7 +1,14 @@
 <?php
+// Public front-controller — the single entry point every request hits.
+// 1. Turns on error display/reporting (development mode).
+// 2. Loads bootstrap.php (autoloader + config.php).
+// 3. Creates the Application + Router.
+// 4. Registers every route, grouped by area below:
+//    Home -> Auth -> Dashboard -> Timetable Officer -> Instructor ->
+//    Coordinator -> In-Charge.
+// 5. Hands control to $app->run(), which resolves the current request.
 ini_set('display_errors', 1);
 error_reporting(E_ALL);
-// Public front-controller: boots the framework and registers routes.
 require_once __DIR__ . '/../../bootstrap.php';
 
 use app\core\Application;

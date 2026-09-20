@@ -1,6 +1,11 @@
-// Wait for the HTML document to fully load before running our script
+// login.js — wires up app/views/auth/login.php's single-step sign-in form.
+// 1. On submit: validate email/password aren't empty, then check the
+//    @ucsc.cmb.ac.lk domain client-side.
+// 2. POST the credentials to /login as JSON (AuthController::login()).
+// 3. On success, redirect to the URL the server returns; on failure, show
+//    the error and re-enable the button.
 document.addEventListener('DOMContentLoaded', function() {
-    
+
     // Grab the login form element using its ID
     const loginForm = document.getElementById('loginForm');
 
@@ -30,7 +35,7 @@ document.addEventListener('DOMContentLoaded', function() {
             }
 
             // 3. Send the login request to the backend
-            btnSubmit = loginForm.querySelector('button[type="submit"]');
+            const btnSubmit = loginForm.querySelector('button[type="submit"]');
             const originalText = btnSubmit.innerHTML;
             btnSubmit.innerHTML = 'Logging in...';
             btnSubmit.disabled = true;

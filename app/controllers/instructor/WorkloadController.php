@@ -6,6 +6,10 @@ use app\core\Controller;
 use app\core\Request;
 use app\models\NotificationModel;
 
+// WorkloadController (instructor): "My Workload" page.
+// NOTE: renders the view with no workload data passed in — the
+// `workload_tasks` table (migration 010) exists but nothing here queries
+// it yet, so the view must be using static/placeholder content (see gaps).
 class WorkloadController extends Controller
 {
     public function __construct()

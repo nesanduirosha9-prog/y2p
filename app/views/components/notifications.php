@@ -1,5 +1,15 @@
 <?php
-// Fetch notifications for the logged-in staff member
+// components/notifications.php — the header bell dropdown + "see all" modal.
+// Included inline (require_once, not render()) by layouts/dashboard.php, so
+// it shares that scope's variables.
+// 1. Query the feed + unread count for the logged-in staff member.
+//    NOTE (gap): every dashboard controller already computes its own
+//    'notificationCount' and passes it in — this file re-queries and
+//    overwrites that variable with the same value, so it's a redundant
+//    second DB round trip on every page load, not a correctness bug.
+// 2. $icons maps notification `type` -> a Font Awesome class.
+// 3. Only the 5 most recent show in the dropdown ($displayNotifs); "See
+//    all" opens the modal with the full $globalNotifs list.
 $notificationModel = new \app\models\NotificationModel();
 $globalNotifs = $_SESSION['staff_code'] ?? null ? $notificationModel->all($_SESSION['staff_code']) : [];
 $notificationCount = $_SESSION['staff_code'] ?? null ? $notificationModel->unreadCount($_SESSION['staff_code']) : 0;

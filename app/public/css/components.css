@@ -96,23 +96,36 @@
     background: var(--color-danger);
 }
 
-/* ---------- Badges (step indicators on auth pages) ---------- */
+/* ---------- Badges (step indicators on auth pages) ----------
+   .step-badge is the pill (bg + padding + radius); badge-text/divider/desc
+   are plain inline runs inside it — Figma renders "Step X of 3 — <label>"
+   as one pill, not stacked chips. */
+
+.step-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: #e8edf5;
+    padding: 4px 12px;
+    border-radius: 20px;
+}
 
 .badge-text {
-    background: #eff6ff;
-    color: var(--color-primary);
-    padding: 4px 10px;
-    border-radius: 20px;
+    color: var(--color-navy);
     font-size: 12px;
     font-weight: 600;
 }
 
 .badge-divider {
-    color: #cbd5e1;
+    display: none;
 }
 
 .badge-desc {
     color: var(--color-text-muted);
-    font-size: 13px;
-    font-weight: 500;
+    font-size: 12px;
+    font-weight: 400;
+}
+
+.badge-desc::before {
+    content: "— ";
 }

@@ -1,6 +1,10 @@
 <?php
 
-// Instructor Leave View
+// instructor/leave.php — "Leave" page (LeaveController).
+// NOTE (gap): every figure/row below is hardcoded demo data, not read from
+// the `leave_requests` table (migration 009) — see LeaveController.php.
+// 1. Summary stats (balance/used/upcoming/total).
+// 2. $upcomingLeaves / $historyLeaves — the two table sections.
 $title = "Leave Management";
 
 $annualBalance = 15;

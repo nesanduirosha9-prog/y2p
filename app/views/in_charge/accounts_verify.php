@@ -1,6 +1,8 @@
 <?php
 // Step 3 of the handover flow — OTP verification. $toStaff / $devOtp come
-// from AccountsController::verifyView().
+// from AccountsController::verifyView(). $devOtp is only shown because no
+// mail server exists yet (see the in-page notice below) — swap this for a
+// real emailed code once one does.
 ?>
 
 <div class="accounts-view">

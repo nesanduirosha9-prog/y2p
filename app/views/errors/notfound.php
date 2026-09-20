@@ -1,3 +1,7 @@
+<!-- errors/notfound.php — standalone 404 page.
+     Rendered via renderPartial() by HomeController::notFound(), which
+     Router::resolve() falls back to when no route matches. Complete HTML
+     document on its own, not injected into a layout's $content. -->
 <!DOCTYPE html>
 <html lang="en">
 <head>

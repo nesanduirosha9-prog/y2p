@@ -8,6 +8,12 @@ use app\models\CourseModel;
 use app\models\NotificationModel;
 use app\models\TimetableSessionModel;
 
+// TimetableController (instructor): "My Timetable" read-only weekly grid.
+// 1. Guards the route to a logged-in academic_staff session.
+// 2. Reads + validates dept/sem/year filters (same defaults/whitelist as
+//    the timetable officer's controller — NOTE: shows the whole
+//    department's grid, not sessions filtered to just this instructor).
+// 3. Renders the grid inside the shared dashboard layout.
 class TimetableController extends Controller
 {
     public function __construct()

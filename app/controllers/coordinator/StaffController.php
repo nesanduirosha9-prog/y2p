@@ -12,6 +12,10 @@ use app\models\StaffModel;
 // browse the active staff directory. Available to anyone holding the
 // additive `coordinator` position — and to `in_charge`, which carries every
 // coordinator ability plus its own Accounts/handover screen.
+// 1. guard()   — shared auth check reused by every action below.
+// 2. index()   — GET, lists pending registrations + the active directory.
+// 3. approve() — POST, assigns a role/rank and flips status to 'active'.
+// 4. reject()  — POST, deletes a pending row outright (no soft-delete).
 class StaffController extends Controller
 {
     private const ASSIGNABLE_ROLES = [

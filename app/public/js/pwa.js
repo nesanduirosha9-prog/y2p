@@ -1,3 +1,6 @@
+// pwa.js — "Add to Home Screen" install prompt (Android/Chrome native
+// prompt, iOS falls back to an instructional banner). Loaded by the
+// generic main.php layout alongside register-sw.js.
 (function () {
     // --- Detect platform ---
     const isIos = () => /iphone|ipad|ipod/.test(window.navigator.userAgent.toLowerCase());

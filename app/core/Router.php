@@ -6,6 +6,11 @@ use app\controllers\HomeController;
 
 // Router: matches incoming requests to registered callbacks.
 // Supports simple HTTP method buckets and parameterized routes like `/user/{id}`.
+// 1. get()/post()/put()/delete() — register a callback under method+path.
+// 2. resolve() — called once per request by Application::run():
+//    a. exact path match first,
+//    b. then `{param}` routes via regex,
+//    c. falls back to HomeController::notFound() (404).
 class Router
 {
     // routes['get']['/path'] = callable
@@ -34,42 +39,40 @@ class Router
 
     public function resolve(Request $request, Response $response)
     {
-        // $path = parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH);
-        // $method = $_SERVER['REQUEST_METHOD'] ?? 'GET';
         $path = $request->getPath();
         $method = $request->getMethod();
         $callback = $this->routes[$method][$path] ?? false;
 
-        // Exact match first
+        // 1. Exact path match first (fast path, no regex)
         if ($callback !== false) {
             return call_user_func($callback, $request, $response);
         }
 
-        // Try route parameter matching (e.g. /user/{id})
+        // 2. Try route parameter matching (e.g. /user/{id})
         if (!empty($this->routes[$method])) {
             foreach ($this->routes[$method] as $route => $cb) {
-                // Convert `{param}` to named regex groups `(?P<param>[^/]+)`
+                // 2a. Convert `{param}` to named regex groups `(?P<param>[^/]+)`
                 $pattern = preg_replace('#\\{([a-zA-Z_][a-zA-Z0-9_]*)\\}#', '(?P<\\1>[^/]+)', $route);
                 $pattern = '#^' . $pattern . '$#';
                 if (preg_match($pattern, $path, $matches)) {
-                    // Extract named params from regex matches
+                    // 2b. Extract only the named params from regex matches
                     $params = [];
                     foreach ($matches as $key => $val) {
                         if (!is_int($key)) {
                             $params[$key] = $val;
                         }
                     }
-                    // Store params on the Request so controllers can read them
+                    // 2c. Store params on the Request so controllers can read them
                     if (method_exists($request, 'setRouteParams')) {
                         $request->setRouteParams($params);
                     }
-                    // Pass params to callback as third arg for convenience
+                    // 2d. Also pass params to the callback as a third arg
                     return call_user_func($cb, $request, $response, $params);
                 }
             }
         }
 
-        // Not found -> 404 page
+        // 3. No route matched -> 404 page
         $response->setStatusCode(404);
         return (new HomeController())->notFound();
     }

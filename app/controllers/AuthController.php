@@ -7,6 +7,18 @@ use app\core\Request;
 use app\core\Response;
 use app\models\StaffModel;
 
+// AuthController: login / signup / forgot-password.
+// 1. *View methods (loginView, signupView, forgotPasswordView) — GET, render
+//    the page. Login/signup bounce an already-logged-in user to their
+//    dashboard instead of showing the form again.
+// 2. login() — POST /login. Verifies credentials, blocks `pending` accounts,
+//    then writes the session and returns a redirect URL by role.
+// 3. signup() — POST /signup. Creates a `pending` staff row (email+password
+//    only); a Coordinator assigns the role later from the Staff screen.
+// 4. resetPassword() — POST /forgot-password. Overwrites the password for
+//    an existing email (no OTP check happens server-side — see gaps below).
+// 5. logout() — destroys the session and redirects to /login.
+// 6. jsonResponse() — private helper every action above returns through.
 class AuthController extends Controller
 {
     public function __construct()
@@ -47,10 +59,13 @@ class AuthController extends Controller
 
     public function login(Request $request, Response $response)
     {
+        // 1. Read credentials ('username' is the HTML input's name, not the
+        //    field's actual meaning — it's always an email here).
         $body = $request->getBody();
-        $email = $body['username'] ?? ''; // Using 'username' because of the HTML input name
+        $email = $body['username'] ?? '';
         $password = $body['password'] ?? '';
 
+        // 2. Look up the staff row and verify the hashed password.
         $staffModel = new StaffModel();
         $user = $staffModel->findByEmail($email);
 
@@ -58,6 +73,7 @@ class AuthController extends Controller
             return $this->jsonResponse($response, ['success' => false, 'message' => 'Invalid email or password'], 401);
         }
 
+        // 3. Block sign-in until a Coordinator/In-Charge assigns a role.
         if (($user['status'] ?? 'active') === 'pending') {
             return $this->jsonResponse($response, [
                 'success' => false,
@@ -65,23 +81,22 @@ class AuthController extends Controller
             ], 403);
         }
 
-        // Login successful
+        // 4. Start the session — every dashboard controller reads these keys.
         $_SESSION['staff_code'] = $user['code'];
         $_SESSION['user_email'] = $user['email'];
         $_SESSION['role'] = $user['role'];
         $_SESSION['academic_rank'] = $user['academic_rank'];
         $_SESSION['position'] = $user['position'];
 
+        // 5. Tell the client where to go next (JS does the redirect).
         $redirectUrl = ($user['role'] === 'academic_staff') ? '/instructor/timetable' : '/timetable';
-
-        // Respond with JSON for AJAX request, or redirect for normal form post
         return $this->jsonResponse($response, ['success' => true, 'message' => 'Login successful', 'redirect' => $redirectUrl]);
     }
 
     public function signup(Request $request, Response $response)
     {
-        // For the multi-step signup, we expect 'email' and 'password' in
-        // the final payload — name/phone are filled in later from Settings.
+        // 1. The signup form only collects email/password — name/phone are
+        //    filled in later from Settings (see StaffModel::create()).
         $body = $request->getBody();
         $email = trim($body['email'] ?? '');
         $password = $body['password'] ?? '';
@@ -92,13 +107,13 @@ class AuthController extends Controller
 
         $staffModel = new StaffModel();
 
-        // Check if user already exists
+        // 2. One email = one account; reject duplicates up front.
         if ($staffModel->findByEmail($email)) {
             return $this->jsonResponse($response, ['success' => false, 'message' => 'Email is already registered'], 409);
         }
 
-        // Create a pending account — a Coordinator/In-Charge assigns the
-        // role via the Staff approval screen before this account can log in.
+        // 3. Create a pending account — a Coordinator/In-Charge assigns the
+        //    role via the Staff approval screen before this account can log in.
         if ($staffModel->create($email, $password)) {
             return $this->jsonResponse($response, [
                 'success' => true,
@@ -112,6 +127,9 @@ class AuthController extends Controller
 
     public function resetPassword(Request $request, Response $response)
     {
+        // 1. Read the new password + the email it belongs to.
+        //    NOTE: this trusts that the client-side OTP step (forgot_password.js)
+        //    actually happened — see "gaps" note on the OTP flow.
         $body = $request->getBody();
         $email = $body['email'] ?? '';
         $newPassword = $body['password'] ?? '';
@@ -121,12 +139,13 @@ class AuthController extends Controller
         }
 
         $staffModel = new StaffModel();
-        
-        // Ensure user actually exists
+
+        // 2. Ensure the account actually exists before touching it.
         if (!$staffModel->findByEmail($email)) {
             return $this->jsonResponse($response, ['success' => false, 'message' => 'No account found with this email'], 404);
         }
 
+        // 3. Overwrite the password hash and report the outcome.
         if ($staffModel->updatePassword($email, $newPassword)) {
             return $this->jsonResponse($response, ['success' => true, 'message' => 'Password reset successfully', 'redirect' => '/login']);
         }
@@ -134,13 +153,15 @@ class AuthController extends Controller
         return $this->jsonResponse($response, ['success' => false, 'message' => 'Failed to reset password'], 500);
     }
 
+    // Ends the session and sends the browser back to the login page.
     public function logout()
     {
         session_destroy();
         $this->redirect('/login');
     }
 
-    // Helper function for JSON responses
+    // Every action above funnels its JSON reply through here: set the
+    // status code, force the content type, and encode the payload.
     private function jsonResponse(Response $response, array $data, int $statusCode = 200)
     {
         $response->setStatusCode($statusCode);

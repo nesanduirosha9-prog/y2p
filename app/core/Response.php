@@ -2,6 +2,12 @@
 
 namespace app\core;
 
+// Response: small wrapper around PHP's header()/http_response_code().
+// 1. setStatusCode() / setHeader() / setContentType() — low-level HTTP output.
+// 2. redirect() — 302-style redirect via Location header, then exit.
+// 3. json() — send a JSON body with the right content type, then exit.
+// 4. send() — generic content responder that does NOT exit (caller decides).
+// 5. setCookie() — thin wrapper over setcookie().
 class Response
 {
 

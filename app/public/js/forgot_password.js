@@ -1,5 +1,13 @@
+// forgot_password.js — drives the 3-step reset wizard in
+// app/views/auth/forgot_password.php. Same shape as signup.js:
+// 1. Step 1 (email): domain check, then switch panels (no OTP request sent).
+// 2. Step 2 (OTP): 6-digit boxes, paste support; submit just advances the
+//    UI — the code is never checked against anything server-side.
+// 3. Step 3 (new password): live match validation, then the one real network
+//    call — POST /forgot-password with {email, password} (no OTP included,
+//    so AuthController::resetPassword() has no way to verify it happened).
 document.addEventListener('DOMContentLoaded', function() {
-    
+
     // UI Elements
     const step1Content = document.getElementById('step-1-content');
     const step2Content = document.getElementById('step-2-content');

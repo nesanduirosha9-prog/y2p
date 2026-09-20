@@ -2,6 +2,9 @@
 
 use app\core\Application;
 // Main layout: wraps individual view content. Expects `$content` and optional `$title`.
+// This is the framework's generic starter layout (PWA install banner, a
+// plain navbar) — home/about/notfound/forbidden use it; every real
+// StaffSync screen uses the 'auth' or 'dashboard' layout instead.
 ?>
 <!DOCTYPE html>
 <html lang="en">

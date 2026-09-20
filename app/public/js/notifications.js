@@ -1,3 +1,11 @@
+// notifications.js — the bell dropdown + "see all" modal shared by every
+// dashboard page (app/views/components/notifications.php).
+// 1. Dropdown: toggles open/closed, closes on an outside click.
+// 2. Modal: "See all" opens it (and closes the dropdown first); closes on
+//    the X button or a click on the backdrop.
+// NOTE (gap): purely a display toggle — nothing here ever calls the
+// backend to mark a notification read, so the unread badge count only
+// changes on a full page reload.
 document.addEventListener('DOMContentLoaded', () => {
     // Dropdown Logic
     const toggleBtn = document.getElementById('notificationToggleBtn');

@@ -6,6 +6,10 @@ use app\core\Controller;
 use app\core\Request;
 use app\models\NotificationModel;
 
+// SettingsController (instructor): "Settings" page.
+// NOTE: read-only render — there is no POST/PUT handler here to persist
+// profile edits (name/phone/etc). This is the page a self-registered
+// account is meant to fill in its details on post-signup (see gaps).
 class SettingsController extends Controller
 {
     public function __construct()

@@ -8,6 +8,11 @@ use app\core\Response;
 use app\models\NotificationModel;
 use app\models\RoomModel;
 
+// LectureHallsController (timetable officer): view + edit the room catalog.
+// 1. index()  — GET, lists every room (guarded to timetable officers).
+// 2. update() — PUT /lecture-halls/{code}, validates type/capacity from the
+//    JSON body (note: only JSON bodies are parsed for non-GET/POST verbs —
+//    see Request::getBody()) and persists via RoomModel::update().
 class LectureHallsController extends Controller
 {
     private const VALID_TYPES = ['lab', 'lecture_hall', 'tutorial_room', 'other'];

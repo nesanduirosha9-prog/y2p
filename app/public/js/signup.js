@@ -1,3 +1,12 @@
+// signup.js — drives the 3-step signup wizard in app/views/auth/signup.php.
+// 1. Step 1 (email): client-side format + @ucsc.cmb.ac.lk domain check,
+//    then just switches to the step-2 panel and lights up the left-panel
+//    progress tracker — no request is sent yet (see gaps: the "Send OTP"
+//    step never calls the backend).
+// 2. Step 2 (OTP): 6 auto-advancing digit boxes with paste support; submit
+//    just switches to step 3 — again no server-side OTP is verified.
+// 3. Step 3 (password): live length/match validation, then the ONLY real
+//    network call in this file — POST /signup with {email, password}.
 // Wait for the HTML to fully load before running anything
 document.addEventListener('DOMContentLoaded', function() {
     

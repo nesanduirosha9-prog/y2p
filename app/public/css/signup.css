@@ -12,70 +12,94 @@
 
 .progress-label {
     font-size: 11px;
-    font-weight: 700;
-    color: #3b82f6; 
+    font-weight: 600;
+    color: rgba(81, 162, 255, 0.7);
     letter-spacing: 1px;
     text-transform: uppercase;
     margin-bottom: 20px;
 }
 
-/* The flex container that holds the circles and lines in a row */
+/* The flex container that holds the circles/lines — three equal-width
+   columns (matching the Figma layout) rather than fixed-width steps with
+   flex-grow lines, so the circles land at 1/6, 1/2 and 5/6 of the full
+   tracker width instead of being pushed out toward the edges on wide
+   screens. */
 .progress-tracker {
     display: flex;
     align-items: flex-start;
-    justify-content: space-between;
     width: 100%;
 }
 
-/* Individual Step Container */
+/* Individual Step Column — the connecting line is drawn as two
+   pseudo-elements (edge-of-column to edge-of-circle) so it's split evenly
+   across each column and meets the next column's line exactly at the
+   boundary. */
 .step {
+    position: relative;
     display: flex;
     flex-direction: column;
     align-items: center;
-    width: 80px; 
-    z-index: 2;
+    flex: 1 1 0;
+    min-width: 0;
+}
+
+.step::before,
+.step::after {
+    content: "";
+    position: absolute;
+    top: 15px; /* vertical center of the 30px circle */
+    height: 1px;
+    width: calc(50% - 15px);
+    background-color: rgba(25, 60, 184, 0.6);
+    z-index: 0;
+}
+
+.step::before {
+    left: 0;
+}
+
+.step::after {
+    right: 0;
+}
+
+.step:first-child::before,
+.step:last-child::after {
+    display: none;
 }
 
 /* The Number Circle (Default Inactive State) */
 .step-circle {
-    width: 32px;
-    height: 32px;
+    position: relative;
+    z-index: 1;
+    width: 30px;
+    height: 30px;
     border-radius: 50%;
-    background-color: transparent; 
-    border: 2px solid #1e3a8a; 
+    background-color: transparent;
+    border: 2px solid #1447e6;
     display: flex;
     justify-content: center;
     align-items: center;
-    font-size: 14px;
+    font-size: 12px;
     font-weight: bold;
-    color: #94a3b8;
+    color: #2b7fff;
     transition: all 0.3s ease;
 }
 
 /* The Text under the circle */
 .step-text {
-    font-size: 12px;
-    color: #94a3b8;
+    font-size: 11px;
+    color: #2b7fff;
     text-align: center;
-    margin-top: 10px;
+    margin-top: 8px;
     font-weight: 500;
     transition: all 0.3s ease;
-}
-
-/* The Connecting Line */
-.step-line {
-    flex-grow: 1;
-    height: 2px;
-    background-color: #1e3a8a;
-    margin-top: 17px; 
-    z-index: 1;
 }
 
 /* --- ACTIVE STATE (Currently on this step) --- */
 .step.active .step-circle {
     background-color: #ffffff;
     border-color: #ffffff;
-    color: #0d1e3c;
+    color: #1a3a6b;
 }
 
 .step.active .step-text {
@@ -84,13 +108,20 @@
 
 /* --- COMPLETED STATE (Passed this step) --- */
 .step.completed .step-circle {
-    background-color: #10b981; 
-    border-color: #10b981;
+    background-color: #00d492;
+    border-color: #00d492;
     color: #ffffff;
 }
 
 .step.completed .step-text {
-    color: #ffffff;
+    color: #5ee9b5;
+}
+
+/* A line segment is green once the step to its left is done: the
+   completed step's own right half, and the following step's left half. */
+.step.completed::after,
+.step.completed + .step::before {
+    background-color: rgba(0, 212, 146, 0.7);
 }
 
 
@@ -104,98 +135,118 @@
     box-sizing: border-box;
     display: flex;
     flex-direction: column;
-    justify-content: space-between; 
+    justify-content: space-between;
 }
 
 /* Top Navigation */
 .top-nav {
     text-align: right;
     font-size: 14px;
-    color: #64748b;
+    color: #6b7c96;
 }
 
 .top-nav a {
-    color: #1e3a8a; 
+    color: var(--color-primary);
     text-decoration: none;
     font-weight: 600;
 }
 
 /* Main Form Container */
 .login-main {
-    max-width: 480px;
-    margin: 0 auto; 
+    max-width: 400px;
+    margin: 0 auto;
     width: 100%;
 }
 
 .welcome-text h2 {
-    font-size: 28px;
-    margin: 0 0 10px;
-    color: #1e293b;
+    font-family: var(--font-display);
+    font-weight: 800;
+    font-size: 27px;
+    margin: 0 0 4px;
+    color: var(--color-navy);
+    letter-spacing: -0.02em;
 }
 
 .welcome-text p {
-    font-size: 15px;
-    margin: 0 0 30px;
-    color: #64748b;
+    font-size: 14px;
+    margin: 0 0 26px;
+    color: #6b7c96;
 }
 
 /* The White Form Card */
 .login-card {
     background-color: #ffffff;
-    border: 1px solid #e2e8f0;
-    border-radius: 12px;
-    padding: 40px;
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+    border: 1px solid #dde3ee;
+    border-radius: 15px;
+    padding: 28px;
+    box-shadow: 0 1px 1.5px rgba(0, 0, 0, 0.1), 0 1px 1px rgba(0, 0, 0, 0.1);
 }
 
 /* Form Inputs & Labels */
 .form-group {
-    margin-bottom: 20px;
+    margin-bottom: 18px;
 }
 
 label {
     font-size: 14px;
-    font-weight: 600;
-    color: #1e293b;
+    font-weight: 500;
+    color: #374151;
     display: block;
-    margin-bottom: 8px;
+    margin-bottom: 6px;
 }
 
 input[type="email"],
-input[type="password"] { 
+input[type="password"] {
     width: 100%;
-    padding: 12px 16px;
+    padding: 10px 14px;
     font-size: 14px;
-    border: 1px solid #e2e8f0;
+    border: 1px solid #dde3ee;
     border-radius: 8px;
     box-sizing: border-box;
-    background-color: #f7f9fb;
-    color: #1e293b;
+    background-color: #ffffff;
+    color: var(--color-text-dark);
+}
+
+input::placeholder {
+    color: #9ca3af;
 }
 
 input[type="email"]:focus,
 input[type="password"]:focus {
-    border-color: #3b82f6;
+    border-color: var(--color-primary);
     outline: none;
-    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
 }
 
-/* Full-width auth CTA — base shape/color now shared via components.css */
+/* Full-width auth CTA — navy, matching the Figma AuthLeftPanel accent;
+   base shape shared via components.css */
 .btn-primary {
     width: 100%;
-    padding: 14px;
-    font-size: 15px;
-    margin-top: 10px;
+    padding: 11px;
+    font-size: 14px;
+    margin-top: 6px;
+    background: #1a3a6b;
+    border-radius: 8px;
+    box-shadow: 0 1px 1.5px rgba(0, 0, 0, 0.1), 0 1px 1px rgba(0, 0, 0, 0.1);
+}
+
+.btn-primary:hover {
+    background: #142d54;
 }
 
 /* Footer */
 .right-footer {
-    font-size: 13px;
-    color: #94a3b8;
-    text-align: center;
+    font-size: 12px;
+    color: #b0bac9;
     margin-top: 20px;
+    padding-top: 16px;
+    border-top: 1px solid #dde3ee;
     display: flex;
     justify-content: space-between;
+}
+
+.right-footer p:last-child {
+    font-family: var(--font-mono);
 }
 
 /* ==========================================================
@@ -203,77 +254,71 @@ input[type="password"]:focus {
    ========================================================== */
 
 /* --- Step 1: The Step Indicator Badge --- */
+/* .step-badge / .badge-text / .badge-divider / .badge-desc now shared via components.css */
 .step-badge {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    font-size: 13px;
-    font-weight: 600;
     margin-bottom: 15px;
 }
-
-/* .badge-text / .badge-divider / .badge-desc now shared via components.css */
 
 /* --- Step 2: OTP Input Group --- */
 .otp-input-group {
     display: flex;
-    justify-content: space-between;
-    gap: 8px;
-    margin-top: 15px;
+    justify-content: center;
+    gap: 7px;
+    margin-top: 10px;
 }
 
 .otp-input {
-    width: 45px;
-    height: 50px;
-    font-size: 20px;
+    width: 41px;
+    height: 45px;
+    font-size: 19px;
     text-align: center;
-    border: 1px solid #e2e8f0;
+    border: 2px solid #dde3ee;
     border-radius: 8px;
-    background-color: #ffffff; 
-    color: #1e293b;
+    background-color: #ffffff;
+    color: var(--color-text-dark);
     font-weight: 700;
 }
 
 .otp-input:focus {
-    border-color: #3b82f6; 
+    border-color: var(--color-primary);
     outline: none;
-    box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.2); 
-    transform: translateY(-2px); 
+    box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.15);
+    transform: translateY(-2px);
     transition: all 0.2s ease;
 }
 
 .resend-wrapper {
     text-align: center;
-    font-size: 13px;
-    margin-bottom: 25px;
-    color: #64748b;
+    font-size: 14px;
+    margin: 15px 0 18px;
+    color: #6b7c96;
 }
 
 .resend-link {
-    color: #3b82f6;
+    color: var(--color-primary);
     text-decoration: none;
-    font-weight: 600;
+    font-weight: 500;
 }
 
 .btn-back {
     width: 100%;
-    padding: 14px;
+    padding: 10px;
     background: none;
     border: none;
-    color: #64748b;
+    color: #6b7c96;
     font-size: 14px;
-    font-weight: 600;
+    font-weight: 500;
     cursor: pointer;
-    margin-top: 5px;
+    margin-top: 4px;
     display: flex;
     justify-content: center;
     align-items: center;
-    gap: 8px;
+    gap: 6px;
     transition: color 0.2s;
 }
 
 .btn-back:hover {
-    color: #1e293b;
+    color: var(--color-navy);
 }
 
 /* --- Step 3: Passkey Toggle Switch --- */
@@ -281,22 +326,31 @@ input[type="password"]:focus {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 15px;
-    background-color: #f7f9fb;
-    border: 1px solid #e2e8f0;
-    border-radius: 8px;
-    margin-bottom: 25px;
+    padding: 12px 16px;
+    background-color: var(--color-bg);
+    border: 1px solid #dde3ee;
+    border-radius: 11px;
+    margin: 14px 0 18px;
 }
 
 .passkey-info {
     display: flex;
     align-items: center;
-    gap: 15px;
+    gap: 12px;
 }
 
 .passkey-info i {
-    font-size: 20px;
-    color: #64748b;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 26px;
+    height: 26px;
+    flex: 0 0 auto;
+    font-size: 13px;
+    color: #374151;
+    background: #ffffff;
+    border: 1px solid #dde3ee;
+    border-radius: 8px;
 }
 
 .passkey-info div {
@@ -305,13 +359,14 @@ input[type="password"]:focus {
 }
 
 .passkey-info strong {
-    font-size: 13px;
-    color: #1e293b;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--color-navy);
 }
 
 .passkey-info span {
-    font-size: 11px;
-    color: #94a3b8;
+    font-size: 12px;
+    color: #6b7c96;
 }
 
 .switch {
@@ -321,7 +376,7 @@ input[type="password"]:focus {
     height: 22px;
 }
 
-.switch input { 
+.switch input {
     opacity: 0;
     width: 0;
     height: 0;
@@ -331,7 +386,7 @@ input[type="password"]:focus {
     position: absolute;
     cursor: pointer;
     top: 0; left: 0; right: 0; bottom: 0;
-    background-color: #cbd5e1;
+    background-color: #dde3ee;
     transition: .3s;
     border-radius: 34px;
 }
@@ -342,12 +397,13 @@ input[type="password"]:focus {
     height: 16px; width: 16px;
     left: 3px; bottom: 3px;
     background-color: white;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1), 0 1px 2px rgba(0, 0, 0, 0.1);
     transition: .3s;
     border-radius: 50%;
 }
 
 input:checked + .slider {
-    background-color: #10b981; 
+    background-color: #00bc7d;
 }
 
 input:checked + .slider:before {
@@ -359,31 +415,31 @@ input:checked + .slider:before {
    ============================== */
 
 /* Default State: Dimmed out and unclickable for all primary buttons */
-#btn-send-otp, 
-#btn-verify-otp, 
+#btn-send-otp,
+#btn-verify-otp,
 #btn-complete {
-    background-color: #1e3a8a; 
-    opacity: 0.5; 
+    background-color: #1a3a6b;
+    opacity: 0.5;
     color: #ffffff;
     cursor: not-allowed;
-    pointer-events: none; 
+    pointer-events: none;
     transition: opacity 0.3s ease, box-shadow 0.3s ease;
     border: none;
 }
 
 /* Active State: Lights up to 100% solid color */
-#btn-send-otp.active-btn, 
-#btn-verify-otp.active-btn, 
+#btn-send-otp.active-btn,
+#btn-verify-otp.active-btn,
 #btn-complete.active-btn {
-    opacity: 1; 
+    opacity: 1;
     cursor: pointer;
-    pointer-events: auto; 
-    box-shadow: 0 4px 12px rgba(30, 58, 138, 0.3); 
+    pointer-events: auto;
+    box-shadow: 0 4px 12px rgba(26, 58, 107, 0.3);
 }
 
 /* Hover effect for active buttons */
-#btn-send-otp.active-btn:hover, 
-#btn-verify-otp.active-btn:hover, 
+#btn-send-otp.active-btn:hover,
+#btn-verify-otp.active-btn:hover,
 #btn-complete.active-btn:hover {
-    background-color: #1a317e; 
+    background-color: #142d54;
 }

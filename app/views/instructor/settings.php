@@ -1,6 +1,12 @@
 <?php
 
-// Instructor Settings View
+// instructor/settings.php — "Settings" page (SettingsController).
+// NOTE (gap — directly affects the self-signup flow): this whole page uses
+// hardcoded dummy data, NOT the logged-in staff member's real row
+// ($_SESSION['staff_code']/StaffModel::findByCode()). A self-registered
+// account currently has nowhere to actually see or edit its own
+// name/phone/bio — "Save Changes" in settings.js only shows a toast, it
+// never calls the backend either. Both sides need wiring up.
 $title = "Settings";
 
 // Dummy data

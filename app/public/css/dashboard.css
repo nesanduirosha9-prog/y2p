@@ -1,3 +1,12 @@
+/* dashboard.css — the shared sidebar+header shell for every logged-in
+   screen (views/layouts/dashboard.php). Page-specific CSS loads after this
+   and only adds what's different for that page.
+   1. Reset + body base.
+   2. .dash-sidebar / .sidebar-* — the left nav column (off-canvas drawer
+      below 1024px, toggled by /js/dashboard.js).
+   3. .dash-header / .user-chip / .sidebar-toggle — the top bar.
+   4. .dash-main — the content area $content renders into.
+   5. .dash-sidebar-backdrop — the mobile drawer's click-away overlay. */
 * {
     margin: 0;
     padding: 0;

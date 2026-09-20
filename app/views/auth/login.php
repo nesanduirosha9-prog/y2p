@@ -1,5 +1,10 @@
+<!-- auth/login.php — single-step sign-in form. Rendered by
+     AuthController::loginView() inside the 'auth' layout.
+     1. .left-panel  — dark branding panel (marketing copy, feature list).
+     2. .right-panel — "Welcome back" card: email + password + passkey button.
+     JS: /js/login.js handles validation and the POST /login submit. -->
 <main class="login-layout-container">
-    
+
     <aside class="left-panel">
         <div class="top-section">
             <div class="branding">
@@ -11,7 +16,7 @@
             </div>
         
             <div class="feature-title">
-                <h2>Staff Management<br>Made Effortless</h2>
+                <h2>Staff Management<br><span class="gradient-text">Made Effortless</span></h2>
             </div>
         
             <p class="feature-description">
@@ -61,19 +66,21 @@
                     <span class="divider-text">or</span>
                 </div>
             
-                <button class="btn-passkey">
-                    <i class="fa-solid fa-key"></i>
+                <button class="btn-passkey" type="button">
+                    <span class="passkey-icon"><i class="fa-solid fa-fingerprint"></i></span>
                     Sign in with Passkey
+                    <span class="passkey-hint">Face ID · Touch ID</span>
                 </button>
             </div>
-        
+
             <p class="agreement-text">
                 By signing in you agree to the University's <a href="#">Terms of Use</a> and <a href="#">Privacy Policy</a>.
             </p>
         </div>
 
         <footer class="right-footer">
-            <p>&copy; <?= date('Y') ?> University of Colombo School of Computing.</p>
+            <p>&copy; <?= date('Y') ?> University of Colombo. All rights reserved.</p>
+            <p class="version">v2.4.1</p>
         </footer>
     </section>
 

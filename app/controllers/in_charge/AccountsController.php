@@ -20,6 +20,17 @@ use app\models\StaffModel;
 // in this codebase, so this mirrors the existing session-based auth guard
 // pattern rather than introducing a new persistence mechanism for a
 // short-lived, single-user flow.
+//
+// 1. guard() / commonViewData() — shared checks/view-data every action uses.
+// 2. index()        — GET, lists the current seat holders.
+// 3. change()        — GET, step 1: pick which seat to reassign.
+// 4. selectView()     — GET, step 2: search a same-rank replacement.
+// 5. selectSubmit()   — POST, step 2 submit: generates a 6-digit OTP into
+//    the session (see the dev-mode note below — it is NOT emailed).
+// 6. verifyView()     — GET, step 3: shows the OTP entry screen.
+// 7. verifySubmit()   — POST, step 3 submit: checks the OTP + expiry, then
+//    performs the actual reassignment.
+// 8. updatedView()    — GET, step 4: confirmation screen.
 class AccountsController extends Controller
 {
     public function __construct()

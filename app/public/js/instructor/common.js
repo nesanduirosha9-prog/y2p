@@ -1,4 +1,8 @@
-// Shared helpers for Instructor pages: toast notifications.
+// common.js — shared helper for every instructor page (loaded once by
+// the dashboard layout when $isInstructor is true).
+// 1. ensureHost() — lazily creates the #ttToastHost container.
+// 2. window.ttToast(message, opts) — global toast function other instructor
+//    JS files call directly; opts: {type, icon, duration}.
 (function () {
     function ensureHost() {
         let host = document.getElementById('ttToastHost');

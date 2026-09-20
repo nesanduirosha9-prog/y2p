@@ -1,3 +1,10 @@
+    <!-- auth/signup.php — 3-step signup wizard. Rendered by
+         AuthController::signupView() inside the 'auth' layout.
+         1. Left panel  — branding + 3-step progress tracker (email/OTP/password).
+         2. Right panel — three step-content blocks, only one visible at a time:
+            #step-1-content (email) -> #step-2-content (OTP) -> #step-3-content (password).
+         JS: /js/signup.js switches steps and does the one real submit
+         (POST /signup) at the end of step 3. -->
     <!-- ==================== MAIN PAGE LAYOUT ==================== -->
     <main class="login-layout-container">
         
@@ -29,16 +36,12 @@
                             <div class="step-circle">1</div>
                             <span class="step-text">Enter email</span>
                         </div>
-                        
-                        <div class="step-line"></div>
-                        
+
                         <div class="step" id="step-2-indicator">
                             <div class="step-circle">2</div>
                             <span class="step-text">Verify OTP</span>
                         </div>
-                        
-                        <div class="step-line"></div>
-                        
+
                         <div class="step" id="step-3-indicator">
                             <div class="step-circle">3</div>
                             <span class="step-text">Set password</span>
@@ -180,8 +183,8 @@
             
             <footer class="right-footer">
                 <p>&copy; <?= date('Y') ?> University of Colombo. All rights reserved.</p>
-                <p>v1.0.0</p>
-            </footer>    
+                <p>v2.4.1</p>
+            </footer>
         </section>
 
     </main>

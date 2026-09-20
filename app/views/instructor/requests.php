@@ -1,6 +1,9 @@
 <?php
 
-// Instructor Requests View
+// instructor/requests.php — "Requests" page (RequestsController).
+// Reachable at /instructor/requests but not linked from the sidebar nav.
+// NOTE (gap): all-static demo data — the `support_requests` table
+// (migration 015) exists but nothing here queries it.
 $title = "Requests";
 
 // Dummy data for the UI

@@ -6,6 +6,10 @@ use app\core\Controller;
 use app\core\Request;
 use app\models\NotificationModel;
 
+// LeaveController (instructor): "Leave" page.
+// NOTE: read-only render — no model backs the `leave_requests` table
+// (migration 009) here yet, so submitting a leave request has no
+// server-side handler (see gaps).
 class LeaveController extends Controller
 {
     public function __construct()

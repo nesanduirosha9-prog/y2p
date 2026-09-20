@@ -1,3 +1,6 @@
+/* style.css — styles for the generic framework layout (views/layouts/main.php):
+   navbar, PWA install button/banner, and base resets. Not used by any real
+   StaffSync page (those load tokens.css/components.css + their own CSS). */
 * {
     margin: 0;
     padding: 0;

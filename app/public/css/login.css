@@ -62,14 +62,22 @@
     display: flex;
     align-items: center;
     gap: 12px;
-    font-size: 15px;
-    color: #e2e8f0;
+    font-size: 13px;
+    color: rgba(219, 234, 254, 0.9);
 }
 
 .feature-list li i {
-    color: #3b82f6; /* Accent blue for list icons */
-    width: 20px;
-    text-align: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 26px;
+    height: 26px;
+    flex: 0 0 auto;
+    font-size: 13px;
+    color: #dbeafe;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 8px;
 }
 
 /* ==============================
@@ -89,59 +97,62 @@
 }
 
 .top-nav span {
-    color: #64748b;
+    color: #6b7c96;
 }
 
 .top-nav a {
-    color: #1e3a8a;
+    color: var(--color-primary);
     text-decoration: none;
     font-weight: 600;
 }
 
 .login-main {
-    max-width: 480px;
+    max-width: 400px;
     margin: 0 auto; /* Centers the form horizontally */
     width: 100%;
 }
 
 .welcome-text h2 {
-    font-size: 28px;
-    margin: 0 0 10px;
-    color: #1e293b;
+    font-family: var(--font-display);
+    font-weight: 800;
+    font-size: 27px;
+    margin: 0 0 4px;
+    color: var(--color-navy);
+    letter-spacing: -0.02em;
 }
 
 .welcome-text p {
-    font-size: 15px;
-    margin: 0 0 30px;
-    color: #64748b;
+    font-size: 14px;
+    margin: 0 0 26px;
+    color: #6b7c96;
 }
 
 /* The white card effect */
 .login-card {
     background-color: #ffffff;
-    border: 1px solid #e2e8f0;
-    border-radius: 12px;
-    padding: 40px;
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+    border: 1px solid #dde3ee;
+    border-radius: 15px;
+    padding: 28px;
+    box-shadow: 0 1px 1.5px rgba(0, 0, 0, 0.1), 0 1px 1px rgba(0, 0, 0, 0.1);
 }
 
 .form-group {
-    margin-bottom: 20px;
+    margin-bottom: 18px;
 }
 
 .label-wrapper {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 8px;
+    margin-bottom: 6px;
 }
 
 label {
     font-size: 14px;
-    font-weight: 600;
-    color: #1e293b;
+    font-weight: 500;
+    color: #374151;
     display: block; /* Ensures label sits above input */
-    margin-bottom: 8px;
+    margin-bottom: 6px;
 }
 
 .label-wrapper label {
@@ -149,8 +160,9 @@ label {
 }
 
 .forgot-password {
-    font-size: 13px;
-    color: #3b82f6;
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--color-primary);
     text-decoration: none;
 }
 
@@ -159,78 +171,121 @@ input[type="email"],
 input[type="password"],
 select {
     width: 100%;
-    padding: 12px 16px;
+    padding: 10px 14px;
     font-size: 14px;
-    border: 1px solid #e2e8f0;
+    color: var(--color-text-dark);
+    border: 1px solid #dde3ee;
     border-radius: 8px;
     box-sizing: border-box;
-    background-color: #f7f9fb;
+    background-color: #ffffff;
+}
+
+input::placeholder {
+    color: #9ca3af;
 }
 
 input:focus, select:focus {
-    border-color: #3b82f6;
+    border-color: var(--color-primary);
     outline: none;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
 }
 
-/* Full-width auth CTA — base shape/color now shared via components.css */
+/* Full-width auth CTA — navy, matching the Figma AuthLeftPanel accent;
+   base shape shared via components.css */
 .btn-primary {
     width: 100%;
-    padding: 14px;
-    font-size: 15px;
-    margin-top: 10px;
+    padding: 11px;
+    font-size: 14px;
+    margin-top: 6px;
+    background: #1a3a6b;
+    border-radius: 8px;
+    box-shadow: 0 1px 1.5px rgba(0, 0, 0, 0.1), 0 1px 1px rgba(0, 0, 0, 0.1);
+}
+
+.btn-primary:hover {
+    background: #142d54;
 }
 
 /* 'Or' Divider trick */
 .divider-wrapper {
-    margin: 25px 0;
+    margin: 15px 0;
     text-align: center;
-    border-bottom: 1px solid #e2e8f0;
+    border-bottom: 1px solid #eef1f6;
     line-height: 0.1em;
 }
 
 .divider-text {
     background: #ffffff;
-    padding: 0 10px;
-    color: #94a3b8;
-    font-size: 13px;
+    padding: 0 11px;
+    color: #b0bac9;
+    font-size: 12px;
 }
 
 /* Passkey Button */
 .btn-passkey {
     width: 100%;
-    padding: 14px;
-    border: 1px solid #e2e8f0;
+    padding: 10px 16px;
+    border: 1px solid #dde3ee;
     border-radius: 8px;
     background-color: #ffffff;
-    font-size: 15px;
-    font-weight: 600;
+    font-size: 14px;
+    font-weight: 500;
     cursor: pointer;
     display: flex;
     align-items: center;
-    justify-content: center;
-    gap: 10px;
-    color: #1e293b;
-    transition: background-color 0.2s;
+    gap: 11px;
+    color: #374151;
+    transition: background-color 0.2s, border-color 0.2s;
 }
 
 .btn-passkey:hover {
-    background-color: #f7f9fb;
+    background-color: #f9fafb;
+    border-color: #cbd5e1;
+}
+
+.passkey-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 26px;
+    height: 26px;
+    flex: 0 0 auto;
+    background: #eef1f6;
+    border-radius: 6px;
+    color: #374151;
+    font-size: 13px;
+}
+
+.passkey-hint {
+    margin-left: auto;
+    font-size: 12px;
+    font-weight: 400;
+    color: #9ca3af;
 }
 
 .agreement-text {
-    font-size: 13px;
-    color: #94a3b8;
-    margin-top: 25px;
+    font-size: 12px;
+    color: #9ca3af;
+    margin-top: 22px;
     text-align: center;
 }
 
 .agreement-text a {
-    color: #64748b;
+    color: #6b7c96;
+    text-decoration: none;
 }
 
 .right-footer {
-    font-size: 13px;
-    color: #94a3b8;
-    text-align: center;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 12px;
+    color: #b0bac9;
     margin-top: 20px;
+    padding-top: 16px;
+    border-top: 1px solid #dde3ee;
+}
+
+.right-footer .version {
+    font-family: var(--font-mono);
 }

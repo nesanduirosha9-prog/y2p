@@ -6,6 +6,10 @@ use app\core\Controller;
 use app\core\Request;
 use app\models\NotificationModel;
 
+// RequestsController (instructor): "Requests" page.
+// Routed at /instructor/requests but NOT linked from the sidebar nav
+// (see dashboard layout's $navItemsByRole) — currently only reachable by
+// typing the URL directly (see gaps). Read-only render, no model wired up.
 class RequestsController extends Controller
 {
     public function __construct()

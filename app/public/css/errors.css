@@ -1,3 +1,8 @@
+/* errors.css — styles for a generic error page (.error-container/.error-icon/etc).
+   NOTE (gap): this file is orphaned — neither errors/notfound.php nor
+   errors/forbidden.php link to it; both use their own inline <style>
+   block instead, so nothing currently loads these rules (or the
+   tokens.css variables they reference) in the browser. */
 .error-container {
     display: flex;
     flex-direction: column;

@@ -1,5 +1,11 @@
+    <!-- auth/forgot_password.php — 3-step password-reset wizard. Rendered by
+         AuthController::forgotPasswordView() inside the 'auth' layout.
+         Self-contained styling (see css/forgot_password.css) — does not
+         reuse global.css's .left-panel/.right-panel like login/signup do.
+         Steps: #step-1-content (email) -> #step-2-content (OTP) ->
+         #step-3-content (new password). JS: /js/forgot_password.js. -->
     <main class="split-layout-container">
-        
+
         <aside class="left-panel dark-theme">
             <div class="top-section">
                 <div class="branding">
@@ -26,9 +32,7 @@
                             </div>
                             <span class="step-text">Enter email</span>
                         </div>
-                        
-                        <div class="step-line"></div>
-                        
+
                         <div class="step" id="step-2-indicator">
                             <div class="step-circle">
                                 <span class="step-num">2</span>
@@ -36,9 +40,7 @@
                             </div>
                             <span class="step-text">Verify OTP</span>
                         </div>
-                        
-                        <div class="step-line"></div>
-                        
+
                         <div class="step" id="step-3-indicator">
                             <div class="step-circle">
                                 <span class="step-num">3</span>

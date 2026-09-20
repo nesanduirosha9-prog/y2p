@@ -123,6 +123,12 @@ if ($seed || $fresh) {
     }
 }
 
+// NOTE (gap): this restore list predates migration 016 — it does not carry
+// `phone` or `status` back over. A preserved `pending` user therefore comes
+// back with status's column default ('active') and `role` forced to
+// 'timetable_officer' below, silently bypassing the Coordinator approval
+// step. Fine for this dev/demo reset tool, but worth fixing before relying
+// on `--fresh` with real pending signups.
 if ($fresh && !empty($preservedUsers)) {
     echo "\nRestoring preserved staff rows...\n";
     $pdo->exec("USE `$dbName`");

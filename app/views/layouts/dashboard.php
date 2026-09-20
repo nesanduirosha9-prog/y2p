@@ -116,6 +116,7 @@ $titleSuffix = $isInstructor ? 'StaffSync - Instructor' : 'StaffSync';
                     </div>
                 </div>
                 <div class="header-actions">
+                    <!-- Decorative only right now — no click handler / dark theme exists yet (see gaps) -->
                     <button class="icon-btn" type="button" title="Toggle theme">
                         <i class="fa-solid fa-moon"></i>
                     </button>

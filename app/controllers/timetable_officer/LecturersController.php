@@ -9,6 +9,12 @@ use app\models\InstructorModel;
 use app\models\LecturerModel;
 use app\models\NotificationModel;
 
+// LecturersController (timetable officer): the "Staff Details" directory
+// (senior lecturers + junior instructors, tabbed in the view).
+// 1. Guards the route to a logged-in timetable officer.
+// 2. Builds a course_code -> {year, program} lookup so the view can show
+//    each staff member's course badges without re-querying per row.
+// 3. Renders lecturers, junior-staff directory, and that lookup together.
 class LecturersController extends Controller
 {
     public function __construct()

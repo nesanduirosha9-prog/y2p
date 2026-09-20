@@ -1,8 +1,10 @@
 // Timetable interactions: lecturer/room filters, and the "Schedule Course" flow
 // (select free slots -> confirm -> fill modal -> block appears in the grid).
 //
-// NOTE: there is no timetable table in the DB yet, so "Add to Timetable" only
-// mutates the DOM for this pageview — it does not persist across reloads.
+// NOTE (gap): the `timetable_sessions` table and TimetableSessionModel::create()
+// both exist server-side, but no route/controller action calls it — "Add to
+// Timetable" here only mutates the DOM for this pageview, so a scheduled
+// session disappears on reload instead of being saved.
 document.addEventListener('DOMContentLoaded', function () {
     const view = document.querySelector('.tt-view');
     if (!view) return;

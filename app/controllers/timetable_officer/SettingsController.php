@@ -6,6 +6,9 @@ use app\core\Controller;
 use app\core\Request;
 use app\models\NotificationModel;
 
+// SettingsController (timetable officer): renders the Settings page.
+// NOTE: read-only for now — there is no POST handler here to persist
+// profile changes yet (see gaps notes).
 class SettingsController extends Controller
 {
     public function __construct()

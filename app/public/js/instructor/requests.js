@@ -1,4 +1,7 @@
-// Instructor Requests JS
+// Instructor Requests JS — the "New Request" inline form on the (currently
+// unlinked, see RequestsController.php) /instructor/requests page.
+// 1. Open/close the new-request form.
+// 2. DOM-only demo — nothing here persists to the backend.
 document.addEventListener('DOMContentLoaded', () => {
     const newRequestBtn = document.getElementById('newRequestBtn');
     const newRequestForm = document.getElementById('newRequestForm');

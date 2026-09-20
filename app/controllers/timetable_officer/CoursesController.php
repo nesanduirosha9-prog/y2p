@@ -9,6 +9,10 @@ use app\models\LecturerModel;
 use app\models\InstructorModel;
 use app\models\NotificationModel;
 
+// CoursesController (timetable officer): the Course Management table.
+// 1. Guards the route to a logged-in timetable officer.
+// 2. Loads the full course listing plus lecturer/instructor name lookups
+//    (used to render the assigned-staff badges and the Add/Edit dropdowns).
 class CoursesController extends Controller
 {
     public function __construct()
