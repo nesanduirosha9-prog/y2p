@@ -7,12 +7,12 @@
 }
 
 .lv-header {
-    background: #fff;
-    border-bottom: 1px solid #dde3ee;
-    padding: 16px 24px;
+    background: transparent;
+    border-bottom: none;
+    padding: 0 24px 16px 24px;
     display: flex;
     align-items: center;
-    justify-content: space-between;
+    justify-content: flex-end;
     flex-shrink: 0;
 }
 
