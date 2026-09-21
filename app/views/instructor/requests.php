@@ -16,10 +16,7 @@ $requests = [
 
 <div class="req-container">
     <div class="req-header">
-        <div class="req-title-area">
-            <h2 class="req-title">Supportive Staff Requests</h2>
-            <p class="req-sub">Request additional support for your sessions</p>
-        </div>
+        <p class="req-sub">Request additional support for your sessions</p>
         <button type="button" class="btn-primary-sm req-new-btn" id="newRequestBtn">
             <i class="fa-solid fa-plus"></i> New Request
         </button>

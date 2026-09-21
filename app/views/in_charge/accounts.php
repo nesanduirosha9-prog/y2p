@@ -21,10 +21,7 @@ function roleHolderPositionKey(array $h): string
 
 <div class="accounts-view">
     <div class="page-head">
-        <div>
-            <h2>Role Assignment</h2>
-            <p class="page-head-sub">Manage key academic role holders for the department.</p>
-        </div>
+        <p class="page-head-sub">Manage key academic role holders for the department.</p>
     </div>
 
     <div class="dir-card">

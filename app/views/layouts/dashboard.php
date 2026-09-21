@@ -17,20 +17,20 @@ $isInstructor = $role === 'academic_staff';
 $active = $active ?? 'timetable';
 $userEmail = $_SESSION['user_email'] ?? ($isInstructor ? 'tmf@ucsc.cmb.ac.lk' : 'tmo@ucsc.cmb.ac.lk');
 
+// Settings is kept out of $navItemsByRole and appended last below, after any
+// role-specific extra tabs — every user gets it as the final nav item.
 $navItemsByRole = [
     'timetable_officer' => [
         ['href' => '/timetable', 'icon' => 'fa-solid fa-calendar-days', 'label' => 'Timetable', 'key' => 'timetable'],
         ['href' => '/courses',   'icon' => 'fa-solid fa-book-open',     'label' => 'Courses',   'key' => 'courses'],
         ['href' => '/lecturers',     'icon' => 'fa-solid fa-users',      'label' => 'Staff Details',  'key' => 'lecturers'],
         ['href' => '/lecture-halls', 'icon' => 'fa-solid fa-building',   'label' => 'Lecture Halls',  'key' => 'lecture-halls'],
-        ['href' => '/settings',      'icon' => 'fa-solid fa-gear',       'label' => 'Settings',       'key' => 'settings'],
     ],
     'academic_staff' => [
         ['href' => '/instructor/timetable', 'icon' => 'fa-solid fa-calendar-days',   'label' => 'Timetable',   'key' => 'timetable'],
         ['href' => '/instructor/workload',  'icon' => 'fa-solid fa-layer-group',     'label' => 'My Workload', 'key' => 'workload'],
         ['href' => '/instructor/leave',     'icon' => 'fa-regular fa-calendar-minus','label' => 'Leave',       'key' => 'leave'],
         ['href' => '/instructor/messages',  'icon' => 'fa-regular fa-message',       'label' => 'Messages',    'key' => 'messages'],
-        ['href' => '/instructor/settings',  'icon' => 'fa-solid fa-gear',            'label' => 'Settings',    'key' => 'settings'],
     ],
 ];
 $navItems = $navItemsByRole[$isInstructor ? 'academic_staff' : 'timetable_officer'];
@@ -44,6 +44,10 @@ if ($isInstructor && in_array($position, ['coordinator', 'in_charge'], true)) {
 if ($isInstructor && $position === 'in_charge') {
     $navItems[] = ['href' => '/in-charge/accounts', 'icon' => 'fa-solid fa-people-arrows', 'label' => 'Accounts', 'key' => 'accounts'];
 }
+
+$navItems[] = $isInstructor
+    ? ['href' => '/instructor/settings', 'icon' => 'fa-solid fa-gear', 'label' => 'Settings', 'key' => 'settings']
+    : ['href' => '/settings',            'icon' => 'fa-solid fa-gear', 'label' => 'Settings', 'key' => 'settings'];
 
 $userChipLabel = $isInstructor ? ($position ? ucwords(str_replace('_', ' ', $position)) : 'Instructor') : 'Timetable Officer';
 $userAvatarInitials = $isInstructor ? 'IN' : 'TO';

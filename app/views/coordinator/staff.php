@@ -35,10 +35,7 @@ function staffInitials(string $name): string
 <div class="staff-view">
 
     <div class="page-head">
-        <div>
-            <h2>Staff Management</h2>
-            <p class="page-head-sub"><?= count($activeStaff) ?> active members &middot; <?= count($pending) ?> pending requests</p>
-        </div>
+        <p class="page-head-sub"><?= count($activeStaff) ?> active members &middot; <?= count($pending) ?> pending requests</p>
     </div>
 
     <!-- Pending Registration Requests -->

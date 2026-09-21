@@ -103,10 +103,7 @@ function renderStaffTable(string $idPrefix, array $staff, array $courseMeta, str
 <div class="lecturers-view">
 
     <div class="page-head">
-        <div>
-            <h2>Staff Details</h2>
-            <p class="page-head-sub">Manage lecturers and junior staff members and their course assignments.</p>
-        </div>
+        <p class="page-head-sub">Manage lecturers and junior staff members and their course assignments.</p>
     </div>
 
     <div class="seg" id="staffTabGroup" role="tablist">

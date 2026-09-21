@@ -33,6 +33,7 @@ $leaveRecords = [
 
 <div class="lv-container">
     <div class="lv-header">
+        <p class="lv-sub">Track your leave balance and manage upcoming requests</p>
         <button type="button" class="btn-primary-sm lv-new-btn" id="requestLeaveBtn">
             <i class="fa-solid fa-plus"></i> Request Leave
         </button>

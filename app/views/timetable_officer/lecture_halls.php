@@ -19,10 +19,7 @@ $total = count($rooms);
 <div class="halls-view">
 
     <div class="page-head">
-        <div>
-            <h2>Lecture Halls</h2>
-            <p class="page-head-sub">Manage teaching spaces by name, capacity and type.</p>
-        </div>
+        <p class="page-head-sub">Manage teaching spaces by name, capacity and type.</p>
     </div>
 
     <div class="dir-controls">

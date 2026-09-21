@@ -1,0 +1,448 @@
+/* settings.css — shared "Account Settings" page (components/settings_form.php),
+   used by every role via timetable_officer/settings.php and
+   instructor/settings.php. Requires tokens.css to be loaded first (dashboard
+   layout already does this) — --color-*/--radius-*/--font-* below all reuse
+   those tokens rather than redefining them.
+
+   Doesn't yet respond to a dark/light theme switch (same as the rest of the
+   dashboard shell right now — see the decorative theme toggle in
+   layouts/dashboard.php) — deferred on purpose, tracked separately. */
+
+.sys-container {
+    max-width: 820px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.sys-header {
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    padding: 20px 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
+.sys-sub {
+    font-size: 13px;
+    color: var(--color-text-muted);
+    margin-top: 2px;
+}
+
+.sys-role-badge {
+    background: rgba(37, 99, 235, 0.08);
+    color: var(--color-primary);
+    border: 1px solid rgba(37, 99, 235, 0.2);
+    padding: 4px 12px;
+    border-radius: 99px;
+    font-size: 12px;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.sys-card {
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+}
+
+.sys-card-header {
+    padding: 14px 24px;
+    background: #f8fafc;
+    border-bottom: 1px solid var(--color-border);
+}
+
+.sys-card-header h3 {
+    font-family: var(--font-display);
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--color-text);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.sys-card-header h3 i {
+    color: var(--color-primary);
+    font-size: 15px;
+}
+
+.sys-card-body {
+    padding: 24px;
+}
+
+.sys-card-footer {
+    padding: 14px 24px;
+    background: #f8fafc;
+    border-top: 1px solid var(--color-border);
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+}
+
+/* Avatar Row */
+.sys-avatar-row {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    padding-bottom: 20px;
+    margin-bottom: 20px;
+    border-bottom: 1px solid var(--color-border);
+}
+
+.sys-avatar-box {
+    width: 72px;
+    height: 72px;
+    border-radius: var(--radius-lg);
+    background: var(--color-navy);
+    color: #ffffff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: var(--font-display);
+    font-size: 24px;
+    font-weight: 700;
+    flex-shrink: 0;
+    overflow: hidden;
+}
+
+.sys-avatar-box img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.sys-avatar-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.sys-avatar-btns {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.sys-avatar-hint {
+    font-size: 12px;
+    color: var(--color-text-muted);
+}
+
+/* Form Grids & Inputs */
+.sys-form-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px;
+}
+
+.sys-form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.sys-form-group.full-width {
+    grid-column: 1 / -1;
+}
+
+.sys-label {
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--color-text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.sys-input,
+.sys-select,
+.sys-textarea {
+    width: 100%;
+    padding: 10px 14px;
+    font-family: var(--font-sans);
+    font-size: 14px;
+    color: var(--color-text);
+    background: var(--color-bg);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    outline: none;
+    transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.sys-input:focus,
+.sys-select:focus,
+.sys-textarea:focus {
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+}
+
+.sys-textarea {
+    resize: none;
+}
+
+.sys-readonly {
+    width: 100%;
+    padding: 10px 14px;
+    border-radius: var(--radius-md);
+    border: 1px solid var(--color-border);
+    background: #f8fafc;
+    font-size: 14px;
+    color: var(--color-text-muted);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+}
+
+.sys-lock-tag {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--color-text-muted);
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    padding: 2px 6px;
+    border-radius: var(--radius-sm);
+    white-space: nowrap;
+}
+
+/* Buttons */
+.sys-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 9px 16px;
+    font-family: var(--font-sans);
+    font-size: 13px;
+    font-weight: 600;
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    border: 1px solid transparent;
+    text-decoration: none;
+    transition: all 0.15s ease;
+}
+
+.sys-btn-primary {
+    background: var(--color-primary);
+    color: #ffffff;
+}
+
+.sys-btn-primary:hover {
+    background: var(--color-primary-dark);
+}
+
+.sys-btn-primary:disabled {
+    opacity: 0.7;
+    cursor: default;
+}
+
+.sys-btn-secondary {
+    background: var(--color-surface);
+    color: var(--color-text);
+    border-color: var(--color-border);
+}
+
+.sys-btn-secondary:hover {
+    background: #f8fafc;
+    border-color: #cbd5e1;
+}
+
+.sys-btn-danger-text {
+    background: transparent;
+    color: var(--color-danger);
+    border: none;
+    padding: 4px 8px;
+    font-size: 12px;
+}
+
+.sys-btn-danger-text:hover {
+    text-decoration: underline;
+}
+
+.sys-btn-sm {
+    padding: 6px 12px;
+    font-size: 12px;
+}
+
+/* Password Reset Inline Card */
+.sys-password-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    flex-wrap: wrap;
+}
+
+.sys-password-info p {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--color-text);
+}
+
+.sys-password-info span {
+    font-size: 12px;
+    color: var(--color-text-muted);
+}
+
+/* Theme Option Cards (decorative — see header comment) */
+.sys-theme-options {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+}
+
+.sys-theme-pill {
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    padding: 12px 14px;
+    background: #f8fafc;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--color-text);
+    transition: all 0.15s ease;
+}
+
+.sys-theme-pill:hover {
+    border-color: #cbd5e1;
+}
+
+.sys-theme-pill.active {
+    border-color: var(--color-primary);
+    background: var(--color-surface);
+    box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.2);
+}
+
+.sys-theme-pill i.check-icon {
+    color: var(--color-primary);
+    opacity: 0;
+}
+
+.sys-theme-pill.active i.check-icon {
+    opacity: 1;
+}
+
+/* Notification Toggles (decorative — see header comment) */
+.sys-notif-list {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+.sys-notif-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+}
+
+.sys-notif-label {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--color-text);
+}
+
+.sys-notif-sub {
+    font-size: 12px;
+    color: var(--color-text-muted);
+}
+
+.sys-switch {
+    position: relative;
+    display: inline-block;
+    width: 38px;
+    height: 22px;
+    flex-shrink: 0;
+}
+
+.sys-switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.sys-slider {
+    position: absolute;
+    cursor: pointer;
+    inset: 0;
+    background-color: #cbd5e1;
+    transition: .2s;
+    border-radius: 22px;
+}
+
+.sys-slider:before {
+    position: absolute;
+    content: "";
+    height: 16px;
+    width: 16px;
+    left: 3px;
+    bottom: 3px;
+    background-color: white;
+    transition: .2s;
+    border-radius: 50%;
+}
+
+input:checked + .sys-slider {
+    background-color: var(--color-primary);
+}
+
+input:checked + .sys-slider:before {
+    transform: translateX(16px);
+}
+
+/* Toast (save feedback) */
+.sys-toast {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    background: var(--color-navy);
+    color: #ffffff;
+    padding: 12px 18px;
+    border-radius: var(--radius-md);
+    font-size: 13px;
+    font-weight: 500;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    z-index: 9999;
+    opacity: 0;
+    transform: translateY(10px);
+    transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+.sys-toast.error {
+    background: var(--color-danger);
+}
+
+.sys-toast.show {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+/* Responsive (768px/480px per tokens.css convention) */
+@media (max-width: 768px) {
+    .sys-form-grid {
+        grid-template-columns: 1fr;
+    }
+    .sys-theme-options {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 480px) {
+    .sys-password-row {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+}

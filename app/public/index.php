@@ -101,6 +101,9 @@ $router->put('/lecture-halls/{code}', function (Request $request, Response $resp
 $router->get('/settings', function (Request $request, Response $response) {
     return (new SettingsController())->index($request);
 });
+$router->post('/settings', function (Request $request, Response $response) {
+    return (new SettingsController())->update($request, $response);
+});
 
 // Example legacy redirect handler
 $router->get('/oldabout', function (Request $request, Response $response) {
@@ -125,6 +128,9 @@ $router->get('/instructor/messages', function (Request $request, Response $respo
 });
 $router->get('/instructor/settings', function (Request $request, Response $response) {
     return (new \app\controllers\instructor\SettingsController())->index($request);
+});
+$router->post('/instructor/settings', function (Request $request, Response $response) {
+    return (new \app\controllers\instructor\SettingsController())->update($request, $response);
 });
 
 // Coordinator Routes (also reachable by In-Charge, which carries every

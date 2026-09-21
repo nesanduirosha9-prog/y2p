@@ -75,6 +75,28 @@ class StaffModel
         ]);
     }
 
+    /**
+     * Self-service profile update: a signed-in member may only change these
+     * columns about themselves (not role/rank/position/department/
+     * designation/email/etc — those are assigned by a Coordinator/In-Charge
+     * via approve()/reassignPosition()/reassignTimetableOfficer()). The
+     * array_intersect_key is the actual enforcement, independent of
+     * whatever the calling controller trusts from the request body.
+     */
+    public function updateProfile(string $code, array $fields): bool
+    {
+        $editable = ['name', 'phone', 'office', 'extension', 'bio'];
+        $data = array_intersect_key($fields, array_flip($editable));
+        if (empty($data)) {
+            return false;
+        }
+
+        $pdo = Database::getConnection();
+        $set = implode(', ', array_map(fn($col) => "{$col} = :{$col}", array_keys($data)));
+        $stmt = $pdo->prepare("UPDATE staff SET {$set} WHERE code = :code");
+        return $stmt->execute($data + ['code' => $code]);
+    }
+
     /** Every staff member, most recent first. */
     public function getAllUsers(): array
     {

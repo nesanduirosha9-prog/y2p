@@ -24,10 +24,7 @@ $total = count($courses);
      data-instructors='<?= htmlspecialchars(json_encode($instructorOptions), ENT_QUOTES) ?>'>
 
     <div class="page-head">
-        <div>
-            <h2>Course Management</h2>
-            <p class="page-head-sub"><span id="courseCount"><?= $total ?></span> of <?= $total ?> courses</p>
-        </div>
+        <p class="page-head-sub"><span id="courseCount"><?= $total ?></span> of <?= $total ?> courses</p>
         <button type="button" class="btn-primary" id="addCourseBtn">
             <i class="fa-solid fa-plus"></i> Add Course
         </button>
