@@ -1,0 +1,46 @@
+/* lecturers.css — Staff Details specifics: the name cell and spacing for
+   the Lecturer/Junior Staff tab bar (reuses the shared .seg/.seg-btn
+   component from directory.css — same look as the Program/Year filters). */
+
+#staffTabGroup {
+    width: fit-content;
+    margin-bottom: 18px;
+}
+
+.lec-identity {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.lec-avatar {
+    width: 30px;
+    height: 30px;
+    flex-shrink: 0;
+    border-radius: 50%;
+    background: #1a3a6b;
+    color: #fff;
+    font-size: 11px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.lec-name {
+    display: block;
+    font-size: 13px;
+    font-weight: 600;
+    color: #0f1c2e;
+}
+
+.lec-dept {
+    display: block;
+    font-size: 11px;
+    color: #9ca3af;
+    margin-top: 1px;
+}
+
+.lec-email {
+    color: #6b7c96;
+}

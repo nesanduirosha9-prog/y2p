@@ -1,0 +1,21 @@
+<?php
+
+namespace app\core;
+
+// Uuid: a small dependency-free UUID v4 generator for the tables keyed by a
+// generated id instead of a natural key (notifications, messages, leave
+// requests, workload tasks, chat rooms, reschedule requests, support
+// requests). No Composer package — just native random_bytes(), matching the
+// project's plain-PHP-only constraint. Seed data instead uses MySQL's own
+// UUID() function inline; this helper is for runtime inserts.
+class Uuid
+{
+    public static function v4(): string
+    {
+        $data = random_bytes(16);
+        $data[6] = chr((ord($data[6]) & 0x0f) | 0x40); // version 4
+        $data[8] = chr((ord($data[8]) & 0x3f) | 0x80); // variant
+
+        return vsprintf('%s%s-%s-%s-%s-%s%s%s', str_split(bin2hex($data), 4));
+    }
+}

@@ -1,0 +1,416 @@
+/* Instructor Leave CSS */
+
+.lv-container {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+
+.lv-header {
+    background: #fff;
+    border-bottom: 1px solid #dde3ee;
+    padding: 16px 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-shrink: 0;
+}
+
+.lv-title {
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-weight: 700;
+    color: #0f1c2e;
+    font-size: 18px;
+}
+
+.lv-sub {
+    font-size: 12px;
+    color: #9ca3af;
+    margin-top: 2px;
+}
+
+.lv-new-btn {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.lv-body {
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.lv-stats-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+}
+
+.lv-stat-card {
+    background: #fff;
+    border: 1px solid #dde3ee;
+    border-radius: 12px;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+}
+
+.lv-icon-box {
+    width: 28px;
+    height: 28px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    margin-bottom: 12px;
+}
+
+.lv-stat-label {
+    font-size: 11px;
+    font-weight: 700;
+    color: #9ca3af;
+    letter-spacing: 0.5px;
+    margin-bottom: 4px;
+}
+
+.lv-stat-value {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 24px;
+    font-weight: 700;
+    color: #0f1c2e;
+}
+
+.lv-stat-unit {
+    font-family: 'Inter', sans-serif;
+    font-size: 12px;
+    font-weight: 400;
+    color: #9ca3af;
+}
+
+.lv-table-card {
+    background: #fff;
+    border: 1px solid #dde3ee;
+    border-radius: 12px;
+    overflow: hidden;
+}
+
+.lv-table-header {
+    padding: 12px 20px;
+    border-bottom: 1px solid #dde3ee;
+    background: #fff;
+}
+
+.lv-table-header p {
+    font-size: 14px;
+    font-weight: 600;
+    color: #0f1c2e;
+}
+
+.lv-table-wrapper {
+    overflow-x: auto;
+}
+
+.lv-empty-state {
+    padding: 32px;
+    text-align: center;
+    color: #9ca3af;
+    font-size: 14px;
+}
+
+.lv-table {
+    width: 100%;
+    min-width: 520px;
+    border-collapse: collapse;
+}
+
+.lv-table th {
+    text-align: left;
+    padding: 10px 16px;
+    font-size: 10.5px;
+    font-weight: 600;
+    color: #6b7c96;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    border-bottom: 1px solid #dde3ee;
+    background: #f4f6f9;
+}
+
+.lv-table td {
+    padding: 12px 16px;
+    font-size: 12px;
+    color: #6b7c96;
+    border-bottom: 1px solid #dde3ee;
+}
+
+.lv-table tr:last-child td {
+    border-bottom: none;
+}
+
+.lv-td-type {
+    color: #0f1c2e;
+    font-weight: 600;
+}
+
+.lv-status {
+    display: inline-block;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: 600;
+}
+
+.status-approved { background: #d0fae5; color: #004f3b; }
+.status-pending { background: #fef3c7; color: #92400e; }
+
+/* ==============================
+   Shared form controls (modal)
+   ============================== */
+.form-group { display: flex; flex-direction: column; }
+.form-group.full-width { grid-column: 1 / -1; }
+.form-group label {
+    font-size: 12px;
+    font-weight: 600;
+    color: #6b7c96;
+    margin-bottom: 6px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.req-input, .req-select {
+    width: 100%;
+    padding: 10px 14px;
+    border-radius: 8px;
+    border: 1px solid #dde3ee;
+    background: #f4f6f9;
+    font-size: 14px;
+    color: #0f1c2e;
+    outline: none;
+}
+
+.req-input:focus, .req-select:focus {
+    border-color: #2563eb;
+    box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.2);
+}
+
+.req-textarea { resize: none; }
+
+.req-select-wrapper { position: relative; }
+.req-select { appearance: none; cursor: pointer; }
+.req-select-wrapper .chevron {
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 14px;
+    color: #9ca3af;
+    pointer-events: none;
+}
+
+.btn-outline {
+    background: #fff;
+    border: 1px solid #dde3ee;
+    color: #6b7c96;
+    padding: 8px 16px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.btn-outline:hover { background: #f4f6f9; }
+
+/* ==============================
+   Request Leave modal
+   ============================== */
+.lv-modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(15, 28, 46, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    z-index: 1000;
+}
+
+.lv-modal-overlay[hidden] { display: none; }
+
+.lv-modal {
+    background: #fff;
+    border-radius: 15px;
+    width: 420px;
+    max-width: 100%;
+    max-height: 90vh;
+    overflow-y: auto;
+}
+
+.lv-modal-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    padding: 20px 22px;
+    border-bottom: 1px solid #eef1f6;
+}
+
+.lv-modal-header h2 { font-size: 16px; font-weight: 700; color: #0f1c2e; }
+.lv-modal-header p { font-size: 12px; color: #6b7c96; margin-top: 4px; }
+
+.modal-close {
+    background: none;
+    border: none;
+    width: 26px;
+    height: 26px;
+    border-radius: 7px;
+    color: #6b7c96;
+    cursor: pointer;
+    flex-shrink: 0;
+}
+
+.modal-close:hover { background: #f4f6f9; }
+
+.lv-modal-body {
+    padding: 18px 22px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.lv-modal-footer {
+    display: flex;
+    gap: 12px;
+    padding: 16px 22px 22px;
+}
+
+.lv-modal-footer .btn-outline,
+.lv-modal-footer .btn-primary-sm { flex: 1; }
+
+.lv-calendar {
+    border: 1px solid #dde3ee;
+    border-radius: 10px;
+    padding: 12px;
+}
+
+.lv-calendar-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 13px;
+    font-weight: 700;
+    color: #0f1c2e;
+    margin-bottom: 8px;
+}
+
+.lv-calendar-header button {
+    background: none;
+    border: none;
+    color: #6b7c96;
+    cursor: pointer;
+    padding: 4px 8px;
+}
+
+.lv-calendar-weekdays,
+.lv-calendar-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 2px;
+    text-align: center;
+}
+
+.lv-calendar-weekdays span {
+    font-size: 10px;
+    font-weight: 700;
+    color: #9ca3af;
+    padding: 4px 0;
+}
+
+.lv-day {
+    background: none;
+    border: none;
+    border-radius: 7px;
+    padding: 7px 0;
+    font-size: 12.5px;
+    color: #374151;
+    cursor: pointer;
+}
+
+.lv-day:hover { background: #f4f6f9; }
+.lv-day.lv-day-empty { visibility: hidden; cursor: default; }
+.lv-day.lv-day-selected { background: #1a3a6b; color: #fff; font-weight: 700; }
+
+.lv-manual-date {
+    display: flex;
+    gap: 8px;
+    margin-top: 10px;
+}
+
+.lv-manual-date .req-input { flex: 1; }
+
+.lv-selected-dates {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: 10px;
+}
+
+.lv-date-chip {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: #eff6ff;
+    color: #1c398e;
+    border: 1px solid #bedbff;
+    border-radius: 999px;
+    padding: 4px 6px 4px 10px;
+    font-size: 11.5px;
+    font-weight: 600;
+}
+
+.lv-date-chip button {
+    background: none;
+    border: none;
+    color: #1c398e;
+    cursor: pointer;
+    font-size: 11px;
+    padding: 2px;
+}
+
+/* ==============================
+   Responsive (768px/480px per tokens.css)
+   ============================== */
+@media (max-width: 1024px) {
+    .lv-stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 480px) {
+    .lv-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+    }
+
+    .lv-new-btn {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .lv-body {
+        padding: 16px;
+    }
+
+    .lv-stats-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .lv-modal-footer {
+        flex-direction: column-reverse;
+    }
+
+    .lv-manual-date {
+        flex-direction: column;
+    }
+}

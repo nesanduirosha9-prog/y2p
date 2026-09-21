@@ -1,0 +1,668 @@
+/* ==============================
+   Toolbar: dept/sem tabs, filters, schedule button
+   ============================== */
+.tt-toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 12px;
+    padding-bottom: 15px;
+}
+
+.tt-filters,
+.tt-actions {
+    display: flex;
+    align-items: center;
+    gap: 7.5px;
+}
+
+.v-divider {
+    width: 1px;
+    height: 22.5px;
+    background: #dde3ee;
+}
+
+.segmented {
+    display: flex;
+    gap: 3.75px;
+    background: #eef1f6;
+    border-radius: 11.5px;
+    padding: 3.75px;
+}
+
+.segmented-btn {
+    padding: 7.5px 18.75px;
+    border-radius: 7.5px;
+    font-size: 13px;
+    font-weight: 600;
+    color: #6b7c96;
+    text-decoration: none;
+    white-space: nowrap;
+}
+
+.segmented-btn.active {
+    background: #fff;
+    color: #1a3a6b;
+    box-shadow: 0 1px 1.5px rgba(0, 0, 0, 0.1), 0 1px 1px rgba(0, 0, 0, 0.1);
+}
+
+.segmented-dark.segmented {
+    background: #eef1f6;
+}
+
+.segmented-dark .segmented-btn.active {
+    background: #1a3a6b;
+    color: #fff;
+}
+
+.tt-select {
+    height: 35.75px;
+    width: 200px;
+    border: 1px solid #dde3ee;
+    border-radius: 7.5px;
+    padding: 0 12px;
+    font-size: 13px;
+    color: #374151;
+    background: #fff;
+    text-overflow: ellipsis;
+}
+
+.btn-dark {
+    display: flex;
+    align-items: center;
+    gap: 7.5px;
+    background: #1a3a6b;
+    color: #fff;
+    border: none;
+    border-radius: 7.5px;
+    padding: 8px 15px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    box-shadow: 0 1px 1.5px rgba(0, 0, 0, 0.1), 0 1px 1px rgba(0, 0, 0, 0.1);
+}
+
+.btn-dark:hover {
+    background: #15305a;
+}
+
+.btn-dark.danger {
+    background: #fff;
+    color: #e7000b;
+    border: 1px solid #ffc9c9;
+}
+
+/* ==============================
+   Year tabs + grid
+   ============================== */
+.tt-body {
+    display: flex;
+    gap: 15px;
+    align-items: flex-start;
+}
+
+.tt-year-tabs {
+    display: flex;
+    flex-direction: column;
+    gap: 3.75px;
+    flex-shrink: 0;
+}
+
+.year-tab {
+    width: 37.5px;
+    height: 75px;
+    border-radius: 11.5px;
+    background: #fff;
+    border: 1px solid #dde3ee;
+    color: #6b7c96;
+    font-weight: 600;
+    font-size: 13px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+}
+
+.year-tab.active {
+    background: #1a3a6b;
+    color: #fff;
+    border-color: #1a3a6b;
+    box-shadow: 0 4px 3px rgba(0, 0, 0, 0.1), 0 2px 2px rgba(0, 0, 0, 0.1);
+}
+
+.tt-grid-card {
+    flex: 1;
+    min-width: 0;
+    background: #fff;
+    border: 1px solid #dde3ee;
+    border-radius: 15px;
+    overflow: auto;
+}
+
+.tt-grid {
+    display: grid;
+    grid-template-columns: 64px repeat(5, minmax(150px, 1fr));
+    grid-auto-rows: 72px;
+    min-width: 800px;
+}
+
+.tt-grid-corner,
+.tt-grid-day-head {
+    grid-row: 1;
+    height: 38.5px;
+    border-right: 1px solid #dde3ee;
+    border-bottom: 1px solid #dde3ee;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #fff;
+    position: sticky;
+    top: 0;
+    z-index: 2;
+}
+
+.tt-grid-day-head {
+    font-size: 11.25px;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    color: #6b7c96;
+}
+
+.tt-grid-time {
+    border-right: 1px solid #c8d0de;
+    display: flex;
+    align-items: flex-start;
+    justify-content: flex-end;
+    padding: 6px 9px 0 0;
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 600;
+    font-size: 11.25px;
+    color: #6b7c96;
+}
+
+.tt-cell {
+    border-top: 1px solid #dde3ee;
+    border-right: 1px solid #dde3ee;
+    position: relative;
+}
+
+.tt-cell-lunch {
+    background: #f0f3f8;
+    border-top: 1px solid #c8d0de;
+    border-bottom: 1px solid #c8d0de;
+}
+
+.lunch-label {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    font-size: 11.25px;
+    font-weight: 600;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: #6b7c96;
+}
+
+.tt-view.selecting .tt-cell:not(.tt-cell-lunch) {
+    cursor: pointer;
+}
+
+.tt-view.selecting .tt-cell:not(.tt-cell-lunch):hover {
+    background: #eff6ff;
+}
+
+.tt-cell.selected {
+    background: #d0fae5;
+}
+
+.selected-badge {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    font-size: 11px;
+    font-weight: 600;
+    color: #007a55;
+}
+
+.tt-block {
+    border-radius: 7.5px;
+    border-left: 4px solid;
+    padding: 7.5px 9.375px;
+    margin: 2px 3px;
+    overflow: hidden;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.tt-block p {
+    color: inherit;
+}
+
+.tt-block-code {
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 700;
+    font-size: 11.25px;
+}
+
+.tt-block-title {
+    font-weight: 600;
+    font-size: 11.25px;
+    margin-top: 1px;
+}
+
+.tt-block-loc {
+    font-size: 11.25px;
+    opacity: 0.8;
+    margin-top: 1px;
+}
+
+.type-lecture { background: #dbeafe; border-left-color: #51a2ff; color: #1c398e; }
+.type-tutorial { background: #d0fae5; border-left-color: #00d492; color: #004f3b; }
+.type-lab { background: #ede9fe; border-left-color: #a684ff; color: #4d179a; }
+.type-practical { background: #ffedd5; border-left-color: #fdba74; color: #9a3412; }
+
+/* ==============================
+   Legend + confirm bar
+   ============================== */
+.tt-legend {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    padding-top: 11px;
+    font-size: 11.25px;
+    color: #6b7c96;
+}
+
+.legend-item {
+    display: flex;
+    align-items: center;
+}
+
+.legend-dot {
+    width: 9.375px;
+    height: 9.375px;
+    border-radius: 3.5px;
+    margin-right: 5.625px;
+}
+
+.dot-lecture { background: #2b7fff; }
+.dot-tutorial { background: #00bc7d; }
+.dot-lab { background: #8e51ff; }
+.dot-practical { background: #ff8904; }
+
+.legend-hint {
+    margin-left: auto;
+    color: #9ca3af;
+}
+
+.tt-confirm-bar[hidden] {
+    display: none;
+}
+
+.tt-confirm-bar {
+    position: sticky;
+    bottom: 0;
+    margin-top: 11px;
+    background: #0f1c2e;
+    color: #fff;
+    border-radius: 11px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 13px 20px;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.confirm-summary {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+}
+
+.confirm-dot {
+    width: 7.5px;
+    height: 7.5px;
+    border-radius: 50%;
+    background: #00d492;
+}
+
+.confirm-day {
+    color: #9ca3af;
+}
+
+.confirm-buttons {
+    display: flex;
+    gap: 10px;
+}
+
+.btn-ghost {
+    background: transparent;
+    color: #cbd5e1;
+    border: none;
+    padding: 6px 14px;
+    font-size: 13px;
+    cursor: pointer;
+}
+
+/* This page's action button is green instead of the shared blue — base
+   shape/sizing comes from components.css. */
+.btn-primary-sm {
+    background: var(--color-success);
+}
+
+.btn-primary-sm:hover {
+    background: var(--color-success-dark);
+}
+
+.btn-primary-sm:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* ==============================
+   Modals
+   ============================== */
+.tt-modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(15, 28, 46, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    z-index: 1000;
+}
+
+.tt-modal-overlay[hidden] {
+    display: none;
+}
+
+.tt-modal {
+    background: #fff;
+    border-radius: 15px;
+    width: 420px;
+    max-width: 100%;
+    max-height: 90vh;
+    overflow-y: auto;
+}
+
+.tt-modal-sm {
+    width: 360px;
+}
+
+.tt-modal-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    padding: 20px 22px;
+    border-bottom: 1px solid #eef1f6;
+}
+
+.tt-modal-header h2 {
+    font-size: 16px;
+    font-weight: 700;
+    color: #0f1c2e;
+}
+
+.tt-modal-header p {
+    font-size: 12px;
+    color: #6b7c96;
+    margin-top: 4px;
+}
+
+.modal-close {
+    background: none;
+    border: none;
+    width: 26px;
+    height: 26px;
+    border-radius: 7px;
+    color: #6b7c96;
+    cursor: pointer;
+    flex-shrink: 0;
+}
+
+.modal-close:hover {
+    background: #f4f6f9;
+}
+
+.tt-modal-body {
+    padding: 18px 22px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.selected-slots-card {
+    display: flex;
+    gap: 11px;
+    background: #f0fdf6;
+    border: 1px solid #bbf7d3;
+    border-radius: 11px;
+    padding: 12px;
+}
+
+.selected-slots-icon {
+    width: 26px;
+    height: 26px;
+    border-radius: 7px;
+    background: #d0fae5;
+    color: #00bc7d;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    font-size: 13px;
+}
+
+.field-label {
+    font-size: 11px;
+    font-weight: 600;
+    color: #374151;
+}
+
+.selected-slots-range {
+    font-size: 13px;
+    font-weight: 600;
+    color: #0f1c2e;
+    margin-top: 2px;
+}
+
+.selected-slots-total {
+    font-size: 11px;
+    color: #6b7c96;
+    margin-top: 2px;
+}
+
+.form-field label {
+    display: block;
+    font-size: 13px;
+    font-weight: 500;
+    color: #374151;
+    margin-bottom: 8px;
+}
+
+.select-wrap {
+    position: relative;
+}
+
+.select-wrap > i:first-child {
+    position: absolute;
+    left: 11px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #9ca3af;
+    font-size: 13px;
+}
+
+.select-wrap select,
+.select-wrap input {
+    width: 100%;
+    height: 39.5px;
+    border: 1px solid #dde3ee;
+    border-radius: 7.5px;
+    padding: 0 12px 0 34px;
+    font-size: 13px;
+    color: #0f1c2e;
+    background: #fff;
+    appearance: none;
+}
+
+.select-wrap input::placeholder {
+    color: #9ca3af;
+}
+
+.select-wrap .chevron {
+    position: absolute;
+    right: 11px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #9ca3af;
+    font-size: 12px;
+    pointer-events: none;
+}
+
+.field-hint {
+    font-size: 11px;
+    color: #6b7c96;
+    margin-top: 6px;
+}
+
+.type-toggle {
+    display: flex;
+    gap: 6px;
+}
+
+.type-btn {
+    flex: 1;
+    padding: 8px 0;
+    border-radius: 7.5px;
+    border: 1px solid #dde3ee;
+    background: #fff;
+    font-size: 13px;
+    font-weight: 500;
+    color: #374151;
+    cursor: pointer;
+}
+
+.type-btn.active {
+    border-color: #2563eb;
+    color: #2563eb;
+    background: #eff6ff;
+}
+
+.tt-modal-footer {
+    display: flex;
+    gap: 12px;
+    padding: 16px 22px 22px;
+}
+
+.btn-outline {
+    flex: 1;
+    padding: 10px;
+    border-radius: 7.5px;
+    border: 1px solid #dde3ee;
+    background: #fff;
+    color: #374151;
+    font-weight: 600;
+    font-size: 13px;
+    cursor: pointer;
+}
+
+.tt-modal-footer .btn-primary-sm {
+    flex: 2;
+    padding: 10px;
+}
+
+.detail-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 13px;
+    color: #374151;
+    padding: 6px 0;
+}
+
+.detail-row i {
+    width: 16px;
+    color: #9ca3af;
+}
+
+/* 768px matches the tablet breakpoint documented in tokens.css (not the
+   700px this used to say) — the grid itself is NOT squeezed to fit; it
+   keeps its min-width and scrolls horizontally inside .tt-grid-card. */
+@media (max-width: 768px) {
+    .tt-toolbar {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    .tt-filters,
+    .tt-actions {
+        flex-wrap: wrap;
+    }
+
+    .tt-select {
+        width: 100% !important;
+        min-width: 0 !important;
+    }
+
+    /* Year tabs move above the grid instead of squeezing it into a
+       column layout — a vertical strip of 75px-tall tabs wastes too much
+       width next to a grid that already needs to scroll horizontally. */
+    .tt-body {
+        flex-direction: column;
+    }
+
+    .tt-year-tabs {
+        flex-direction: row;
+        width: 100%;
+        overflow-x: auto;
+    }
+
+    .year-tab {
+        width: auto;
+        flex: 1;
+        min-width: 44px;
+        height: 44px;
+    }
+
+    .tt-grid-card {
+        max-width: 100%;
+    }
+
+    .tt-confirm-bar {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .confirm-buttons {
+        justify-content: stretch;
+    }
+
+    .confirm-buttons > * {
+        flex: 1;
+    }
+}
+
+@media (max-width: 480px) {
+    .tt-modal-footer {
+        flex-direction: column;
+    }
+
+    .type-toggle {
+        flex-wrap: wrap;
+    }
+
+    .type-btn {
+        flex: 1 1 45%;
+    }
+}

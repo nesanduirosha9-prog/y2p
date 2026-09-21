@@ -1,0 +1,491 @@
+/* dashboard.css — the shared sidebar+header shell for every logged-in
+   screen (views/layouts/dashboard.php). Page-specific CSS loads after this
+   and only adds what's different for that page.
+   1. Reset + body base.
+   2. .dash-sidebar / .sidebar-* — the left nav column (off-canvas drawer
+      below 1024px, toggled by /js/dashboard.js).
+   3. .dash-header / .user-chip / .sidebar-toggle — the top bar.
+   4. .dash-main — the content area $content renders into.
+   5. .dash-sidebar-backdrop — the mobile drawer's click-away overlay. */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+html {
+    height: 100%;
+    overflow: hidden;
+}
+
+body {
+    height: 100%;
+    overflow: hidden;
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    color: #0f1c2e;
+    background: #f4f6f9;
+}
+
+.dashboard-shell {
+    display: flex;
+    align-items: stretch;
+    height: 100vh;
+    height: 100dvh;
+}
+
+/* ==============================
+   Sidebar
+   ============================== */
+.dash-sidebar {
+    width: 225px;
+    flex-shrink: 0;
+    background: #0f1c2e;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    overflow-y: auto;
+}
+
+.sidebar-brand {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 20px 18px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.brand-mark {
+    width: 34px;
+    height: 34px;
+    flex-shrink: 0;
+    border-radius: 11px;
+    background: #2563eb;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    font-size: 16px;
+}
+
+.brand-name {
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-weight: 700;
+    font-size: 13px;
+    color: #fff;
+    line-height: 1.3;
+}
+
+.brand-sub {
+    font-size: 11px;
+    color: #51a2ff;
+    line-height: 1.3;
+}
+
+.sidebar-nav {
+    flex: 1;
+    padding: 8px 11px 0;
+}
+
+.nav-label {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.6px;
+    text-transform: uppercase;
+    color: rgba(81, 162, 255, 0.6);
+    padding: 11px 11px 8px;
+}
+
+.nav-item {
+    display: flex;
+    align-items: center;
+    gap: 11px;
+    width: 100%;
+    padding: 9px 11px;
+    margin-top: 2px;
+    border-radius: 11px;
+    color: #bedbff;
+    font-size: 13px;
+    font-weight: 500;
+    text-decoration: none;
+    transition: background-color 0.15s;
+}
+
+.nav-item i {
+    width: 19px;
+    text-align: center;
+    font-size: 15px;
+}
+
+.nav-item:hover {
+    background: rgba(255, 255, 255, 0.06);
+}
+
+.nav-item.active {
+    background: #2563eb;
+    color: #fff;
+    box-shadow: 0 10px 15px -3px rgba(28, 57, 142, 0.3), 0 4px 6px -4px rgba(28, 57, 142, 0.3);
+}
+
+.nav-badge {
+    margin-left: auto;
+    background: #fb2c36;
+    color: #fff;
+    font-size: 11px;
+    font-weight: 700;
+    width: 15px;
+    height: 15px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.sidebar-footer {
+    padding: 8px 0 0;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.sidebar-footer .nav-item {
+    margin: 8px 11px 15px;
+    width: calc(100% - 22px);
+}
+
+.nav-item-danger {
+    color: #ff6467;
+}
+
+.nav-item-danger:hover {
+    background: rgba(255, 100, 103, 0.1);
+}
+
+/* ==============================
+   Header
+   ============================== */
+.dash-body {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+}
+
+.dash-header {
+    background: #fff;
+    border-bottom: 1px solid #dde3ee;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 24px;
+    gap: 12px;
+}
+
+.header-titles {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    min-width: 0;
+}
+
+/* The hamburger only makes sense once the sidebar becomes an off-canvas
+   drawer (see the responsive rules below) — hidden by default. */
+.sidebar-toggle {
+    display: none;
+    flex-shrink: 0;
+}
+
+.header-titles h1 {
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-weight: 700;
+    font-size: 17px;
+    color: #0f1c2e;
+}
+
+.header-titles p {
+    font-size: 11px;
+    color: #9ca3af;
+    margin-top: 2px;
+}
+
+.header-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+/* .icon-btn / .icon-btn-dot now shared via components.css */
+
+.user-chip {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    padding: 4px 11px 4px 4px;
+    border-radius: 11px;
+    cursor: pointer;
+}
+
+.user-chip:hover {
+    background: #f4f6f9;
+}
+
+.user-avatar {
+    width: 26px;
+    height: 26px;
+    border-radius: 7.5px;
+    background: #1a3a6b;
+    color: #fff;
+    font-size: 11px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.user-name {
+    font-size: 11px;
+    font-weight: 600;
+    color: #0f1c2e;
+    line-height: 1.3;
+}
+
+.user-email {
+    font-size: 11px;
+    color: #9ca3af;
+    line-height: 1.3;
+}
+
+.user-chip > i {
+    font-size: 11px;
+    color: #9ca3af;
+}
+
+.dash-main {
+    flex: 1;
+    min-height: 0;
+    padding: 22px;
+    overflow: auto;
+}
+
+/* ==============================
+   Notifications Dropdown & Modal
+   ============================== */
+.notif-dropdown {
+    position: absolute;
+    top: calc(100% + 10px);
+    right: 0;
+    width: 380px;
+    background: #1c2531;
+    color: #e5e7eb;
+    border-radius: 8px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+    z-index: 1000;
+    border: 1px solid #374151;
+    overflow: hidden;
+    font-family: 'Inter', sans-serif;
+}
+.notif-dropdown-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 16px;
+    background: #252e3e;
+    border-bottom: 1px solid #374151;
+}
+.notif-dropdown-header h3 {
+    font-size: 14px;
+    font-weight: 600;
+    color: #f3f4f6;
+    margin: 0;
+}
+.notif-dropdown-actions button {
+    background: none;
+    border: none;
+    color: #9ca3af;
+    cursor: pointer;
+    font-size: 14px;
+    margin-left: 10px;
+}
+.notif-dropdown-actions button:hover {
+    color: #f3f4f6;
+}
+.notif-dropdown-body {
+    max-height: 400px;
+    overflow-y: auto;
+}
+.notif-item {
+    display: flex;
+    padding: 14px 16px;
+    border-bottom: 1px solid #374151;
+    transition: background 0.2s;
+    gap: 14px;
+    text-align: left;
+}
+.notif-item:hover {
+    background: #252e3e;
+}
+.notif-item.unread {
+    background: rgba(37, 99, 235, 0.05);
+    border-left: 3px solid #3b82f6;
+    padding-left: 13px;
+}
+.notif-icon-wrap {
+    color: #9ca3af;
+    font-size: 18px;
+    padding-top: 2px;
+}
+.notif-content-wrap {
+    flex: 1;
+}
+.notif-title-text {
+    font-size: 13px;
+    font-weight: 600;
+    color: #f3f4f6;
+    margin: 0 0 4px 0;
+    line-height: 1.4;
+}
+.notif-time-text {
+    font-size: 11px;
+    color: #9ca3af;
+    margin: 0 0 6px 0;
+}
+.notif-link {
+    font-size: 12px;
+    color: #60a5fa;
+    text-decoration: none;
+}
+.notif-link:hover {
+    text-decoration: underline;
+}
+.notif-dropdown-footer {
+    padding: 10px;
+    text-align: center;
+    background: #1c2531;
+}
+.notif-dropdown-footer button {
+    background: none;
+    border: none;
+    color: #60a5fa;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+}
+.notif-dropdown-footer button:hover {
+    text-decoration: underline;
+}
+.notif-empty {
+    padding: 20px;
+    text-align: center;
+    color: #9ca3af;
+    font-size: 13px;
+}
+
+/* Modal specific styles */
+.modal-overlay {
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 2000;
+}
+.modal {
+    background: #fff;
+    border-radius: 12px;
+    width: 90%;
+    max-width: 500px;
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+    overflow: hidden;
+}
+.modal-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px 20px;
+    border-bottom: 1px solid #e5e7eb;
+}
+.modal-head h3 {
+    margin: 0;
+    font-size: 16px;
+    color: #111827;
+}
+.modal-close {
+    background: none;
+    border: none;
+    font-size: 18px;
+    color: #6b7280;
+    cursor: pointer;
+}
+.modal-foot {
+    padding: 16px 20px;
+    border-top: 1px solid #e5e7eb;
+}
+/* .btn-primary-sm now shared via components.css */
+/* override notif items for modal light theme */
+.modal .notif-item { border-bottom: 1px solid #e5e7eb; background: #fff; }
+.modal .notif-item:hover { background: #f9fafb; }
+.modal .notif-item.unread { background: #eff6ff; }
+.modal .notif-title-text { color: #111827; }
+.modal .notif-icon-wrap { color: #6b7280; }
+
+/* ==============================
+   Responsive shell
+   Breakpoints match the convention documented in tokens.css:
+   1024px = tablet/small-desktop, 480px = phone.
+   ============================== */
+.dash-sidebar-backdrop {
+    display: none;
+}
+
+@media (max-width: 1024px) {
+    .dash-sidebar {
+        position: fixed;
+        top: 0;
+        left: 0;
+        bottom: 0;
+        z-index: 1500;
+        transform: translateX(-100%);
+        transition: transform 0.25s ease;
+        box-shadow: 0 0 25px rgba(0, 0, 0, 0.3);
+    }
+
+    .dash-sidebar.open {
+        transform: translateX(0);
+    }
+
+    .dash-sidebar-backdrop.visible {
+        display: block;
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.4);
+        z-index: 1400;
+    }
+
+    .sidebar-toggle {
+        display: flex;
+    }
+}
+
+@media (max-width: 480px) {
+    .dash-header {
+        padding: 10px 14px;
+    }
+
+    .header-titles h1 {
+        font-size: 15px;
+    }
+
+    .header-actions {
+        gap: 4px;
+    }
+
+    /* Keep the avatar as an identity anchor, drop the name/email text —
+       there isn't room for both on a phone-width header. */
+    .user-chip .user-meta,
+    .user-chip > i {
+        display: none;
+    }
+
+    .dash-main {
+        padding: 14px;
+    }
+}

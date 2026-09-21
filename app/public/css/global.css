@@ -1,0 +1,166 @@
+/* ==========================================================
+   Shared base styles + two-panel auth layout scaffold.
+   login.css and signup.css build on top of this (they only define
+   the parts specific to their own page); forgot_password.css is
+   fully self-contained and overrides all of this by design.
+   ========================================================== */
+
+* {
+    box-sizing: border-box;
+}
+
+body, html {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    font-family: var(--font-sans);
+}
+
+.login-layout-container {
+    display: flex;
+    min-height: 100vh;
+    width: 100%;
+}
+
+/* ===== Left branding panel =====
+   Diagonal navy gradient + three soft glow blooms (positioned as
+   percentages of the panel so they hold their place at any viewport) plus
+   a faint 40px grid — reproduces the Figma AuthLeftPanel treatment without
+   extra DOM nodes. */
+.left-panel {
+    position: relative;
+    flex: 0 0 55%;
+    min-height: 100vh;
+    padding: 60px;
+    background:
+        radial-gradient(circle at 16% 13%, rgba(26, 58, 107, 0.45) 0%, rgba(26, 58, 107, 0) 32%),
+        radial-gradient(circle at 78% 78%, rgba(37, 99, 235, 0.22) 0%, rgba(37, 99, 235, 0) 30%),
+        radial-gradient(circle at 48% 63%, rgba(30, 77, 183, 0.3) 0%, rgba(30, 77, 183, 0) 24%),
+        repeating-linear-gradient(0deg, rgba(255, 255, 255, 0.035) 0, rgba(255, 255, 255, 0.035) 1px, transparent 1px, transparent 40px),
+        repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.035) 0, rgba(255, 255, 255, 0.035) 1px, transparent 1px, transparent 40px),
+        linear-gradient(133deg, #0b1829 0%, #0c1c2d 15%, #0d1f34 30%, #0e2340 45%, #0f2547 55%, #0e2240 70%, #0d1f3a 85%, #0c1c33 100%);
+    color: #ffffff;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    overflow: hidden;
+}
+
+.branding {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 40px;
+}
+
+.logo-icon {
+    width: 37px;
+    height: 37px;
+    flex: 0 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 17px;
+    color: #ffffff;
+    background: var(--color-primary);
+    border-radius: 11px;
+    box-shadow: 0 10px 15px -3px rgba(28, 57, 142, 0.5), 0 4px 6px -2px rgba(28, 57, 142, 0.5);
+}
+
+.logo-text h1 {
+    font-family: var(--font-display);
+    font-size: 15px;
+    margin: 0;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+}
+
+.logo-text p {
+    font-size: 11px;
+    margin: 3px 0 0;
+    color: #7db4ff;
+}
+
+.feature-title h2 {
+    font-family: var(--font-display);
+    font-weight: 800;
+    font-size: 34px;
+    margin: 0 0 15px;
+    line-height: 1.25;
+    letter-spacing: -0.02em;
+}
+
+.feature-title .gradient-text {
+    background: linear-gradient(90deg, #8ec5ff, #53eafd);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+}
+
+.feature-description {
+    font-size: 15px;
+    margin: 0 0 40px;
+    line-height: 1.6;
+    color: rgba(190, 219, 255, 0.8);
+    max-width: 400px;
+}
+
+.left-footer {
+    position: relative;
+    font-size: 11px;
+    color: rgba(81, 162, 255, 0.6);
+    padding-top: 22px;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* ===== Right form panel ===== */
+.right-panel {
+    flex: 1;
+    background-color: var(--color-bg);
+    padding: 40px 60px;
+    display: flex;
+    flex-direction: column;
+}
+
+.right-footer {
+    font-size: 11px;
+    color: #b0bac9;
+    text-align: center;
+    margin-top: 20px;
+}
+
+.right-footer span.version,
+.right-footer p.version {
+    font-family: var(--font-mono);
+}
+
+/* ==============================
+   Responsive — stack the two panels below 1024px (tablet/mobile per
+   tokens.css) instead of squeezing them side by side. login.css/signup.css
+   redefine most panel cosmetics (padding, card, feature text) after this
+   file loads, so their own page-specific overrides carry the matching
+   padding/font-size rules for those breakpoints — this file only owns the
+   structural reset (flex-basis/min-height) that neither page redefines.
+   ============================== */
+@media (max-width: 1024px) {
+    .login-layout-container {
+        flex-direction: column;
+        min-height: auto;
+    }
+
+    .left-panel {
+        flex: 0 0 auto;
+        min-height: auto;
+    }
+}
+
+@media (max-width: 480px) {
+    .feature-title h2 {
+        font-size: 26px;
+    }
+
+    .feature-description {
+        font-size: 14px;
+        margin-bottom: 24px;
+    }
+}

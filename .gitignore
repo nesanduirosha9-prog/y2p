@@ -1,0 +1,13 @@
+# Machine-local config — copy config.php.example to config.php
+/config.php
+
+# Runtime scratch
+/app/runtime/*
+!/app/runtime/.gitignore
+
+# Agent/project context doc (keep local, never commit)
+/PROJECT_CONTEXT.md
+
+# OS / editor noise
+.DS_Store
+*.swp

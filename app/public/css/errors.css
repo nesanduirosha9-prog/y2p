@@ -1,0 +1,51 @@
+/* errors.css — styles for a generic error page (.error-container/.error-icon/etc).
+   NOTE (gap): this file is orphaned — neither errors/notfound.php nor
+   errors/forbidden.php link to it; both use their own inline <style>
+   block instead, so nothing currently loads these rules (or the
+   tokens.css variables they reference) in the browser. */
+.error-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    background-color: var(--color-bg);
+    color: var(--color-text);
+    text-align: center;
+    padding: 2rem;
+}
+
+.error-icon {
+    font-size: 5rem;
+    color: var(--color-primary);
+    margin-bottom: 1.5rem;
+}
+
+.error-title {
+    font-size: 4rem;
+    font-weight: 800;
+    margin: 0;
+    line-height: 1;
+    color: var(--color-text-dark);
+}
+
+.error-subtitle {
+    font-size: 1.5rem;
+    font-weight: 500;
+    margin: 1rem 0;
+    color: var(--color-text-dark);
+}
+
+.error-text {
+    font-size: 1rem;
+    color: var(--color-text-muted);
+    max-width: 400px;
+    margin-bottom: 2rem;
+    line-height: 1.5;
+}
+
+/* Base shape/color now shared via components.css — this page just adds a
+   small lift on hover. */
+.btn-primary:hover {
+    transform: translateY(-1px);
+}

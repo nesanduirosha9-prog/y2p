@@ -1,0 +1,458 @@
+<mxGraphModel dx="2097" dy="1157" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="3000" pageHeight="1700" math="0" shadow="0">
+  <root>
+    <mxCell id="0" />
+    <mxCell id="1" parent="0" />
+
+    <mxCell id="title_note" value="StaffSync EER — corrected. Bugs fixed vs. the original: no self-loops, every relationship edge is bound to a real shape, Is_Read moved onto Receives (was wrongly on Notification under an M:N), duplicate relationship names resolved, dead-end Coordinator/In-Charge subclasses now carry real relationships, Workload Task's redundant Delegates+Assigned-to collapsed to one relationship, Chat Room scoped to Course (not 1:1 with a Workload Task) with a new Participates In membership relationship, Support Request added (distinct from Reschedule Request). See docs/DESIGN_PATTERNS_PLAN.md sibling doc database/README.md for the physical mapping." parent="1" vertex="1" style="text;html=1;align=left;verticalAlign=top;fontSize=13;fontStyle=1;whiteSpace=wrap;">
+      <mxGeometry x="60" y="-60" width="1400" height="80" as="geometry" />
+    </mxCell>
+
+    <!-- ===================== STAFF CLUSTER ===================== -->
+    <mxCell id="st_code" value="&lt;u&gt;Code&lt;/u&gt;" parent="1" vertex="1" style="ellipse;whiteSpace=wrap;html=1;align=center;">
+      <mxGeometry x="560" y="40" width="120" height="40" as="geometry" />
+    </mxCell>
+    <mxCell id="st_email" value="University_Email" parent="1" vertex="1" style="ellipse;whiteSpace=wrap;html=1;align=center;">
+      <mxGeometry x="700" y="40" width="140" height="40" as="geometry" />
+    </mxCell>
+    <mxCell id="st_pass" value="Hashed_Password" parent="1" vertex="1" style="ellipse;whiteSpace=wrap;html=1;align=center;">
+      <mxGeometry x="860" y="40" width="130" height="40" as="geometry" />
+    </mxCell>
+    <mxCell id="st_name" value="Name" parent="1" vertex="1" style="ellipse;whiteSpace=wrap;html=1;align=center;">
+      <mxGeometry x="1010" y="40" width="110" height="40" as="geometry" />
+    </mxCell>
+    <mxCell id="st_role" value="Role" parent="1" vertex="1" style="ellipse;whiteSpace=wrap;html=1;align=center;">
+      <mxGeometry x="1140" y="40" width="110" height="40" as="geometry" />
+    </mxCell>
+    <mxCell id="st_rank" value="Academic_Rank" parent="1" vertex="1" style="ellipse;whiteSpace=wrap;html=1;align=center;">
+      <mxGeometry x="1270" y="40" width="130" height="40" as="geometry" />
+    </mxCell>
+    <mxCell id="st_pos" value="Position" parent="1" vertex="1" style="ellipse;whiteSpace=wrap;html=1;align=center;">
+      <mxGeometry x="1420" y="40" width="120" height="40" as="geometry" />
+    </mxCell>
+    <mxCell id="st_dept" value="Department" parent="1" vertex="1" style="ellipse;whiteSpace=wrap;html=1;align=center;">
+      <mxGeometry x="560" y="120" width="120" height="40" as="geometry" />
+    </mxCell>
+    <mxCell id="st_avail" value="Availability_Status" parent="1" vertex="1" style="ellipse;whiteSpace=wrap;html=1;align=center;">
+      <mxGeometry x="1420" y="120" width="140" height="40" as="geometry" />
+    </mxCell>
+    <mxCell id="st_profile" value="Profile_Data&#10;(Designation, Office, Extension, Bio)" parent="1" vertex="1" style="ellipse;whiteSpace=wrap;html=1;align=center;">
+      <mxGeometry x="700" y="120" width="240" height="50" as="geometry" />
+    </mxCell>
+
+    <mxCell id="e_staff" value="Staff" parent="1" vertex="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontStyle=1">
+      <mxGeometry x="1000" y="220" width="160" height="60" as="geometry" />
+    </mxCell>
+    <mxCell id="d_staff" value="d" parent="1" vertex="1" style="ellipse;whiteSpace=wrap;html=1;aspect=fixed;align=center;fontStyle=1">
+      <mxGeometry x="1060" y="320" width="40" height="40" as="geometry" />
+    </mxCell>
+    <mxCell id="e_academic" value="Academic Staff" parent="1" vertex="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;">
+      <mxGeometry x="840" y="420" width="160" height="60" as="geometry" />
+    </mxCell>
+    <mxCell id="e_officer" value="Timetable Officer" parent="1" vertex="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;">
+      <mxGeometry x="1220" y="420" width="160" height="60" as="geometry" />
+    </mxCell>
+    <mxCell id="d_academic" value="d" parent="1" vertex="1" style="ellipse;whiteSpace=wrap;html=1;aspect=fixed;align=center;fontStyle=1">
+      <mxGeometry x="900" y="520" width="40" height="40" as="geometry" />
+    </mxCell>
+    <mxCell id="e_junior" value="Junior Staff" parent="1" vertex="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;">
+      <mxGeometry x="720" y="620" width="140" height="60" as="geometry" />
+    </mxCell>
+    <mxCell id="e_senior" value="Senior Lecturer" parent="1" vertex="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;">
+      <mxGeometry x="980" y="620" width="140" height="60" as="geometry" />
+    </mxCell>
+    <mxCell id="e_coord" value="Coordinator" parent="1" vertex="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;">
+      <mxGeometry x="660" y="720" width="140" height="60" as="geometry" />
+    </mxCell>
+    <mxCell id="e_incharge" value="In-Charge" parent="1" vertex="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;">
+      <mxGeometry x="980" y="720" width="140" height="60" as="geometry" />
+    </mxCell>
+
+    <!-- ===================== LEAVE REQUEST CLUSTER ===================== -->
+    <mxCell id="lv_id" value="&lt;u&gt;id (UUID)&lt;/u&gt;" parent="1" vertex="1" style="ellipse;whiteSpace=wrap;html=1;align=center;">
+      <mxGeometry x="60" y="60" width="110" height="40" as="geometry" />
+    </mxCell>
+    <mxCell id="lv_type" value="Leave_Type" parent="1" vertex="1" style="ellipse;whiteSpace=wrap;html=1;align=center;">
+      <mxGeometry x="200" y="60" width="110" height="40" as="geometry" />
+    </mxCell>
+    <mxCell id="lv_start" value="Start_Date" parent="1" vertex="1" style="ellipse;whiteSpace=wrap;html=1;align=center;">
+      <mxGeometry x="60" y="140" width="110" height="40" as="geometry" />
+    </mxCell>
+    <mxCell id="lv_end" value="End_Date" parent="1" vertex="1" style="ellipse;whiteSpace=wrap;html=1;align=center;">
+      <mxGeometry x="200" y="140" width="110" height="40" as="geometry" />
+    </mxCell>
+    <mxCell id="lv_reason" value="Reason" parent="1" vertex="1" style="ellipse;whiteSpace=wrap;html=1;align=center;">
+      <mxGeometry x="340" y="60" width="110" height="40" as="geometry" />
+    </mxCell>
+    <mxCell id="lv_status" value="Status" parent="1" vertex="1" style="ellipse;whiteSpace=wrap;html=1;align=center;">
+      <mxGeometry x="340" y="140" width="110" height="40" as="geometry" />
+    </mxCell>
+    <mxCell id="e_leave" value="Leave Request" parent="1" vertex="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontStyle=1">
+      <mxGeometry x="200" y="220" width="150" height="60" as="geometry" />
+    </mxCell>
+    <mxCell id="r_submits" value="Submits" parent="1" vertex="1" style="rhombus;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;">
+      <mxGeometry x="200" y="340" width="100" height="60" as="geometry" />
+    </mxCell>
+    <mxCell id="r_covers" value="Covers" parent="1" vertex="1" style="rhombus;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;">
+      <mxGeometry x="380" y="340" width="100" height="60" as="geometry" />
+    </mxCell>
+
+    <!-- ===================== NOTIFICATION CLUSTER ===================== -->
+    <mxCell id="nt_id" value="&lt;u&gt;id (UUID)&lt;/u&gt;" parent="1" vertex="1" style="ellipse;whiteSpace=wrap;html=1;align=center;">
+      <mxGeometry x="2220" y="60" width="120" height="40" as="geometry" />
+    </mxCell>
+    <mxCell id="nt_type" value="Type" parent="1" vertex="1" style="ellipse;whiteSpace=wrap;html=1;align=center;">
+      <mxGeometry x="2360" y="60" width="110" height="40" as="geometry" />
+    </mxCell>
+    <mxCell id="nt_title" value="Title" parent="1" vertex="1" style="ellipse;whiteSpace=wrap;html=1;align=center;">
+      <mxGeometry x="2220" y="140" width="120" height="40" as="geometry" />
+    </mxCell>
+    <mxCell id="nt_body" value="Body" parent="1" vertex="1" style="ellipse;whiteSpace=wrap;html=1;align=center;">
+      <mxGeometry x="2360" y="140" width="110" height="40" as="geometry" />
+    </mxCell>
+    <mxCell id="e_notif" value="Notification" parent="1" vertex="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontStyle=1">
+      <mxGeometry x="2280" y="220" width="150" height="60" as="geometry" />
+    </mxCell>
+    <mxCell id="r_receives" value="Receives" parent="1" vertex="1" style="rhombus;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;">
+      <mxGeometry x="2020" y="220" width="120" height="60" as="geometry" />
+    </mxCell>
+    <mxCell id="rc_read" value="Is_Read" parent="1" vertex="1" style="ellipse;whiteSpace=wrap;html=1;align=center;">
+      <mxGeometry x="1960" y="340" width="110" height="40" as="geometry" />
+    </mxCell>
+    <mxCell id="rc_readat" value="Read_At" parent="1" vertex="1" style="ellipse;whiteSpace=wrap;html=1;align=center;">
+      <mxGeometry x="2100" y="340" width="110" height="40" as="geometry" />
+    </mxCell>
+
+    <!-- ===================== CHAT / MESSAGE CLUSTER ===================== -->
+    <mxCell id="ch_id" value="&lt;u&gt;id (UUID)&lt;/u&gt;" parent="1" vertex="1" style="ellipse;whiteSpace=wrap;html=1;align=center;">
+      <mxGeometry x="60" y="600" width="110" height="40" as="geometry" />
+    </mxCell>
+    <mxCell id="ch_name" value="Name" parent="1" vertex="1" style="ellipse;whiteSpace=wrap;html=1;align=center;">
+      <mxGeometry x="200" y="600" width="110" height="40" as="geometry" />
+    </mxCell>
+    <mxCell id="ch_type" value="Chat_Type" parent="1" vertex="1" style="ellipse;whiteSpace=wrap;html=1;align=center;">
+      <mxGeometry x="340" y="600" width="110" height="40" as="geometry" />
+    </mxCell>
+    <mxCell id="e_chat" value="Chat Room" parent="1" vertex="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontStyle=1">
+      <mxGeometry x="200" y="680" width="140" height="60" as="geometry" />
+    </mxCell>
+    <mxCell id="r_contains" value="Contains" parent="1" vertex="1" style="rhombus;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;">
+      <mxGeometry x="200" y="780" width="100" height="60" as="geometry" />
+    </mxCell>
+    <mxCell id="e_msg" value="Message" parent="1" vertex="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontStyle=1">
+      <mxGeometry x="200" y="900" width="140" height="60" as="geometry" />
+    </mxCell>
+    <mxCell id="ms_id" value="&lt;u&gt;id (UUID)&lt;/u&gt;" parent="1" vertex="1" style="ellipse;whiteSpace=wrap;html=1;align=center;">
+      <mxGeometry x="60" y="1000" width="110" height="40" as="geometry" />
+    </mxCell>
+    <mxCell id="ms_content" value="Content" parent="1" vertex="1" style="ellipse;whiteSpace=wrap;html=1;align=center;">
+      <mxGeometry x="200" y="1000" width="120" height="40" as="geometry" />
+    </mxCell>
+    <mxCell id="ms_sent" value="Sent_At" parent="1" vertex="1" style="ellipse;whiteSpace=wrap;html=1;align=center;">
+      <mxGeometry x="340" y="1000" width="110" height="40" as="geometry" />
+    </mxCell>
+    <mxCell id="r_sends" value="Sends" parent="1" vertex="1" style="rhombus;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;">
+      <mxGeometry x="420" y="900" width="100" height="60" as="geometry" />
+    </mxCell>
+    <mxCell id="r_participates" value="Participates In" parent="1" vertex="1" style="rhombus;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;">
+      <mxGeometry x="420" y="680" width="130" height="60" as="geometry" />
+    </mxCell>
+    <mxCell id="r_scopedto" value="Scoped To" parent="1" vertex="1" style="rhombus;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;">
+      <mxGeometry x="40" y="780" width="90" height="50" as="geometry" />
+    </mxCell>
+
+    <!-- ===================== ROOM / SESSION / COURSE / ASSIGNMENT CLUSTER ===================== -->
+    <mxCell id="rm_code" value="&lt;u&gt;Code&lt;/u&gt;" parent="1" vertex="1" style="ellipse;whiteSpace=wrap;html=1;align=center;">
+      <mxGeometry x="2500" y="460" width="110" height="40" as="geometry" />
+    </mxCell>
+    <mxCell id="rm_type" value="Type" parent="1" vertex="1" style="ellipse;whiteSpace=wrap;html=1;align=center;">
+      <mxGeometry x="2650" y="460" width="110" height="40" as="geometry" />
+    </mxCell>
+    <mxCell id="rm_cap" value="Capacity" parent="1" vertex="1" style="ellipse;whiteSpace=wrap;html=1;align=center;">
+      <mxGeometry x="2650" y="540" width="110" height="40" as="geometry" />
+    </mxCell>
+    <mxCell id="e_room" value="Workspace / Room" parent="1" vertex="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontStyle=1">
+      <mxGeometry x="2500" y="540" width="140" height="60" as="geometry" />
+    </mxCell>
+    <mxCell id="r_heldin" value="Held In (identifying)" parent="1" vertex="1" style="rhombus;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;strokeWidth=3;">
+      <mxGeometry x="2280" y="620" width="130" height="60" as="geometry" />
+    </mxCell>
+    <mxCell id="e_session" value="Timetable Session (weak entity)" parent="1" vertex="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontStyle=1;strokeWidth=3;">
+      <mxGeometry x="2020" y="700" width="220" height="70" as="geometry" />
+    </mxCell>
+    <mxCell id="ts_day" value="&lt;span style=&quot;text-decoration:underline;text-decoration-style:dashed;&quot;&gt;Day_Of_Week&lt;/span&gt;" parent="1" vertex="1" style="ellipse;whiteSpace=wrap;html=1;align=center;">
+      <mxGeometry x="1900" y="820" width="130" height="40" as="geometry" />
+    </mxCell>
+    <mxCell id="ts_start" value="&lt;span style=&quot;text-decoration:underline;text-decoration-style:dashed;&quot;&gt;Start_Hour&lt;/span&gt;" parent="1" vertex="1" style="ellipse;whiteSpace=wrap;html=1;align=center;">
+      <mxGeometry x="2050" y="820" width="130" height="40" as="geometry" />
+    </mxCell>
+    <mxCell id="ts_dur" value="Duration_Hours" parent="1" vertex="1" style="ellipse;whiteSpace=wrap;html=1;align=center;">
+      <mxGeometry x="2200" y="820" width="120" height="40" as="geometry" />
+    </mxCell>
+    <mxCell id="ts_type" value="Session_Type" parent="1" vertex="1" style="ellipse;whiteSpace=wrap;html=1;align=center;">
+      <mxGeometry x="2340" y="820" width="120" height="40" as="geometry" />
+    </mxCell>
+    <mxCell id="r_belongsto" value="Belongs To" parent="1" vertex="1" style="rhombus;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;">
+      <mxGeometry x="2020" y="600" width="110" height="50" as="geometry" />
+    </mxCell>
+    <mxCell id="r_manages" value="Manages" parent="1" vertex="1" style="rhombus;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;">
+      <mxGeometry x="1780" y="700" width="100" height="60" as="geometry" />
+    </mxCell>
+    <mxCell id="e_course" value="Course" parent="1" vertex="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontStyle=1">
+      <mxGeometry x="2600" y="700" width="140" height="60" as="geometry" />
+    </mxCell>
+    <mxCell id="co_code" value="&lt;u&gt;Code&lt;/u&gt;" parent="1" vertex="1" style="ellipse;whiteSpace=wrap;html=1;align=center;">
+      <mxGeometry x="2600" y="800" width="110" height="40" as="geometry" />
+    </mxCell>
+    <mxCell id="co_title" value="Title" parent="1" vertex="1" style="ellipse;whiteSpace=wrap;html=1;align=center;">
+      <mxGeometry x="2740" y="800" width="110" height="40" as="geometry" />
+    </mxCell>
+    <mxCell id="co_credit" value="Credits" parent="1" vertex="1" style="ellipse;whiteSpace=wrap;html=1;align=center;">
+      <mxGeometry x="2740" y="900" width="110" height="40" as="geometry" />
+    </mxCell>
+    <mxCell id="co_dept" value="Department" parent="1" vertex="1" style="ellipse;whiteSpace=wrap;html=1;align=center;">
+      <mxGeometry x="2600" y="900" width="110" height="40" as="geometry" />
+    </mxCell>
+    <mxCell id="co_year" value="Year_Of_Study" parent="1" vertex="1" style="ellipse;whiteSpace=wrap;html=1;align=center;">
+      <mxGeometry x="2460" y="900" width="110" height="40" as="geometry" />
+    </mxCell>
+    <mxCell id="co_sem" value="Semester" parent="1" vertex="1" style="ellipse;whiteSpace=wrap;html=1;align=center;">
+      <mxGeometry x="2460" y="800" width="110" height="40" as="geometry" />
+    </mxCell>
+    <mxCell id="r_weeklytopic" value="Weekly Topic (identifying)" parent="1" vertex="1" style="rhombus;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;strokeWidth=3;">
+      <mxGeometry x="2130" y="900" width="140" height="60" as="geometry" />
+    </mxCell>
+    <mxCell id="e_assign" value="Assignment (weak entity)" parent="1" vertex="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontStyle=1;strokeWidth=3;">
+      <mxGeometry x="2200" y="1000" width="150" height="60" as="geometry" />
+    </mxCell>
+    <mxCell id="as_week" value="&lt;span style=&quot;text-decoration:underline;text-decoration-style:dashed;&quot;&gt;Week_Num&lt;/span&gt;" parent="1" vertex="1" style="ellipse;whiteSpace=wrap;html=1;align=center;">
+      <mxGeometry x="2080" y="1100" width="130" height="40" as="geometry" />
+    </mxCell>
+    <mxCell id="as_title" value="Title" parent="1" vertex="1" style="ellipse;whiteSpace=wrap;html=1;align=center;">
+      <mxGeometry x="2240" y="1100" width="120" height="40" as="geometry" />
+    </mxCell>
+
+    <!-- ===================== COURSE_STAFF "ASSIGNED TO" CLUSTER ===================== -->
+    <mxCell id="r_assignedto" value="Assigned To" parent="1" vertex="1" style="rhombus;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;">
+      <mxGeometry x="1300" y="950" width="130" height="60" as="geometry" />
+    </mxCell>
+    <mxCell id="ar_role" value="Assignment_Role" parent="1" vertex="1" style="ellipse;whiteSpace=wrap;html=1;align=center;">
+      <mxGeometry x="1300" y="1050" width="130" height="40" as="geometry" />
+    </mxCell>
+
+    <!-- ===================== WORKLOAD TASK CLUSTER ===================== -->
+    <mxCell id="wt_id" value="&lt;u&gt;id (UUID)&lt;/u&gt;" parent="1" vertex="1" style="ellipse;whiteSpace=wrap;html=1;align=center;">
+      <mxGeometry x="60" y="1150" width="110" height="40" as="geometry" />
+    </mxCell>
+    <mxCell id="wt_title" value="Title" parent="1" vertex="1" style="ellipse;whiteSpace=wrap;html=1;align=center;">
+      <mxGeometry x="200" y="1150" width="120" height="40" as="geometry" />
+    </mxCell>
+    <mxCell id="wt_type" value="Task_Type" parent="1" vertex="1" style="ellipse;whiteSpace=wrap;html=1;align=center;">
+      <mxGeometry x="340" y="1150" width="110" height="40" as="geometry" />
+    </mxCell>
+    <mxCell id="wt_hours" value="Hours" parent="1" vertex="1" style="ellipse;whiteSpace=wrap;html=1;align=center;">
+      <mxGeometry x="60" y="1300" width="110" height="40" as="geometry" />
+    </mxCell>
+    <mxCell id="wt_status" value="Status" parent="1" vertex="1" style="ellipse;whiteSpace=wrap;html=1;align=center;">
+      <mxGeometry x="200" y="1300" width="110" height="40" as="geometry" />
+    </mxCell>
+    <mxCell id="e_wtask" value="Workload Task" parent="1" vertex="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;fontStyle=1">
+      <mxGeometry x="200" y="1220" width="140" height="60" as="geometry" />
+    </mxCell>
+    <mxCell id="r_assignedwt" value="Assigned" parent="1" vertex="1" style="rhombus;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;">
+      <mxGeometry x="420" y="1220" width="100" height="60" as="geometry" />
+    </mxCell>
+    <mxCell id="r_forwt" value="For" parent="1" vertex="1" style="rhombus;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;">
+      <mxGeometry x="200" y="1330" width="90" height="50" as="geometry" />
+    </mxCell>
+
+    <!-- ===================== RESCHEDULE REQUEST CLUSTER ===================== -->
+    <mxCell id="rr_id" value="&lt;u&gt;id (UUID)&lt;/u&gt;" parent="1" vertex="1" style="ellipse;whiteSpace=wrap;html=1;align=center;">
+      <mxGeometry x="760" y="1150" width="110" height="40" as="geometry" />
+    </mxCell>
+    <mxCell id="rr_day" value="Requested_Day" parent="1" vertex="1" style="ellipse;whiteSpace=wrap;html=1;align=center;">
+      <mxGeometry x="900" y="1150" width="120" height="40" as="geometry" />
+    </mxCell>
+    <mxCell id="rr_hour" value="Requested_Start_Hour" parent="1" vertex="1" style="ellipse;whiteSpace=wrap;html=1;align=center;">
+      <mxGeometry x="1040" y="1150" width="150" height="40" as="geometry" />
+    </mxCell>
+    <mxCell id="rr_weeks" value="Target_Weeks" parent="1" vertex="1" style="ellipse;whiteSpace=wrap;html=1;align=center;">
+      <mxGeometry x="760" y="1400" width="120" height="40" as="geometry" />
+    </mxCell>
+    <mxCell id="rr_status" value="Status" parent="1" vertex="1" style="ellipse;whiteSpace=wrap;html=1;align=center;">
+      <mxGeometry x="900" y="1400" width="110" height="40" as="geometry" />
+    </mxCell>
+    <mxCell id="e_resched" value="Reschedule Request" parent="1" vertex="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontStyle=1">
+      <mxGeometry x="900" y="1260" width="150" height="60" as="geometry" />
+    </mxCell>
+    <mxCell id="r_requests" value="Requests" parent="1" vertex="1" style="rhombus;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;">
+      <mxGeometry x="700" y="1260" width="100" height="60" as="geometry" />
+    </mxCell>
+    <mxCell id="r_confirms" value="Confirms" parent="1" vertex="1" style="rhombus;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;">
+      <mxGeometry x="1120" y="1260" width="100" height="60" as="geometry" />
+    </mxCell>
+    <mxCell id="r_targets" value="Targets" parent="1" vertex="1" style="rhombus;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;">
+      <mxGeometry x="900" y="1400" width="100" height="60" as="geometry" />
+    </mxCell>
+
+    <!-- ===================== SUPPORT REQUEST CLUSTER (new entity) ===================== -->
+    <mxCell id="sr_id" value="&lt;u&gt;id (UUID)&lt;/u&gt;" parent="1" vertex="1" style="ellipse;whiteSpace=wrap;html=1;align=center;">
+      <mxGeometry x="1650" y="1150" width="110" height="40" as="geometry" />
+    </mxCell>
+    <mxCell id="sr_type" value="Support_Type" parent="1" vertex="1" style="ellipse;whiteSpace=wrap;html=1;align=center;">
+      <mxGeometry x="1790" y="1150" width="130" height="40" as="geometry" />
+    </mxCell>
+    <mxCell id="sr_notes" value="Notes" parent="1" vertex="1" style="ellipse;whiteSpace=wrap;html=1;align=center;">
+      <mxGeometry x="1650" y="1400" width="110" height="40" as="geometry" />
+    </mxCell>
+    <mxCell id="sr_status" value="Status" parent="1" vertex="1" style="ellipse;whiteSpace=wrap;html=1;align=center;">
+      <mxGeometry x="1790" y="1400" width="110" height="40" as="geometry" />
+    </mxCell>
+    <mxCell id="e_support" value="Support Request" parent="1" vertex="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontStyle=1">
+      <mxGeometry x="1700" y="1260" width="150" height="60" as="geometry" />
+    </mxCell>
+    <mxCell id="r_reqsupport" value="Requests Support" parent="1" vertex="1" style="rhombus;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;">
+      <mxGeometry x="1470" y="1260" width="140" height="60" as="geometry" />
+    </mxCell>
+    <mxCell id="r_forsr" value="For" parent="1" vertex="1" style="rhombus;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;">
+      <mxGeometry x="1900" y="1260" width="90" height="60" as="geometry" />
+    </mxCell>
+    <mxCell id="r_prefers" value="Prefers" parent="1" vertex="1" style="rhombus;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;">
+      <mxGeometry x="1700" y="1400" width="100" height="50" as="geometry" />
+    </mxCell>
+
+    <!-- ===================== LEGEND ===================== -->
+    <mxCell id="legend_note" value="Legend: &lt;u&gt;underline&lt;/u&gt; = primary key (natural/business key, or UUID where noted — never AUTO_INCREMENT). Dashed underline = partial key of a weak entity. Bold-bordered box/diamond = weak entity / its identifying relationship. Staff's Role + Academic_Rank + Position implement the Timetable Officer / Academic Staff / Junior Staff / Senior Lecturer / Coordinator / In-Charge specialization as ONE physical table (see database/migrations/001_create_staff.sql) — Coordinator keeps Academic_Rank='junior' and In-Charge keeps Academic_Rank='senior', so both still satisfy every check on their base rank; Position only adds capability. Audit columns (created_at/updated_at) exist on every table but are omitted here for clarity." parent="1" vertex="1" style="rounded=1;whiteSpace=wrap;html=1;align=left;verticalAlign=top;fillColor=#ffffff;strokeColor=#666666;spacing=10;">
+      <mxGeometry x="60" y="1500" width="1200" height="140" as="geometry" />
+    </mxCell>
+
+    <!-- ===================== EDGES: attribute -> entity ===================== -->
+    <mxCell id="e1" parent="1" edge="1" source="st_code" target="e_staff" style="endArrow=none;html=1;"><mxGeometry relative="1" as="geometry" /></mxCell>
+    <mxCell id="e2" parent="1" edge="1" source="st_email" target="e_staff" style="endArrow=none;html=1;"><mxGeometry relative="1" as="geometry" /></mxCell>
+    <mxCell id="e3" parent="1" edge="1" source="st_pass" target="e_staff" style="endArrow=none;html=1;"><mxGeometry relative="1" as="geometry" /></mxCell>
+    <mxCell id="e4" parent="1" edge="1" source="st_name" target="e_staff" style="endArrow=none;html=1;"><mxGeometry relative="1" as="geometry" /></mxCell>
+    <mxCell id="e5" parent="1" edge="1" source="st_role" target="e_staff" style="endArrow=none;html=1;"><mxGeometry relative="1" as="geometry" /></mxCell>
+    <mxCell id="e6" parent="1" edge="1" source="st_rank" target="e_staff" style="endArrow=none;html=1;"><mxGeometry relative="1" as="geometry" /></mxCell>
+    <mxCell id="e7" parent="1" edge="1" source="st_pos" target="e_staff" style="endArrow=none;html=1;"><mxGeometry relative="1" as="geometry" /></mxCell>
+    <mxCell id="e8" parent="1" edge="1" source="st_dept" target="e_staff" style="endArrow=none;html=1;"><mxGeometry relative="1" as="geometry" /></mxCell>
+    <mxCell id="e9" parent="1" edge="1" source="st_avail" target="e_staff" style="endArrow=none;html=1;"><mxGeometry relative="1" as="geometry" /></mxCell>
+    <mxCell id="e10" parent="1" edge="1" source="st_profile" target="e_staff" style="endArrow=none;html=1;"><mxGeometry relative="1" as="geometry" /></mxCell>
+
+    <mxCell id="e11" parent="1" edge="1" source="lv_id" target="e_leave" style="endArrow=none;html=1;"><mxGeometry relative="1" as="geometry" /></mxCell>
+    <mxCell id="e12" parent="1" edge="1" source="lv_type" target="e_leave" style="endArrow=none;html=1;"><mxGeometry relative="1" as="geometry" /></mxCell>
+    <mxCell id="e13" parent="1" edge="1" source="lv_start" target="e_leave" style="endArrow=none;html=1;"><mxGeometry relative="1" as="geometry" /></mxCell>
+    <mxCell id="e14" parent="1" edge="1" source="lv_end" target="e_leave" style="endArrow=none;html=1;"><mxGeometry relative="1" as="geometry" /></mxCell>
+    <mxCell id="e15" parent="1" edge="1" source="lv_reason" target="e_leave" style="endArrow=none;html=1;"><mxGeometry relative="1" as="geometry" /></mxCell>
+    <mxCell id="e16" parent="1" edge="1" source="lv_status" target="e_leave" style="endArrow=none;html=1;"><mxGeometry relative="1" as="geometry" /></mxCell>
+
+    <mxCell id="e17" parent="1" edge="1" source="nt_id" target="e_notif" style="endArrow=none;html=1;"><mxGeometry relative="1" as="geometry" /></mxCell>
+    <mxCell id="e18" parent="1" edge="1" source="nt_type" target="e_notif" style="endArrow=none;html=1;"><mxGeometry relative="1" as="geometry" /></mxCell>
+    <mxCell id="e19" parent="1" edge="1" source="nt_title" target="e_notif" style="endArrow=none;html=1;"><mxGeometry relative="1" as="geometry" /></mxCell>
+    <mxCell id="e20" parent="1" edge="1" source="nt_body" target="e_notif" style="endArrow=none;html=1;"><mxGeometry relative="1" as="geometry" /></mxCell>
+
+    <mxCell id="e21" parent="1" edge="1" source="ch_id" target="e_chat" style="endArrow=none;html=1;"><mxGeometry relative="1" as="geometry" /></mxCell>
+    <mxCell id="e22" parent="1" edge="1" source="ch_name" target="e_chat" style="endArrow=none;html=1;"><mxGeometry relative="1" as="geometry" /></mxCell>
+    <mxCell id="e23" parent="1" edge="1" source="ch_type" target="e_chat" style="endArrow=none;html=1;"><mxGeometry relative="1" as="geometry" /></mxCell>
+    <mxCell id="e24" parent="1" edge="1" source="ms_id" target="e_msg" style="endArrow=none;html=1;"><mxGeometry relative="1" as="geometry" /></mxCell>
+    <mxCell id="e25" parent="1" edge="1" source="ms_content" target="e_msg" style="endArrow=none;html=1;"><mxGeometry relative="1" as="geometry" /></mxCell>
+    <mxCell id="e26" parent="1" edge="1" source="ms_sent" target="e_msg" style="endArrow=none;html=1;"><mxGeometry relative="1" as="geometry" /></mxCell>
+
+    <mxCell id="e27" parent="1" edge="1" source="rm_code" target="e_room" style="endArrow=none;html=1;"><mxGeometry relative="1" as="geometry" /></mxCell>
+    <mxCell id="e28" parent="1" edge="1" source="rm_type" target="e_room" style="endArrow=none;html=1;"><mxGeometry relative="1" as="geometry" /></mxCell>
+    <mxCell id="e29" parent="1" edge="1" source="rm_cap" target="e_room" style="endArrow=none;html=1;"><mxGeometry relative="1" as="geometry" /></mxCell>
+    <mxCell id="e30" parent="1" edge="1" source="ts_day" target="e_session" style="endArrow=none;html=1;"><mxGeometry relative="1" as="geometry" /></mxCell>
+    <mxCell id="e31" parent="1" edge="1" source="ts_start" target="e_session" style="endArrow=none;html=1;"><mxGeometry relative="1" as="geometry" /></mxCell>
+    <mxCell id="e32" parent="1" edge="1" source="ts_dur" target="e_session" style="endArrow=none;html=1;"><mxGeometry relative="1" as="geometry" /></mxCell>
+    <mxCell id="e33" parent="1" edge="1" source="ts_type" target="e_session" style="endArrow=none;html=1;"><mxGeometry relative="1" as="geometry" /></mxCell>
+
+    <mxCell id="e34" parent="1" edge="1" source="co_code" target="e_course" style="endArrow=none;html=1;"><mxGeometry relative="1" as="geometry" /></mxCell>
+    <mxCell id="e35" parent="1" edge="1" source="co_title" target="e_course" style="endArrow=none;html=1;"><mxGeometry relative="1" as="geometry" /></mxCell>
+    <mxCell id="e36" parent="1" edge="1" source="co_credit" target="e_course" style="endArrow=none;html=1;"><mxGeometry relative="1" as="geometry" /></mxCell>
+    <mxCell id="e37" parent="1" edge="1" source="co_dept" target="e_course" style="endArrow=none;html=1;"><mxGeometry relative="1" as="geometry" /></mxCell>
+    <mxCell id="e38" parent="1" edge="1" source="co_year" target="e_course" style="endArrow=none;html=1;"><mxGeometry relative="1" as="geometry" /></mxCell>
+    <mxCell id="e39" parent="1" edge="1" source="co_sem" target="e_course" style="endArrow=none;html=1;"><mxGeometry relative="1" as="geometry" /></mxCell>
+
+    <mxCell id="e40" parent="1" edge="1" source="as_week" target="e_assign" style="endArrow=none;html=1;"><mxGeometry relative="1" as="geometry" /></mxCell>
+    <mxCell id="e41" parent="1" edge="1" source="as_title" target="e_assign" style="endArrow=none;html=1;"><mxGeometry relative="1" as="geometry" /></mxCell>
+
+    <mxCell id="e42" parent="1" edge="1" source="wt_id" target="e_wtask" style="endArrow=none;html=1;"><mxGeometry relative="1" as="geometry" /></mxCell>
+    <mxCell id="e43" parent="1" edge="1" source="wt_title" target="e_wtask" style="endArrow=none;html=1;"><mxGeometry relative="1" as="geometry" /></mxCell>
+    <mxCell id="e44" parent="1" edge="1" source="wt_type" target="e_wtask" style="endArrow=none;html=1;"><mxGeometry relative="1" as="geometry" /></mxCell>
+    <mxCell id="e45" parent="1" edge="1" source="wt_hours" target="e_wtask" style="endArrow=none;html=1;"><mxGeometry relative="1" as="geometry" /></mxCell>
+    <mxCell id="e46" parent="1" edge="1" source="wt_status" target="e_wtask" style="endArrow=none;html=1;"><mxGeometry relative="1" as="geometry" /></mxCell>
+
+    <mxCell id="e47" parent="1" edge="1" source="rr_id" target="e_resched" style="endArrow=none;html=1;"><mxGeometry relative="1" as="geometry" /></mxCell>
+    <mxCell id="e48" parent="1" edge="1" source="rr_day" target="e_resched" style="endArrow=none;html=1;"><mxGeometry relative="1" as="geometry" /></mxCell>
+    <mxCell id="e49" parent="1" edge="1" source="rr_hour" target="e_resched" style="endArrow=none;html=1;"><mxGeometry relative="1" as="geometry" /></mxCell>
+    <mxCell id="e50" parent="1" edge="1" source="rr_weeks" target="e_resched" style="endArrow=none;html=1;"><mxGeometry relative="1" as="geometry" /></mxCell>
+    <mxCell id="e51" parent="1" edge="1" source="rr_status" target="e_resched" style="endArrow=none;html=1;"><mxGeometry relative="1" as="geometry" /></mxCell>
+
+    <mxCell id="e52" parent="1" edge="1" source="sr_id" target="e_support" style="endArrow=none;html=1;"><mxGeometry relative="1" as="geometry" /></mxCell>
+    <mxCell id="e53" parent="1" edge="1" source="sr_type" target="e_support" style="endArrow=none;html=1;"><mxGeometry relative="1" as="geometry" /></mxCell>
+    <mxCell id="e54" parent="1" edge="1" source="sr_notes" target="e_support" style="endArrow=none;html=1;"><mxGeometry relative="1" as="geometry" /></mxCell>
+    <mxCell id="e55" parent="1" edge="1" source="sr_status" target="e_support" style="endArrow=none;html=1;"><mxGeometry relative="1" as="geometry" /></mxCell>
+
+    <mxCell id="e56" parent="1" edge="1" source="r_receives" target="rc_read" style="endArrow=none;html=1;"><mxGeometry relative="1" as="geometry" /></mxCell>
+    <mxCell id="e57" parent="1" edge="1" source="r_receives" target="rc_readat" style="endArrow=none;html=1;"><mxGeometry relative="1" as="geometry" /></mxCell>
+    <mxCell id="e58" parent="1" edge="1" source="r_assignedto" target="ar_role" style="endArrow=none;html=1;"><mxGeometry relative="1" as="geometry" /></mxCell>
+
+    <!-- ===================== EDGES: ISA hierarchy ===================== -->
+    <mxCell id="isa1" parent="1" edge="1" source="e_staff" target="d_staff" style="endArrow=none;html=1;rounded=0;strokeWidth=4;"><mxGeometry relative="1" as="geometry" /></mxCell>
+    <mxCell id="isa2" parent="1" edge="1" source="d_staff" target="e_academic" style="endArrow=block;html=1;rounded=0;endFill=0;endSize=12;"><mxGeometry relative="1" as="geometry" /></mxCell>
+    <mxCell id="isa3" parent="1" edge="1" source="d_staff" target="e_officer" style="endArrow=block;html=1;rounded=0;endFill=0;endSize=12;"><mxGeometry relative="1" as="geometry" /></mxCell>
+    <mxCell id="isa4" parent="1" edge="1" source="e_academic" target="d_academic" style="endArrow=none;html=1;rounded=0;strokeWidth=4;"><mxGeometry relative="1" as="geometry" /></mxCell>
+    <mxCell id="isa5" parent="1" edge="1" source="d_academic" target="e_junior" style="endArrow=block;html=1;rounded=0;endFill=0;endSize=12;"><mxGeometry relative="1" as="geometry" /></mxCell>
+    <mxCell id="isa6" parent="1" edge="1" source="d_academic" target="e_senior" style="endArrow=block;html=1;rounded=0;endFill=0;endSize=12;"><mxGeometry relative="1" as="geometry" /></mxCell>
+    <mxCell id="isa7" parent="1" edge="1" source="e_junior" target="e_coord" style="endArrow=block;html=1;rounded=0;endFill=0;endSize=12;"><mxGeometry relative="1" as="geometry" /></mxCell>
+    <mxCell id="isa8" parent="1" edge="1" source="e_senior" target="e_incharge" style="endArrow=block;html=1;rounded=0;endFill=0;endSize=12;"><mxGeometry relative="1" as="geometry" /></mxCell>
+
+    <!-- ===================== EDGES: relationships ===================== -->
+    <mxCell id="rel1" parent="1" edge="1" source="r_submits" target="e_leave" value="N" style="endArrow=none;html=1;rounded=0;strokeWidth=4;"><mxGeometry relative="1" as="geometry" /></mxCell>
+    <mxCell id="rel2" parent="1" edge="1" source="e_academic" target="r_submits" value="1" style="endArrow=none;html=1;rounded=0;edgeStyle=orthogonalEdgeStyle;"><mxGeometry relative="1" as="geometry" /></mxCell>
+    <mxCell id="rel3" parent="1" edge="1" source="r_covers" target="e_leave" value="N" style="endArrow=none;html=1;rounded=0;strokeWidth=4;"><mxGeometry relative="1" as="geometry" /></mxCell>
+    <mxCell id="rel4" parent="1" edge="1" source="e_academic" target="r_covers" value="1" style="endArrow=none;html=1;rounded=0;edgeStyle=orthogonalEdgeStyle;"><mxGeometry relative="1" as="geometry" /></mxCell>
+
+    <mxCell id="rel5" parent="1" edge="1" source="r_receives" target="e_notif" value="M" style="endArrow=none;html=1;rounded=0;strokeWidth=4;"><mxGeometry relative="1" as="geometry" /></mxCell>
+    <mxCell id="rel6" parent="1" edge="1" source="e_staff" target="r_receives" value="N" style="endArrow=none;html=1;rounded=0;edgeStyle=orthogonalEdgeStyle;"><mxGeometry relative="1" as="geometry" /></mxCell>
+
+    <mxCell id="rel7" parent="1" edge="1" source="e_chat" target="r_contains" value="1" style="endArrow=none;html=1;rounded=0;"><mxGeometry relative="1" as="geometry" /></mxCell>
+    <mxCell id="rel8" parent="1" edge="1" source="r_contains" target="e_msg" value="N" style="endArrow=none;html=1;rounded=0;strokeWidth=4;"><mxGeometry relative="1" as="geometry" /></mxCell>
+    <mxCell id="rel9" parent="1" edge="1" source="r_sends" target="e_msg" value="N" style="endArrow=none;html=1;rounded=0;strokeWidth=4;"><mxGeometry relative="1" as="geometry" /></mxCell>
+    <mxCell id="rel10" parent="1" edge="1" source="e_staff" target="r_sends" value="1" style="endArrow=none;html=1;rounded=0;edgeStyle=orthogonalEdgeStyle;"><mxGeometry relative="1" as="geometry" /></mxCell>
+    <mxCell id="rel11" parent="1" edge="1" source="r_participates" target="e_chat" value="N" style="endArrow=none;html=1;rounded=0;strokeWidth=4;"><mxGeometry relative="1" as="geometry" /></mxCell>
+    <mxCell id="rel12" parent="1" edge="1" source="e_staff" target="r_participates" value="M" style="endArrow=none;html=1;rounded=0;edgeStyle=orthogonalEdgeStyle;"><mxGeometry relative="1" as="geometry" /></mxCell>
+    <mxCell id="rel13" parent="1" edge="1" source="e_chat" target="r_scopedto" value="N" style="endArrow=none;html=1;rounded=0;"><mxGeometry relative="1" as="geometry" /></mxCell>
+    <mxCell id="rel14" parent="1" edge="1" source="r_scopedto" target="e_course" value="1" style="endArrow=none;html=1;rounded=0;edgeStyle=orthogonalEdgeStyle;"><mxGeometry relative="1" as="geometry" /></mxCell>
+
+    <mxCell id="rel15" parent="1" edge="1" source="r_heldin" target="e_room" value="1" style="endArrow=none;html=1;rounded=0;"><mxGeometry relative="1" as="geometry" /></mxCell>
+    <mxCell id="rel16" parent="1" edge="1" source="e_session" target="r_heldin" value="1" style="endArrow=none;html=1;rounded=0;strokeWidth=4;"><mxGeometry relative="1" as="geometry" /></mxCell>
+    <mxCell id="rel17" parent="1" edge="1" source="e_session" target="r_belongsto" value="N" style="endArrow=none;html=1;rounded=0;"><mxGeometry relative="1" as="geometry" /></mxCell>
+    <mxCell id="rel18" parent="1" edge="1" source="r_belongsto" target="e_course" value="1" style="endArrow=none;html=1;rounded=0;edgeStyle=orthogonalEdgeStyle;"><mxGeometry relative="1" as="geometry" /></mxCell>
+    <mxCell id="rel19" parent="1" edge="1" source="e_officer" target="r_manages" value="1" style="endArrow=none;html=1;rounded=0;edgeStyle=orthogonalEdgeStyle;"><mxGeometry relative="1" as="geometry" /></mxCell>
+    <mxCell id="rel20" parent="1" edge="1" source="r_manages" target="e_session" value="N" style="endArrow=none;html=1;rounded=0;strokeWidth=4;"><mxGeometry relative="1" as="geometry" /></mxCell>
+    <mxCell id="rel21" parent="1" edge="1" source="e_session" target="r_weeklytopic" value="1" style="endArrow=none;html=1;rounded=0;strokeWidth=4;"><mxGeometry relative="1" as="geometry" /></mxCell>
+    <mxCell id="rel22" parent="1" edge="1" source="r_weeklytopic" target="e_assign" value="N" style="endArrow=none;html=1;rounded=0;"><mxGeometry relative="1" as="geometry" /></mxCell>
+
+    <mxCell id="rel23" parent="1" edge="1" source="e_academic" target="r_assignedto" value="M" style="endArrow=none;html=1;rounded=0;edgeStyle=orthogonalEdgeStyle;"><mxGeometry relative="1" as="geometry" /></mxCell>
+    <mxCell id="rel24" parent="1" edge="1" source="r_assignedto" target="e_course" value="N" style="endArrow=none;html=1;rounded=0;strokeWidth=4;edgeStyle=orthogonalEdgeStyle;"><mxGeometry relative="1" as="geometry" /></mxCell>
+
+    <mxCell id="rel25" parent="1" edge="1" source="e_academic" target="r_assignedwt" value="1" style="endArrow=none;html=1;rounded=0;edgeStyle=orthogonalEdgeStyle;"><mxGeometry relative="1" as="geometry" /></mxCell>
+    <mxCell id="rel26" parent="1" edge="1" source="r_assignedwt" target="e_wtask" value="N" style="endArrow=none;html=1;rounded=0;strokeWidth=4;"><mxGeometry relative="1" as="geometry" /></mxCell>
+    <mxCell id="rel27" parent="1" edge="1" source="e_wtask" target="r_forwt" value="N" style="endArrow=none;html=1;rounded=0;"><mxGeometry relative="1" as="geometry" /></mxCell>
+    <mxCell id="rel28" parent="1" edge="1" source="r_forwt" target="e_course" value="1" style="endArrow=none;html=1;rounded=0;edgeStyle=orthogonalEdgeStyle;"><mxGeometry relative="1" as="geometry" /></mxCell>
+
+    <mxCell id="rel29" parent="1" edge="1" source="e_senior" target="r_requests" value="1" style="endArrow=none;html=1;rounded=0;edgeStyle=orthogonalEdgeStyle;"><mxGeometry relative="1" as="geometry" /></mxCell>
+    <mxCell id="rel30" parent="1" edge="1" source="r_requests" target="e_resched" value="N" style="endArrow=none;html=1;rounded=0;strokeWidth=4;"><mxGeometry relative="1" as="geometry" /></mxCell>
+    <mxCell id="rel31" parent="1" edge="1" source="e_coord" target="r_confirms" value="1" style="endArrow=none;html=1;rounded=0;edgeStyle=orthogonalEdgeStyle;"><mxGeometry relative="1" as="geometry" /></mxCell>
+    <mxCell id="rel32" parent="1" edge="1" source="r_confirms" target="e_resched" value="N" style="endArrow=none;html=1;rounded=0;strokeWidth=4;"><mxGeometry relative="1" as="geometry" /></mxCell>
+    <mxCell id="rel33" parent="1" edge="1" source="e_resched" target="r_targets" value="N" style="endArrow=none;html=1;rounded=0;"><mxGeometry relative="1" as="geometry" /></mxCell>
+    <mxCell id="rel34" parent="1" edge="1" source="r_targets" target="e_session" value="1" style="endArrow=none;html=1;rounded=0;edgeStyle=orthogonalEdgeStyle;"><mxGeometry relative="1" as="geometry" /></mxCell>
+
+    <mxCell id="rel35" parent="1" edge="1" source="e_academic" target="r_reqsupport" value="1" style="endArrow=none;html=1;rounded=0;edgeStyle=orthogonalEdgeStyle;"><mxGeometry relative="1" as="geometry" /></mxCell>
+    <mxCell id="rel36" parent="1" edge="1" source="r_reqsupport" target="e_support" value="N" style="endArrow=none;html=1;rounded=0;strokeWidth=4;"><mxGeometry relative="1" as="geometry" /></mxCell>
+    <mxCell id="rel37" parent="1" edge="1" source="e_support" target="r_forsr" value="N" style="endArrow=none;html=1;rounded=0;"><mxGeometry relative="1" as="geometry" /></mxCell>
+    <mxCell id="rel38" parent="1" edge="1" source="r_forsr" target="e_course" value="1" style="endArrow=none;html=1;rounded=0;edgeStyle=orthogonalEdgeStyle;"><mxGeometry relative="1" as="geometry" /></mxCell>
+    <mxCell id="rel39" parent="1" edge="1" source="e_support" target="r_prefers" value="N" style="endArrow=none;html=1;rounded=0;"><mxGeometry relative="1" as="geometry" /></mxCell>
+    <mxCell id="rel40" parent="1" edge="1" source="r_prefers" target="e_staff" value="0..1" style="endArrow=none;html=1;rounded=0;edgeStyle=orthogonalEdgeStyle;"><mxGeometry relative="1" as="geometry" /></mxCell>
+
+  </root>
+</mxGraphModel>

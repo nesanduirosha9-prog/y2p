@@ -1,0 +1,21 @@
+<?php
+// config.php.example
+//
+// Copy this file to config.php and adjust for your machine:
+//     cp config.php.example config.php
+//
+// config.php is gitignored — it holds machine-local credentials and must
+// never be committed.
+
+// XAMPP defaults: user "root", empty password.
+define('DB_HOST', '127.0.0.1');
+define('DB_USER', 'root');
+define('DB_PASS', '');
+define('DB_NAME', 'staffsync_db');
+
+// Gmail SMTP — used by EmailService for OTP delivery. Generate an "App
+// Password" at https://myaccount.google.com/apppasswords (requires 2FA on
+// the Gmail account); paste it below, with or without the spaces Google
+// displays it with.
+define('SMTP_USERNAME', 'you@gmail.com');
+define('SMTP_APP_PASSWORD', '');

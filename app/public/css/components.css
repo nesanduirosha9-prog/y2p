@@ -1,0 +1,131 @@
+/* components.css — shared component classes.
+ *
+ * Consolidates button/icon-button/badge styles that used to be redefined
+ * (with drift) in login.css, signup.css, directory.css, errors.css,
+ * dashboard.css, notifications.css, timetable.css and forgot_password.css.
+ * Pages that need a *different* look for one of these (e.g. timetable.css's
+ * green "add" button, directory.css's navy CTA) keep a short override in
+ * their own file for just the property that differs — not the whole rule.
+ *
+ * Requires tokens.css to be loaded first.
+ */
+
+/* ---------- Buttons ---------- */
+
+.btn-primary {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-2);
+    padding: 10px 16px;
+    background: var(--color-primary);
+    color: #fff;
+    border: none;
+    border-radius: var(--radius-md);
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    text-decoration: none;
+    transition: background-color 0.2s ease;
+}
+
+.btn-primary:hover {
+    background: var(--color-primary-dark);
+}
+
+.btn-primary-sm {
+    background: var(--color-primary);
+    color: #fff;
+    border: none;
+    border-radius: var(--radius-sm);
+    padding: 8px 16px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+.btn-primary-sm:hover {
+    background: var(--color-primary-dark);
+}
+
+.btn-primary-sm:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.btn-secondary {
+    padding: 6px 12px;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--color-text-dark);
+    background: var(--color-surface);
+    border: 1px solid #cbd5e1;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+}
+
+/* ---------- Icon button (header actions, dropdown triggers) ---------- */
+
+.icon-btn {
+    position: relative;
+    width: 34px;
+    height: 34px;
+    border-radius: 11px;
+    border: none;
+    background: var(--color-bg);
+    color: #6b7c96;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+.icon-btn:hover {
+    background: #e8edf5;
+}
+
+.icon-btn-dot {
+    position: absolute;
+    top: 6px;
+    right: 7px;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--color-danger);
+}
+
+/* ---------- Badges (step indicators on auth pages) ----------
+   .step-badge is the pill (bg + padding + radius); badge-text/divider/desc
+   are plain inline runs inside it — Figma renders "Step X of 3 — <label>"
+   as one pill, not stacked chips. */
+
+.step-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: #e8edf5;
+    padding: 4px 12px;
+    border-radius: 20px;
+}
+
+.badge-text {
+    color: var(--color-navy);
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.badge-divider {
+    display: none;
+}
+
+.badge-desc {
+    color: var(--color-text-muted);
+    font-size: 12px;
+    font-weight: 400;
+}
+
+.badge-desc::before {
+    content: "— ";
+}

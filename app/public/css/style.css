@@ -1,0 +1,121 @@
+/* style.css — styles for the generic framework layout (views/layouts/main.php):
+   navbar, PWA install button/banner, and base resets. Not used by any real
+   StaffSync page (those load tokens.css/components.css + their own CSS). */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: system-ui, -apple-system, sans-serif;
+    line-height: 1.6;
+    color: #222;
+    background: #f7f7f7;
+}
+
+.navbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: #1f2937;
+    color: white;
+    padding: 1rem 2rem;
+}
+
+.nav-brand {
+    font-weight: bold;
+    font-size: 1.2rem;
+}
+
+.nav-links {
+    list-style: none;
+    display: flex;
+    gap: 1.5rem;
+}
+
+.nav-links a {
+    color: white;
+    text-decoration: none;
+}
+
+.nav-links a:hover {
+    text-decoration: underline;
+}
+
+.container {
+    max-width: 800px;
+    margin: 2rem auto;
+    padding: 1rem 2rem;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.1);
+}
+
+.user-list {
+    margin-top: 1rem;
+    padding-left: 1.5rem;
+}
+
+.btn {
+    margin-top: 1rem;
+    padding: 0.6rem 1.2rem;
+    background: #2563eb;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.btn:hover {
+    background: #1d4ed8;
+}
+
+.footer {
+    text-align: center;
+    padding: 1.5rem;
+    color: #666;
+    font-size: 0.9rem;
+}
+
+
+/* pwa  */
+.hidden {
+    display: none !important;
+}
+
+.install-btn {
+    position: fixed;
+    bottom: 1.5rem;
+    right: 1.5rem;
+    z-index: 999;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+}
+
+.ios-banner {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: white;
+    border-top: 1px solid #ddd;
+    padding: 1rem;
+    text-align: center;
+    z-index: 999;
+    box-shadow: 0 -2px 8px rgba(0,0,0,0.1);
+}
+
+.ios-banner video {
+    display: block;
+    margin: 0.75rem auto;
+    border-radius: 8px;
+}
+
+.ios-banner-close {
+    margin-top: 0.5rem;
+    background: none;
+    border: none;
+    color: #666;
+    text-decoration: underline;
+    cursor: pointer;
+}

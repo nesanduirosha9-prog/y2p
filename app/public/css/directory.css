@@ -1,0 +1,449 @@
+/* ==============================================================
+   directory.css — shared furniture for the Timetable Officer's
+   list screens (Courses, Lecturers, Notifications): the page
+   header, the search + filter bar, the data-table card, the
+   status badges, and the modal shell.
+   Page-specific styling lives in courses.css / lecturers.css /
+   notifications.css, same pattern as the auth pages.
+   ============================================================== */
+
+/* ---- Page header ---- */
+.page-head {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-bottom: 18px;
+}
+
+.page-head h2 {
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-weight: 800;
+    font-size: 20px;
+    color: #0f1c2e;
+}
+
+.page-head-sub {
+    font-size: 12px;
+    color: #6b7c96;
+    margin-top: 3px;
+}
+
+/* This page's CTA uses a navy variant instead of the shared blue —
+   base shape/sizing comes from components.css. */
+.btn-primary {
+    background: #1a3a6b;
+    box-shadow: 0 1px 1.5px rgba(0, 0, 0, 0.1), 0 1px 1px rgba(0, 0, 0, 0.1);
+}
+
+.btn-primary:hover {
+    background: #15305a;
+}
+
+.link-action {
+    background: none;
+    border: none;
+    color: #2563eb;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    padding: 4px 2px;
+}
+
+.link-action:hover {
+    text-decoration: underline;
+}
+
+/* ---- Search + filter bar ---- */
+.dir-controls {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 14px;
+}
+
+.search-box {
+    position: relative;
+    flex: 1 1 240px;
+    max-width: 320px;
+}
+
+.search-box i {
+    position: absolute;
+    left: 13px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #9ca3af;
+    font-size: 13px;
+}
+
+.search-box input {
+    width: 100%;
+    height: 40px;
+    border: 1px solid #dde3ee;
+    border-radius: 9px;
+    padding: 0 14px 0 34px;
+    font-size: 13px;
+    color: #0f1c2e;
+    background: #fff;
+}
+
+.search-box input::placeholder {
+    color: #9ca3af;
+}
+
+.search-box input:focus {
+    outline: none;
+    border-color: #2563eb;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+}
+
+.seg {
+    display: flex;
+    gap: 4px;
+    background: #eef1f6;
+    border-radius: 11px;
+    padding: 4px;
+}
+
+.seg-btn {
+    padding: 7px 14px;
+    border-radius: 8px;
+    border: none;
+    background: transparent;
+    font-size: 12.5px;
+    font-weight: 600;
+    color: #6b7c96;
+    cursor: pointer;
+    white-space: nowrap;
+}
+
+.seg-btn.active {
+    background: #fff;
+    color: #1a3a6b;
+    box-shadow: 0 1px 1.5px rgba(0, 0, 0, 0.1), 0 1px 1px rgba(0, 0, 0, 0.1);
+}
+
+.seg-dark {
+    background: #eef1f6;
+}
+
+.seg-dark .seg-btn.active {
+    background: #1a3a6b;
+    color: #fff;
+}
+
+/* ---- Data-table card ---- */
+.dir-card {
+    background: #fff;
+    border: 1px solid #dde3ee;
+    border-radius: 14px;
+    overflow: hidden;
+}
+
+.dir-scroll {
+    overflow-x: auto;
+}
+
+.dir-table {
+    width: 100%;
+    border-collapse: collapse;
+    min-width: 720px;
+}
+
+.dir-table thead th {
+    background: #f0f3f8;
+    text-align: left;
+    padding: 12px 18px;
+    font-size: 10.5px;
+    font-weight: 700;
+    letter-spacing: 0.6px;
+    text-transform: uppercase;
+    color: #6b7c96;
+    white-space: nowrap;
+}
+
+.dir-table tbody td {
+    padding: 14px 18px;
+    font-size: 13px;
+    color: #374151;
+    border-top: 1px solid #eef1f6;
+    vertical-align: middle;
+}
+
+.dir-table tbody tr:hover {
+    background: #f9fafc;
+}
+
+.cell-code {
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 700;
+    font-size: 12.5px;
+    color: #1a3a6b;
+}
+
+.dir-empty {
+    padding: 40px 18px;
+    text-align: center;
+    font-size: 13px;
+    color: #9ca3af;
+}
+
+/* ---- Badges / chips ---- */
+.pill {
+    display: inline-flex;
+    align-items: center;
+    padding: 3px 9px;
+    border-radius: 999px;
+    font-size: 11px;
+    font-weight: 600;
+    line-height: 1.4;
+}
+
+.pill-muted {
+    background: #eef1f6;
+    color: #6b7c96;
+}
+
+.pill-year-1 { background: #eff6ff; color: #1447e6; }
+.pill-year-2 { background: #ecfdf5; color: #007a55; }
+.pill-year-3 { background: #f5f3ff; color: #7008e7; }
+.pill-year-4 { background: #fff7ed; color: #ca3500; }
+
+.tag {
+    display: inline-flex;
+    align-items: center;
+    padding: 3px 8px;
+    border-radius: 6px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10.5px;
+    font-weight: 700;
+    letter-spacing: 0.3px;
+}
+
+.tag-lecturer { background: #0f1c2e; color: #fff; }
+.tag-instructor { background: #007a55; color: #fff; }
+.tag-course { background: #eff6ff; color: #1447e6; }
+
+.tag-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+}
+
+.icon-action {
+    background: none;
+    border: none;
+    width: 28px;
+    height: 28px;
+    border-radius: 7px;
+    color: #9ca3af;
+    cursor: pointer;
+    font-size: 13px;
+}
+
+.icon-action:hover {
+    background: #f0f3f8;
+    color: #374151;
+}
+
+.icon-action.danger:hover {
+    background: #fef2f2;
+    color: #fb2c36;
+}
+
+/* ---- Modal form fields (shared by every Add/Edit modal) ---- */
+.field-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+}
+
+.form-row {
+    margin-bottom: 14px;
+}
+
+.form-row label {
+    display: block;
+    font-size: 12.5px;
+    font-weight: 500;
+    color: #374151;
+    margin-bottom: 6px;
+}
+
+.form-row input,
+.form-row select {
+    width: 100%;
+    height: 40px;
+    border: 1px solid #dde3ee;
+    border-radius: 8px;
+    padding: 0 12px;
+    font-size: 13px;
+    color: #0f1c2e;
+    background: #fff;
+    appearance: none;
+}
+
+.form-row select {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%239ca3af' stroke-width='3'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+    padding-right: 32px;
+}
+
+.form-row input:focus,
+.form-row select:focus {
+    outline: none;
+    border-color: #2563eb;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+}
+
+.form-row input::placeholder {
+    color: #9ca3af;
+}
+
+.form-row input:disabled {
+    background: #f4f6f9;
+    color: #6b7c96;
+}
+
+.section-label {
+    font-size: 10.5px;
+    font-weight: 700;
+    letter-spacing: 0.7px;
+    text-transform: uppercase;
+    color: #9ca3af;
+    margin: 4px 0 12px;
+}
+
+.form-error {
+    font-size: 12px;
+    color: var(--color-danger);
+    margin-top: 8px;
+}
+
+/* ---- Modal shell ---- */
+.modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(15, 28, 46, 0.55);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    z-index: 1000;
+}
+
+.modal-overlay[hidden] {
+    display: none;
+}
+
+.modal {
+    background: #fff;
+    border-radius: 14px;
+    width: 470px;
+    max-width: 100%;
+    max-height: 90vh;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 24px 48px -12px rgba(15, 28, 46, 0.35);
+}
+
+.modal-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 20px;
+    background: #1a3a6b;
+    color: #fff;
+}
+
+.modal-head h3 {
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-size: 16px;
+    font-weight: 700;
+}
+
+.modal-close {
+    background: none;
+    border: none;
+    color: rgba(255, 255, 255, 0.85);
+    width: 26px;
+    height: 26px;
+    border-radius: 7px;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+.modal-close:hover {
+    background: rgba(255, 255, 255, 0.15);
+    color: #fff;
+}
+
+.modal-body {
+    padding: 20px;
+    overflow-y: auto;
+}
+
+.modal-foot {
+    display: flex;
+    gap: 10px;
+    padding: 14px 20px;
+    border-top: 1px solid #eef1f6;
+}
+
+.btn-block {
+    flex: 1;
+    padding: 10px;
+    border-radius: 8px;
+    border: none;
+    background: #1a3a6b;
+    color: #fff;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.btn-block:hover {
+    background: #15305a;
+}
+
+.btn-block:disabled {
+    background: #9fb2ce;
+    cursor: not-allowed;
+}
+
+.btn-cancel {
+    padding: 10px 18px;
+    border-radius: 8px;
+    border: 1px solid #dde3ee;
+    background: #fff;
+    color: #374151;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.btn-cancel:hover {
+    background: #f4f6f9;
+}
+
+/* 768px matches the tablet breakpoint documented in tokens.css (not the
+   640px this used to say). .dir-table itself keeps its min-width and
+   scrolls horizontally inside .dir-scroll rather than being squeezed. */
+@media (max-width: 768px) {
+    .search-box { max-width: none; flex-basis: 100%; }
+    .dir-controls { gap: 8px; }
+    .field-grid { grid-template-columns: 1fr; }
+
+    .modal-foot {
+        flex-direction: column-reverse;
+    }
+
+    .btn-cancel {
+        text-align: center;
+    }
+}

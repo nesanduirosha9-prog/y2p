@@ -1,0 +1,347 @@
+/* ==============================
+   Left Panel Content Styles
+   ============================== */
+.left-panel {
+    /* Adding padding to push content away from the edges */
+    padding: 80px 60px;
+    color: #ffffff;
+    box-sizing: border-box;
+    /* Ensures padding doesn't break the 40% width */
+}
+
+/* Branding Section */
+.branding {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    margin-bottom: 40px;
+    flex-shrink: 0;
+}
+
+/* Takes up the remaining height below the logo and centers the marketing
+   copy inside it, instead of everything sitting top-left with a large
+   empty area under it on tall/wide screens. */
+.left-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    max-width: 460px;
+}
+
+.logo-icon {
+    font-size: 36px;
+    color: #3b82f6;
+    /* Accent blue */
+}
+
+.logo-text h1 {
+    font-size: 24px;
+    margin: 0;
+    font-weight: 700;
+}
+
+.logo-text p {
+    font-size: 14px;
+    margin: 5px 0 0;
+    color: #94a3b8;
+}
+
+/* Typography for Features */
+.feature-title h2 {
+    font-size: 40px;
+    margin: 0;
+    line-height: 1.2;
+}
+
+.feature-description {
+    font-size: 16px;
+    margin: 20px 0 40px;
+    line-height: 1.6;
+    color: #cbd5e1;
+}
+
+/* Feature List */
+.feature-list {
+    list-style: none;
+    /* Removes default bullet points */
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    /* Spaces out the list items */
+}
+
+.feature-list li {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 13px;
+    color: rgba(219, 234, 254, 0.9);
+}
+
+.feature-list li i {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 26px;
+    height: 26px;
+    flex: 0 0 auto;
+    font-size: 13px;
+    color: #dbeafe;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 8px;
+}
+
+/* ==============================
+   Right Panel Content Styles
+   ============================== */
+.right-panel {
+    padding: 40px 60px;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    /* Pushes nav up, footer down, form center */
+}
+
+.top-nav {
+    text-align: right;
+    font-size: 14px;
+}
+
+.top-nav span {
+    color: #6b7c96;
+}
+
+.top-nav a {
+    color: var(--color-primary);
+    text-decoration: none;
+    font-weight: 600;
+}
+
+.login-main {
+    max-width: 400px;
+    margin: 0 auto;
+    /* Centers the form horizontally */
+    width: 100%;
+}
+
+.welcome-text h2 {
+    font-family: var(--font-display);
+    font-weight: 800;
+    font-size: 27px;
+    margin: 0 0 4px;
+    color: var(--color-navy);
+    letter-spacing: -0.02em;
+}
+
+.welcome-text p {
+    font-size: 14px;
+    margin: 0 0 26px;
+    color: #6b7c96;
+}
+
+/* The white card effect */
+.login-card {
+    background-color: #ffffff;
+    border: 1px solid #dde3ee;
+    border-radius: 15px;
+    padding: 28px;
+    box-shadow: 0 1px 1.5px rgba(0, 0, 0, 0.1), 0 1px 1px rgba(0, 0, 0, 0.1);
+}
+
+.form-group {
+    margin-bottom: 18px;
+}
+
+.label-wrapper {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 6px;
+}
+
+label {
+    font-size: 14px;
+    font-weight: 500;
+    color: #374151;
+    display: block;
+    /* Ensures label sits above input */
+    margin-bottom: 6px;
+}
+
+.label-wrapper label {
+    margin-bottom: 0;
+}
+
+.forgot-password {
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--color-primary);
+    text-decoration: none;
+}
+
+/* Inputs and Selects */
+input[type="email"],
+input[type="password"],
+select {
+    width: 100%;
+    padding: 10px 14px;
+    font-size: 14px;
+    color: var(--color-text-dark);
+    border: 1px solid #dde3ee;
+    border-radius: 8px;
+    box-sizing: border-box;
+    background-color: #ffffff;
+}
+
+input::placeholder {
+    color: #9ca3af;
+}
+
+input:focus,
+select:focus {
+    border-color: var(--color-primary);
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+}
+
+/* Full-width auth CTA — navy, matching the Figma AuthLeftPanel accent;
+   base shape shared via components.css */
+.btn-primary {
+    width: 100%;
+    padding: 11px;
+    font-size: 14px;
+    margin-top: 6px;
+    background: #1a3a6b;
+    border-radius: 8px;
+    box-shadow: 0 1px 1.5px rgba(0, 0, 0, 0.1), 0 1px 1px rgba(0, 0, 0, 0.1);
+}
+
+.btn-primary:hover {
+    background: #142d54;
+}
+
+/* 'Or' Divider trick */
+.divider-wrapper {
+    margin: 15px 0;
+    text-align: center;
+    border-bottom: 1px solid #eef1f6;
+    line-height: 0.1em;
+}
+
+.divider-text {
+    background: #ffffff;
+    padding: 0 11px;
+    color: #b0bac9;
+    font-size: 12px;
+}
+
+/* Passkey Button */
+.btn-passkey {
+    width: 100%;
+    padding: 10px 16px;
+    border: 1px solid #dde3ee;
+    border-radius: 8px;
+    background-color: #ffffff;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 11px;
+    color: #374151;
+    transition: background-color 0.2s, border-color 0.2s;
+}
+
+.btn-passkey:hover {
+    background-color: #f9fafb;
+    border-color: #cbd5e1;
+}
+
+.passkey-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 26px;
+    height: 26px;
+    flex: 0 0 auto;
+    background: #eef1f6;
+    border-radius: 6px;
+    color: #374151;
+    font-size: 13px;
+}
+
+.passkey-hint {
+    margin-left: auto;
+    font-size: 12px;
+    font-weight: 400;
+    color: #9ca3af;
+}
+
+.agreement-text {
+    font-size: 12px;
+    color: #9ca3af;
+    margin-top: 22px;
+    text-align: center;
+}
+
+.agreement-text a {
+    color: #6b7c96;
+    text-decoration: none;
+}
+
+.right-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 12px;
+    color: #b0bac9;
+    margin-top: 20px;
+    padding-top: 16px;
+    border-top: 1px solid #dde3ee;
+}
+
+.right-footer .version {
+    font-family: var(--font-mono);
+}
+
+
+/* ==============================
+   Responsive (1024px/480px per tokens.css). 
+   ============================== */
+@media (max-width: 1024px) {
+
+    /* Hide the left panel on tablet and mobile to prevent stacking/distortion */
+    .left-panel {
+        display: none;
+    }
+
+    /* Make the right panel take the full width of the screen */
+    .right-panel {
+        width: 100%;
+        padding: 32px 48px;
+    }
+}
+
+@media (max-width: 480px) {
+
+    /* Left panel is already hidden by the rule above. 
+       Just adjust the right panel's padding for small phone screens. */
+    .right-panel {
+        padding: 24px 20px;
+    }
+
+    .login-card {
+        padding: 20px;
+    }
+
+    .right-footer {
+        flex-direction: column;
+        gap: 6px;
+        text-align: center;
+    }
+}

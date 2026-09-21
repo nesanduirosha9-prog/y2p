@@ -1,0 +1,123 @@
+/* courses.css — Course Management specifics: the Add/Edit modal's
+   multi-select pickers. Shared table / filter / modal-shell / form-field
+   styling (including .field-grid, .form-row, .section-label) is in
+   directory.css. */
+
+/* ---- Multi-select ---- */
+.multi-select {
+    position: relative;
+}
+
+.multi-trigger {
+    width: 100%;
+    min-height: 40px;
+    border: 1px solid #dde3ee;
+    border-radius: 8px;
+    background: #fff;
+    padding: 5px 32px 5px 10px;
+    font-size: 13px;
+    color: #0f1c2e;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 5px;
+    text-align: left;
+}
+
+.multi-trigger > i {
+    position: absolute;
+    right: 12px;
+    top: 13px;
+    color: #9ca3af;
+    font-size: 11px;
+    pointer-events: none;
+}
+
+.multi-select.open .multi-trigger {
+    border-color: #2563eb;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+}
+
+.multi-placeholder {
+    color: #9ca3af;
+    padding: 4px 0;
+}
+
+.multi-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    background: #0f1c2e;
+    color: #fff;
+    border-radius: 6px;
+    padding: 3px 6px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10.5px;
+    font-weight: 700;
+}
+
+.multi-chip button {
+    background: none;
+    border: none;
+    color: rgba(255, 255, 255, 0.7);
+    cursor: pointer;
+    font-size: 11px;
+    line-height: 1;
+    padding: 0;
+}
+
+.multi-chip button:hover {
+    color: #fff;
+}
+
+.multi-menu {
+    position: absolute;
+    top: calc(100% + 4px);
+    left: 0;
+    right: 0;
+    background: #fff;
+    border: 1px solid #dde3ee;
+    border-radius: 8px;
+    box-shadow: 0 12px 24px -8px rgba(15, 28, 46, 0.25);
+    max-height: 200px;
+    overflow-y: auto;
+    z-index: 20;
+    padding: 5px;
+}
+
+.multi-menu[hidden] {
+    display: none;
+}
+
+.multi-option {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    padding: 8px 9px;
+    border-radius: 6px;
+    font-size: 12.5px;
+    color: #374151;
+    cursor: pointer;
+}
+
+.multi-option:hover {
+    background: #f4f6f9;
+}
+
+.multi-option .opt-meta {
+    font-size: 11px;
+    color: #9ca3af;
+}
+
+.multi-option.selected {
+    color: #1a3a6b;
+    font-weight: 600;
+}
+
+.multi-option.selected::after {
+    content: "\2713";
+    color: #2563eb;
+    font-weight: 700;
+}
