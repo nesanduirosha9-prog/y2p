@@ -38,6 +38,14 @@
 .lv-body {
     padding: 24px;
     display: flex;
+    align-items: flex-start;
+    gap: 20px;
+}
+
+.lv-main-col {
+    flex: 1;
+    min-width: 0;
+    display: flex;
     flex-direction: column;
     gap: 20px;
 }
@@ -49,29 +57,38 @@
 }
 
 .lv-stat-card {
-    background: #fff;
-    border: 1px solid #dde3ee;
-    border-radius: 12px;
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 14px;
     padding: 20px;
     display: flex;
     flex-direction: column;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
+    transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+.lv-stat-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px -4px rgba(15, 28, 46, 0.08);
+    border-color: #cbd5e1;
 }
 
 .lv-icon-box {
-    width: 28px;
-    height: 28px;
-    border-radius: 8px;
+    width: 34px;
+    height: 34px;
+    border-radius: 10px;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 14px;
+    font-size: 15px;
     margin-bottom: 12px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.04);
 }
 
 .lv-stat-label {
     font-size: 11px;
     font-weight: 700;
-    color: #9ca3af;
+    color: #64748b;
     letter-spacing: 0.5px;
     margin-bottom: 4px;
 }
@@ -86,15 +103,16 @@
 .lv-stat-unit {
     font-family: 'Inter', sans-serif;
     font-size: 12px;
-    font-weight: 400;
-    color: #9ca3af;
+    font-weight: 500;
+    color: #94a3b8;
 }
 
 .lv-table-card {
-    background: #fff;
-    border: 1px solid #dde3ee;
-    border-radius: 12px;
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 14px;
     overflow: hidden;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
 }
 
 .lv-table-header {
@@ -164,189 +182,528 @@
 
 .status-approved { background: #d0fae5; color: #004f3b; }
 .status-pending { background: #fef3c7; color: #92400e; }
+.status-cancelled { background: #fee2e2; color: #991b1b; }
 
 /* ==============================
-   Shared form controls (modal)
+   Upcoming Leaves card (row list, not a table — each row needs a cancel
+   action and a partial-day badge, which don't fit table cells cleanly)
+   ============================== */
+.lv-header-amber {
+    background: #fffbeb;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.lv-header-amber p { margin: 0; }
+
+.lv-head-note {
+    margin-left: auto;
+    font-size: 10.5px;
+    font-weight: 400;
+    color: #9ca3af;
+}
+
+.lv-row {
+    padding: 14px 20px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    border-bottom: 1px solid #eef1f6;
+}
+
+.lv-row:last-child { border-bottom: none; }
+.lv-row:hover { background: #fafbfc; }
+
+.lv-row-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+
+.lv-dot-amber { background: #f59e0b; }
+.lv-dot-purple { background: #7c3aed; }
+
+.lv-row-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.lv-row-type {
+    font-size: 12.5px;
+    font-weight: 700;
+    color: #0f1c2e;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.lv-row-meta {
+    font-size: 11px;
+    color: #6b7c96;
+    margin-top: 3px;
+}
+
+.lv-badge-partial {
+    background: #ede9fe;
+    color: #7c3aed;
+    font-size: 10px;
+    font-weight: 800;
+    padding: 1px 7px;
+    border-radius: 999px;
+}
+
+.lv-cover-label {
+    font-size: 10.5px;
+    color: #6b7c96;
+    flex-shrink: 0;
+}
+
+.lv-btn-cancel {
+    font-size: 10.5px;
+    font-weight: 700;
+    color: #dc2626;
+    border: 1px solid #fecaca;
+    background: #fff5f5;
+    border-radius: 8px;
+    padding: 5px 11px;
+    cursor: pointer;
+    flex-shrink: 0;
+}
+
+.lv-btn-cancel:hover { background: #fee2e2; }
+
+/* ==============================
+   Leave History filter bar
+   ============================== */
+.lv-header-wrap {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.lv-filter-bar {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-left: auto;
+}
+
+.lv-filter-label {
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: #6b7c96;
+}
+
+.lv-filter-group {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 10.5px;
+    color: #9ca3af;
+}
+
+.lv-filter-sep { color: #9ca3af; }
+
+.lv-date-input {
+    padding: 6px 8px;
+    border: 1px solid #dde3ee;
+    border-radius: 8px;
+    background: #f4f6f9;
+    font-size: 11px;
+    color: #0f1c2e;
+    outline: none;
+    width: 130px;
+}
+
+.lv-date-input:focus {
+    border-color: #2563eb;
+    box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.2);
+}
+
+.lv-btn-clear-filter {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 10px;
+    font-weight: 600;
+    color: #6b7c96;
+    border: 1px solid #dde3ee;
+    border-radius: 8px;
+    padding: 5px 9px;
+    background: none;
+    cursor: pointer;
+}
+
+.lv-btn-clear-filter:hover { color: #dc2626; background: #fff5f5; border-color: #fecaca; }
+
+.lv-td-time {
+    font-size: 10px;
+    color: #7c3aed;
+    font-weight: 700;
+    margin-top: 3px;
+}
+
+/* ==============================
+   Shared form controls (modal / side panel)
    ============================== */
 .form-group { display: flex; flex-direction: column; }
 .form-group.full-width { grid-column: 1 / -1; }
-.form-group label {
+
+.lv-field-label {
     font-size: 12px;
-    font-weight: 600;
-    color: #6b7c96;
-    margin-bottom: 6px;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
+    font-weight: 700;
+    color: #334155;
+    margin-bottom: 7px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    letter-spacing: 0.01em;
+}
+
+.lv-field-label i {
+    color: #2563eb;
+    font-size: 13px;
 }
 
 .req-input, .req-select {
     width: 100%;
     padding: 10px 14px;
-    border-radius: 8px;
-    border: 1px solid #dde3ee;
-    background: #f4f6f9;
-    font-size: 14px;
+    border-radius: 10px;
+    border: 1px solid #cbd5e1;
+    background: #ffffff;
+    font-size: 13.5px;
     color: #0f1c2e;
     outline: none;
+    transition: all 0.2s ease;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
 }
 
 .req-input:focus, .req-select:focus {
     border-color: #2563eb;
-    box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.2);
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
 }
 
-.req-textarea { resize: none; }
+.req-textarea { resize: none; font-family: inherit; line-height: 1.5; }
 
 .req-select-wrapper { position: relative; }
-.req-select { appearance: none; cursor: pointer; }
+.req-select { appearance: none; cursor: pointer; padding-right: 36px; }
 .req-select-wrapper .chevron {
     position: absolute;
-    right: 12px;
+    right: 14px;
     top: 50%;
     transform: translateY(-50%);
-    font-size: 14px;
-    color: #9ca3af;
+    font-size: 12px;
+    color: #64748b;
     pointer-events: none;
+    transition: transform 0.2s ease;
 }
 
 .btn-outline {
-    background: #fff;
-    border: 1px solid #dde3ee;
-    color: #6b7c96;
-    padding: 8px 16px;
-    border-radius: 8px;
-    font-size: 14px;
+    background: #ffffff;
+    border: 1px solid #cbd5e1;
+    color: #475569;
+    padding: 9px 16px;
+    border-radius: 10px;
+    font-size: 13.5px;
     font-weight: 600;
     cursor: pointer;
+    transition: all 0.2s ease;
 }
 
-.btn-outline:hover { background: #f4f6f9; }
+.btn-outline:hover { background: #f8fafc; border-color: #94a3b8; color: #0f1c2e; }
 
 /* ==============================
-   Request Leave modal
+   Request Leave panel — docked beside page content
    ============================== */
-.lv-modal-overlay {
-    position: fixed;
-    inset: 0;
-    background: rgba(15, 28, 46, 0.5);
+.lv-side-panel {
+    width: 400px;
+    flex-shrink: 0;
+    background: #ffffff;
+    border: 1px solid #dde3ee;
+    border-radius: 16px;
+    display: flex;
+    flex-direction: column;
+    max-height: calc(100vh - 120px);
+    box-shadow: 0 10px 25px -5px rgba(15, 28, 46, 0.06), 0 8px 10px -6px rgba(15, 28, 46, 0.04);
+    transition: all 0.25s ease;
+}
+
+.lv-side-panel[hidden] { display: none; }
+
+.lv-panel-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 18px 22px;
+    border-bottom: 1px solid #eef1f6;
+    background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+    border-top-left-radius: 16px;
+    border-top-right-radius: 16px;
+}
+
+.lv-panel-header-left {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.lv-panel-icon {
+    width: 38px;
+    height: 38px;
+    border-radius: 10px;
+    background: linear-gradient(135deg, #1a3a6b 0%, #2563eb 100%);
+    color: #ffffff;
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: 20px;
-    z-index: 1000;
-}
-
-.lv-modal-overlay[hidden] { display: none; }
-
-.lv-modal {
-    background: #fff;
-    border-radius: 15px;
-    width: 420px;
-    max-width: 100%;
-    max-height: 90vh;
-    overflow-y: auto;
-}
-
-.lv-modal-header {
-    display: flex;
-    align-items: flex-start;
-    justify-content: space-between;
-    padding: 20px 22px;
-    border-bottom: 1px solid #eef1f6;
-}
-
-.lv-modal-header h2 { font-size: 16px; font-weight: 700; color: #0f1c2e; }
-.lv-modal-header p { font-size: 12px; color: #6b7c96; margin-top: 4px; }
-
-.modal-close {
-    background: none;
-    border: none;
-    width: 26px;
-    height: 26px;
-    border-radius: 7px;
-    color: #6b7c96;
-    cursor: pointer;
+    font-size: 16px;
+    box-shadow: 0 4px 10px rgba(37, 99, 235, 0.25);
     flex-shrink: 0;
 }
 
-.modal-close:hover { background: #f4f6f9; }
+.lv-panel-header h2 {
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-size: 16px;
+    font-weight: 700;
+    color: #0f1c2e;
+    margin: 0;
+    letter-spacing: -0.01em;
+}
 
-.lv-modal-body {
-    padding: 18px 22px;
+.lv-panel-header p {
+    font-size: 11.5px;
+    color: #6b7c96;
+    margin: 2px 0 0;
+}
+
+.modal-close {
+    background: #f1f5f9;
+    border: 1px solid #e2e8f0;
+    width: 30px;
+    height: 30px;
+    border-radius: 8px;
+    color: #64748b;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+}
+
+.modal-close:hover {
+    background: #fee2e2;
+    border-color: #fecaca;
+    color: #dc2626;
+    transform: rotate(90deg);
+}
+
+.lv-panel-body {
+    padding: 20px 22px;
+    overflow-y: auto;
+    flex: 1;
     display: flex;
     flex-direction: column;
-    gap: 16px;
+    gap: 18px;
 }
 
-.lv-modal-footer {
+.lv-panel-footer {
+    padding: 16px 22px;
+    border-top: 1px solid #eef1f6;
+    background: #f8fafc;
+    border-bottom-left-radius: 16px;
+    border-bottom-right-radius: 16px;
+}
+
+.lv-panel-footer .btn-row {
     display: flex;
-    gap: 12px;
-    padding: 16px 22px 22px;
+    gap: 10px;
 }
 
-.lv-modal-footer .btn-outline,
-.lv-modal-footer .btn-primary-sm { flex: 1; }
+.lv-panel-footer .btn-row > * { flex: 1; }
+
+.lv-submit-btn {
+    background: linear-gradient(135deg, #1a3a6b 0%, #2563eb 100%);
+    color: #ffffff;
+    border: none;
+    border-radius: 10px;
+    padding: 10px 18px;
+    font-size: 13.5px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.25);
+    transition: all 0.2s ease;
+}
+
+.lv-submit-btn:hover:not(:disabled) {
+    background: linear-gradient(135deg, #142d54 0%, #1d4ed8 100%);
+    box-shadow: 0 6px 16px rgba(37, 99, 235, 0.35);
+    transform: translateY(-1px);
+}
+
+.lv-submit-btn:disabled {
+    background: #cbd5e1;
+    color: #94a3b8;
+    box-shadow: none;
+    cursor: not-allowed;
+}
+
+/* ==============================
+   Calendar & Date Picker
+   ============================== */
+.lv-section-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 7px;
+}
+
+.lv-selected-count-badge {
+    font-size: 11px;
+    font-weight: 700;
+    color: #1d4ed8;
+    background: #dbeafe;
+    border: 1px solid #bfdbfe;
+    padding: 2px 8px;
+    border-radius: 999px;
+    display: inline-flex;
+    align-items: center;
+}
+
+.lv-calendar-card {
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    background: #f8fafc;
+    padding: 12px;
+}
 
 .lv-calendar {
-    border: 1px solid #dde3ee;
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
     border-radius: 10px;
     padding: 12px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
 }
 
 .lv-calendar-header {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    font-size: 13px;
+    font-size: 13.5px;
     font-weight: 700;
     color: #0f1c2e;
-    margin-bottom: 8px;
+    margin-bottom: 10px;
 }
 
 .lv-calendar-header button {
-    background: none;
-    border: none;
-    color: #6b7c96;
+    background: #f1f5f9;
+    border: 1px solid #e2e8f0;
+    border-radius: 6px;
+    color: #475569;
     cursor: pointer;
-    padding: 4px 8px;
+    width: 28px;
+    height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    transition: all 0.2s ease;
+}
+
+.lv-calendar-header button:hover {
+    background: #1a3a6b;
+    color: #ffffff;
+    border-color: #1a3a6b;
 }
 
 .lv-calendar-weekdays,
 .lv-calendar-grid {
     display: grid;
     grid-template-columns: repeat(7, 1fr);
-    gap: 2px;
+    gap: 3px;
     text-align: center;
 }
 
 .lv-calendar-weekdays span {
-    font-size: 10px;
+    font-size: 10.5px;
     font-weight: 700;
-    color: #9ca3af;
-    padding: 4px 0;
+    color: #94a3b8;
+    text-transform: uppercase;
+    padding: 6px 0;
 }
 
 .lv-day {
     background: none;
     border: none;
-    border-radius: 7px;
+    border-radius: 8px;
     padding: 7px 0;
     font-size: 12.5px;
-    color: #374151;
+    font-weight: 500;
+    color: #334155;
     cursor: pointer;
+    transition: all 0.15s ease;
 }
 
-.lv-day:hover { background: #f4f6f9; }
+.lv-day:hover { background: #eff6ff; color: #1d4ed8; }
 .lv-day.lv-day-empty { visibility: hidden; cursor: default; }
-.lv-day.lv-day-selected { background: #1a3a6b; color: #fff; font-weight: 700; }
+.lv-day.lv-day-selected {
+    background: linear-gradient(135deg, #1a3a6b 0%, #2563eb 100%) !important;
+    color: #ffffff !important;
+    font-weight: 700;
+    box-shadow: 0 2px 6px rgba(37, 99, 235, 0.3);
+}
+.lv-day.lv-day-today {
+    border: 2px solid #2563eb;
+    font-weight: 700;
+    color: #1d4ed8;
+}
+.lv-day.lv-day-today.lv-day-selected { border-color: #ffffff; color: #ffffff !important; }
 
-.lv-manual-date {
+.lv-manual-date-row {
     display: flex;
+    align-items: center;
     gap: 8px;
     margin-top: 10px;
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    padding: 4px 6px 4px 10px;
 }
 
-.lv-manual-date .req-input { flex: 1; }
+.lv-manual-icon { color: #94a3b8; font-size: 13px; }
+.lv-manual-input {
+    border: none !important;
+    box-shadow: none !important;
+    padding: 4px 6px !important;
+    font-size: 12.5px;
+    background: transparent !important;
+}
+
+.btn-outline-sm {
+    background: #f1f5f9;
+    border: 1px solid #cbd5e1;
+    color: #334155;
+    padding: 4px 10px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.btn-outline-sm:hover {
+    background: #1a3a6b;
+    color: #ffffff;
+    border-color: #1a3a6b;
+}
 
 .lv-selected-dates {
     display: flex;
@@ -358,24 +715,172 @@
 .lv-date-chip {
     display: flex;
     align-items: center;
-    gap: 6px;
+    gap: 8px;
     background: #eff6ff;
-    color: #1c398e;
-    border: 1px solid #bedbff;
-    border-radius: 999px;
-    padding: 4px 6px 4px 10px;
-    font-size: 11.5px;
+    color: #1e40af;
+    border: 1px solid #bfdbfe;
+    border-radius: 8px;
+    padding: 4px 8px 4px 10px;
+    font-size: 12px;
     font-weight: 600;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
 }
 
 .lv-date-chip button {
     background: none;
     border: none;
-    color: #1c398e;
+    color: #3b82f6;
     cursor: pointer;
-    font-size: 11px;
-    padding: 2px;
+    font-size: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 18px;
+    height: 18px;
+    border-radius: 4px;
+    transition: all 0.15s ease;
 }
+
+.lv-date-chip button:hover {
+    background: #dbeafe;
+    color: #1d4ed8;
+}
+
+.lv-optional {
+    font-weight: 400;
+    text-transform: none;
+    color: #94a3b8;
+}
+
+/* ==============================
+   Partial Day Leave Card
+   ============================== */
+.lv-partial-card {
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    overflow: hidden;
+    background: #ffffff;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
+}
+
+.lv-partial-head {
+    padding: 12px 16px;
+    background: #f8fafc;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.lv-partial-head-left {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.lv-partial-icon {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    background: #f1f5f9;
+    color: #475569;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+}
+
+.lv-partial-title {
+    font-size: 13px;
+    font-weight: 700;
+    color: #0f1c2e;
+}
+
+.lv-partial-desc {
+    font-size: 11px;
+    color: #64748b;
+    margin-top: 1px;
+}
+
+.lv-toggle {
+    cursor: pointer;
+    flex-shrink: 0;
+}
+
+.lv-toggle-track {
+    width: 42px;
+    height: 24px;
+    border-radius: 999px;
+    position: relative;
+    background: #cbd5e1;
+    transition: background 0.25s ease;
+}
+
+.lv-toggle-track.on { background: #2563eb; }
+
+.lv-toggle-thumb {
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: #ffffff;
+    position: absolute;
+    top: 3px;
+    left: 3px;
+    transition: left 0.25s ease;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25);
+}
+
+.lv-toggle-track.on .lv-toggle-thumb { left: 21px; }
+
+.lv-partial-body {
+    border-top: 1px solid #e2e8f0;
+    padding: 14px 16px;
+    background: #ffffff;
+}
+
+.lv-partial-body[hidden] { display: none; }
+
+.lv-time-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+}
+
+.lv-time-label {
+    font-size: 11px;
+    font-weight: 700;
+    color: #64748b;
+    margin-bottom: 5px;
+    letter-spacing: 0.5px;
+}
+
+.lv-time-preview {
+    grid-column: span 2;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: #f3e8ff;
+    border: 1px solid #e9d5ff;
+    border-radius: 8px;
+    padding: 9px 12px;
+}
+
+.lv-time-preview i { color: #7c3aed; }
+.lv-time-preview span { font-size: 11.5px; font-weight: 700; color: #6b21a8; }
+
+.lv-fullday-note {
+    border-top: 1px solid #f1f5f9;
+    padding: 10px 16px;
+    background: #f8fafc;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 11px;
+    color: #64748b;
+}
+
+.lv-fullday-note i { color: #3b82f6; }
+.lv-fullday-note[hidden] { display: none; }
 
 /* ==============================
    Responsive (768px/480px per tokens.css)
@@ -383,6 +888,33 @@
 @media (max-width: 1024px) {
     .lv-stats-grid {
         grid-template-columns: repeat(2, 1fr);
+    }
+
+    /* The side panel docks beside .lv-main-col on desktop — below tablet
+       width there isn't room for both, so it drops under the main column
+       and takes the full width instead of squeezing the calendar. */
+    .lv-body {
+        flex-direction: column;
+    }
+
+    .lv-side-panel {
+        width: 100%;
+        max-height: none;
+    }
+}
+
+@media (max-width: 768px) {
+    .lv-filter-bar {
+        margin-left: 0;
+        width: 100%;
+    }
+
+    .lv-row {
+        flex-wrap: wrap;
+    }
+
+    .lv-btn-cancel {
+        margin-left: auto;
     }
 }
 
@@ -406,11 +938,36 @@
         grid-template-columns: 1fr;
     }
 
-    .lv-modal-footer {
+    .lv-panel-footer .btn-row {
         flex-direction: column-reverse;
     }
 
     .lv-manual-date {
         flex-direction: column;
+    }
+
+    .lv-date-input {
+        width: 100%;
+    }
+
+    .lv-filter-group {
+        flex: 1 1 auto;
+    }
+
+    .lv-row {
+        align-items: flex-start;
+    }
+
+    .lv-cover-label {
+        width: 100%;
+        margin-left: 20px;
+    }
+
+    .lv-time-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .lv-time-preview {
+        grid-column: span 1;
     }
 }
