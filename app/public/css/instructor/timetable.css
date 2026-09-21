@@ -513,3 +513,39 @@
 .dashboard-content-placeholder p {
     font-size: 14px;
 }
+
+/* ==============================
+   Responsive (768px tablet breakpoint per tokens.css)
+   ============================== */
+@media (max-width: 768px) {
+    /* .tt-body is flex-direction:column here (see timetable.css) — the
+       fixed 300px side panel would otherwise force page-level horizontal
+       overflow next to the grid section. */
+    .tt-side-panel {
+        width: 100%;
+        max-height: none;
+    }
+
+    .tt-grid-row {
+        flex-direction: column;
+    }
+
+    .tt-toolbar-left {
+        width: 100%;
+    }
+
+    .tt-week-nav {
+        flex: 1;
+        justify-content: space-between;
+    }
+
+    .tt-legend-inline {
+        margin-left: 0;
+        width: 100%;
+    }
+
+    .st-free-bar {
+        flex-wrap: wrap;
+        gap: 8px 18px;
+    }
+}

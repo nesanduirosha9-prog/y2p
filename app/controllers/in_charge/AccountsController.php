@@ -7,6 +7,7 @@ use app\core\Request;
 use app\core\Response;
 use app\models\NotificationModel;
 use app\models\StaffModel;
+use app\services\EmailService;
 
 // In-Charge "Accounts" / Role Assignment screen — pulled from Figma node
 // 34:5044 (canvas "In_Charge"): a 4-step handover flow (pick seat -> search
@@ -26,7 +27,8 @@ use app\models\StaffModel;
 // 3. change()        — GET, step 1: pick which seat to reassign.
 // 4. selectView()     — GET, step 2: search a same-rank replacement.
 // 5. selectSubmit()   — POST, step 2 submit: generates a 6-digit OTP into
-//    the session (see the dev-mode note below — it is NOT emailed).
+//    the session and emails it (via EmailService) to the incoming staff
+//    member, so they consciously confirm accepting the new role.
 // 6. verifyView()     — GET, step 3: shows the OTP entry screen.
 // 7. verifySubmit()   — POST, step 3 submit: checks the OTP + expiry, then
 //    performs the actual reassignment.
@@ -155,7 +157,21 @@ class AccountsController extends Controller
             return;
         }
 
+        // The incoming staff member (the one receiving the new role) is who
+        // needs to consciously confirm accepting the handover.
+        $toStaff = (new StaffModel())->findByCode($toCode);
+        if (!$toStaff) {
+            $response->json(['success' => false, 'message' => 'Could not find the selected replacement.'], 404);
+            return;
+        }
+
         $otp = str_pad((string) random_int(0, 999999), 6, '0', STR_PAD_LEFT);
+
+        if (!EmailService::sendOtpEmail($toStaff['email'], $otp, 'role_handover')) {
+            $response->json(['success' => false, 'message' => 'Could not send the verification code. Please try again.'], 500);
+            return;
+        }
+
         $_SESSION['handover'] = [
             'position' => $position,
             'from_code' => $fromCode,
@@ -165,11 +181,7 @@ class AccountsController extends Controller
             'expires_at' => time() + 300, // 5 minutes
         ];
 
-        // No mail infrastructure exists anywhere in this codebase yet, so the
-        // OTP is surfaced directly instead of emailed — the verification is
-        // still real (a wrong code is rejected), it's just not delivered out
-        // of band. Swap this for a real mailer once one exists.
-        $response->json(['success' => true, 'redirect' => '/in-charge/accounts/verify', 'dev_otp' => $otp]);
+        $response->json(['success' => true, 'redirect' => '/in-charge/accounts/verify']);
     }
 
     /** GET /in-charge/accounts/verify */
@@ -188,8 +200,6 @@ class AccountsController extends Controller
             'pageTitle' => 'Role Assignment',
             'pageSubtitle' => 'Enter the verification code to confirm this change.',
             'toStaff' => $staffModel->findByCode($handover['to_code']),
-            // Dev-mode only: no email dispatch exists yet (see selectSubmit).
-            'devOtp' => $handover['otp'],
         ]));
     }
 

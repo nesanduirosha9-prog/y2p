@@ -443,3 +443,48 @@ input:checked + .slider:before {
 #btn-complete.active-btn:hover {
     background-color: #142d54;
 }
+
+/* ==============================
+   Responsive (1024px/480px per tokens.css). The container itself stacks
+   to a column via global.css; .right-panel/.login-card are redefined in
+   this file (loaded after global.css), so their padding tweaks need to
+   live here too.
+   ============================== */
+@media (max-width: 1024px) {
+    .right-panel {
+        padding: 32px 48px;
+    }
+}
+
+@media (max-width: 480px) {
+    .right-panel {
+        padding: 24px 20px;
+    }
+
+    .login-card {
+        padding: 20px;
+    }
+
+    .right-footer {
+        flex-direction: column;
+        gap: 6px;
+        text-align: center;
+    }
+
+    /* 6 fixed-width boxes (41px + 7px gap) can just overflow a 375px
+       screen once panel/card padding is included — shrink slightly
+       rather than letting them wrap or scroll. */
+    .otp-input-group {
+        gap: 5px;
+    }
+
+    .otp-input {
+        width: 36px;
+        height: 42px;
+        font-size: 17px;
+    }
+
+    .step-text {
+        font-size: 10px;
+    }
+}

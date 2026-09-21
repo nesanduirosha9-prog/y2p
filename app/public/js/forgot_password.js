@@ -1,11 +1,14 @@
 // forgot_password.js — drives the 3-step reset wizard in
 // app/views/auth/forgot_password.php. Same shape as signup.js:
-// 1. Step 1 (email): domain check, then switch panels (no OTP request sent).
-// 2. Step 2 (OTP): 6-digit boxes, paste support; submit just advances the
-//    UI — the code is never checked against anything server-side.
-// 3. Step 3 (new password): live match validation, then the one real network
-//    call — POST /forgot-password with {email, password} (no OTP included,
-//    so AuthController::resetPassword() has no way to verify it happened).
+// 1. Step 1 (email): domain check, then POST /forgot-password/send-otp;
+//    advances to step 2 only once the server confirms a code was sent.
+// 2. Step 2 (OTP): 6-digit boxes, paste support; submit concatenates them
+//    and POSTs /forgot-password/verify-otp; advances to step 3 only on a
+//    verified match (AuthController::verifyOtp() checks it server-side and
+//    flags the email as verified in the session for 5 minutes).
+// 3. Step 3 (new password): live match validation, then POST /forgot-password
+//    with {email, password} — AuthController::resetPassword() rejects this
+//    unless step 2's verification is still valid for this same email.
 document.addEventListener('DOMContentLoaded', function() {
 
     // UI Elements
@@ -62,6 +65,14 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // --- STEP 1 to 2 Submit ---
+    function requestOtp(email) {
+        return fetch('/forgot-password/send-otp', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email: email })
+        }).then(response => response.json());
+    }
+
     if (emailForm) {
         emailForm.addEventListener('submit', function(event) {
             event.preventDefault();
@@ -69,10 +80,31 @@ document.addEventListener('DOMContentLoaded', function() {
 
             if (!emailValue.endsWith('@ucsc.cmb.ac.lk')) return; // Extra check
 
-            step1Content.style.display = 'none';
-            step2Content.style.display = 'block';
-            updateProgressUI(2);
-            document.querySelector('.otp-input').focus();
+            const originalText = btnSendOtp.innerHTML;
+            btnSendOtp.innerHTML = 'Sending...';
+            btnSendOtp.disabled = true;
+
+            requestOtp(emailValue)
+                .then(data => {
+                    btnSendOtp.innerHTML = originalText;
+                    btnSendOtp.disabled = false;
+
+                    if (!data.success) {
+                        alert(data.message || 'Could not send the code. Please try again.');
+                        return;
+                    }
+
+                    step1Content.style.display = 'none';
+                    step2Content.style.display = 'block';
+                    updateProgressUI(2);
+                    document.querySelector('.otp-input').focus();
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    btnSendOtp.innerHTML = originalText;
+                    btnSendOtp.disabled = false;
+                    alert('An error occurred. Please try again.');
+                });
         });
     }
 
@@ -132,9 +164,59 @@ document.addEventListener('DOMContentLoaded', function() {
     if (otpForm) {
         otpForm.addEventListener('submit', function(event) {
             event.preventDefault();
-            step2Content.style.display = 'none';
-            step3Content.style.display = 'block';
-            updateProgressUI(3);
+
+            const otpValue = Array.from(otpInputs).map(input => input.value).join('');
+            const emailValue = emailInput.value.trim();
+
+            const originalText = btnVerifyOtp.innerHTML;
+            btnVerifyOtp.innerHTML = 'Verifying...';
+            btnVerifyOtp.disabled = true;
+
+            fetch('/forgot-password/verify-otp', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email: emailValue, otp: otpValue })
+            })
+            .then(response => response.json())
+            .then(data => {
+                btnVerifyOtp.innerHTML = originalText;
+                btnVerifyOtp.disabled = false;
+
+                if (!data.success) {
+                    alert(data.message || 'Incorrect code. Please try again.');
+                    otpInputs.forEach(input => input.value = '');
+                    otpInputs[0].focus();
+                    checkOtpValidity();
+                    return;
+                }
+
+                step2Content.style.display = 'none';
+                step3Content.style.display = 'block';
+                updateProgressUI(3);
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                btnVerifyOtp.innerHTML = originalText;
+                btnVerifyOtp.disabled = false;
+                alert('An error occurred. Please try again.');
+            });
+        });
+    }
+
+    // --- STEP 2: Resend OTP ---
+    const resendLink = document.querySelector('.resend-link');
+    if (resendLink) {
+        resendLink.addEventListener('click', function(event) {
+            event.preventDefault();
+            const emailValue = emailInput.value.trim();
+            requestOtp(emailValue)
+                .then(data => {
+                    alert(data.success ? 'A new code has been sent.' : (data.message || 'Could not resend the code.'));
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('An error occurred. Please try again.');
+                });
         });
     }
 

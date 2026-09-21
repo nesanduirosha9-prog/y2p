@@ -431,8 +431,19 @@
     background: #f4f6f9;
 }
 
-@media (max-width: 640px) {
-    .search-box { max-width: none; }
+/* 768px matches the tablet breakpoint documented in tokens.css (not the
+   640px this used to say). .dir-table itself keeps its min-width and
+   scrolls horizontally inside .dir-scroll rather than being squeezed. */
+@media (max-width: 768px) {
+    .search-box { max-width: none; flex-basis: 100%; }
     .dir-controls { gap: 8px; }
     .field-grid { grid-template-columns: 1fr; }
+
+    .modal-foot {
+        flex-direction: column-reverse;
+    }
+
+    .btn-cancel {
+        text-align: center;
+    }
 }

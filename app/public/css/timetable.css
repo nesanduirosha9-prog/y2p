@@ -597,7 +597,10 @@
     color: #9ca3af;
 }
 
-@media (max-width: 700px) {
+/* 768px matches the tablet breakpoint documented in tokens.css (not the
+   700px this used to say) — the grid itself is NOT squeezed to fit; it
+   keeps its min-width and scrolls horizontally inside .tt-grid-card. */
+@media (max-width: 768px) {
     .tt-toolbar {
         flex-direction: column;
         align-items: stretch;
@@ -605,5 +608,61 @@
     .tt-filters,
     .tt-actions {
         flex-wrap: wrap;
+    }
+
+    .tt-select {
+        width: 100% !important;
+        min-width: 0 !important;
+    }
+
+    /* Year tabs move above the grid instead of squeezing it into a
+       column layout — a vertical strip of 75px-tall tabs wastes too much
+       width next to a grid that already needs to scroll horizontally. */
+    .tt-body {
+        flex-direction: column;
+    }
+
+    .tt-year-tabs {
+        flex-direction: row;
+        width: 100%;
+        overflow-x: auto;
+    }
+
+    .year-tab {
+        width: auto;
+        flex: 1;
+        min-width: 44px;
+        height: 44px;
+    }
+
+    .tt-grid-card {
+        max-width: 100%;
+    }
+
+    .tt-confirm-bar {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .confirm-buttons {
+        justify-content: stretch;
+    }
+
+    .confirm-buttons > * {
+        flex: 1;
+    }
+}
+
+@media (max-width: 480px) {
+    .tt-modal-footer {
+        flex-direction: column;
+    }
+
+    .type-toggle {
+        flex-wrap: wrap;
+    }
+
+    .type-btn {
+        flex: 1 1 45%;
     }
 }

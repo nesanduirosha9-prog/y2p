@@ -177,6 +177,7 @@
 
 .req-table {
     width: 100%;
+    min-width: 640px;
     border-collapse: collapse;
 }
 
@@ -230,3 +231,37 @@
 .status-approved { background: #d0fae5; color: #004f3b; }
 .status-pending { background: #fef3c7; color: #92400e; }
 .status-rejected { background: #fee2e2; color: #991b1b; }
+
+/* ==============================
+   Responsive (768px/480px per tokens.css)
+   ============================== */
+@media (max-width: 768px) {
+    .req-form-body {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 480px) {
+    .req-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+    }
+
+    .req-new-btn {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .req-body {
+        padding: 16px;
+    }
+
+    .req-form-actions {
+        flex-direction: column-reverse;
+    }
+
+    .req-form-actions > * {
+        width: 100%;
+    }
+}

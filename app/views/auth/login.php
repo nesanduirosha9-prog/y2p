@@ -6,27 +6,32 @@
 <main class="login-layout-container">
 
     <aside class="left-panel">
-        <div class="top-section">
-            <div class="branding">
-                <i class="fa-solid fa-graduation-cap logo-icon"></i>
-                <div class="logo-text">
-                    <h1>StaffSync</h1>
-                    <p>University of Colombo</p>
-                </div>
+        <div class="branding">
+            <i class="fa-solid fa-graduation-cap logo-icon"></i>
+            <div class="logo-text">
+                <h1>StaffSync</h1>
+                <p>University of Colombo</p>
             </div>
-        
+        </div>
+
+        <!-- Logo stays pinned to the top; this block takes the remaining
+             height and centers itself in it, rather than the whole panel
+             sitting top-left with a huge dead area below on tall/wide
+             screens. -->
+        <div class="left-content">
             <div class="feature-title">
                 <h2>Staff Management<br><span class="gradient-text">Made Effortless</span></h2>
             </div>
-        
+
             <p class="feature-description">
                 The central hub for timetable officers, coordinators, department heads, and academic staff to manage schedules, resources, and institutional activities efficiently.
             </p>
-        
+
             <ul class="feature-list">
-                <li><i class="fa-solid fa-calendar-days"></i> Automated timetable scheduling</li>
+                <li><i class="fa-solid fa-calendar-days"></i> Enhanced timetable scheduling</li>
                 <li><i class="fa-solid fa-book"></i> Centralised course catalogue</li>
-                <li><i class="fa-solid fa-users"></i> Lecturer & resource management</li>
+                <li><i class="fa-solid fa-building"></i> Lecture hall conflict detection</li>
+                <li><i class="fa-regular fa-calendar-minus"></i> Leave handling & tracking</li>
                 <li><i class="fa-solid fa-bell"></i> Real-time conflict notifications</li>
             </ul>
         </div>

@@ -332,3 +332,42 @@
 .set-toggle input:checked + .set-toggle-track::before {
     transform: translateX(18px);
 }
+
+/* ==============================
+   Responsive (768px/480px per tokens.css)
+   ============================== */
+@media (max-width: 768px) {
+    .set-form-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 480px) {
+    .set-body {
+        padding: 16px;
+    }
+
+    .set-profile-layout {
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+    }
+
+    .set-form-grid {
+        width: 100%;
+    }
+
+    .set-card-header.flex-between {
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+
+    .set-passkey-item {
+        flex-wrap: wrap;
+        gap: 10px;
+    }
+
+    .set-notif-item {
+        flex-wrap: wrap;
+    }
+}

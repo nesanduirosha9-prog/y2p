@@ -216,6 +216,7 @@ $workHistory = [
                 <p><i class="fa-regular fa-calendar" style="color:#1a3a6b;margin-right:6px;"></i>Semester Breakdown</p>
                 <span class="wk-table-header-hint"><?= count($semesterBreakdown) ?> periods</span>
             </div>
+            <div class="wk-table-scroll">
             <table class="wk-table">
                 <thead>
                     <tr><th>SEMESTER</th><th>ASSIGNED</th><th>COMPLETED</th><th>PROGRESS</th></tr>
@@ -236,6 +237,7 @@ $workHistory = [
                     <?php endforeach; ?>
                 </tbody>
             </table>
+            </div>
         </div>
 
         <div class="wk-table-card">
@@ -243,6 +245,7 @@ $workHistory = [
                 <p><i class="fa-regular fa-calendar-days" style="color:#7c3aed;margin-right:6px;"></i>Monthly Breakdown</p>
                 <span class="wk-table-header-hint"><?= count($monthlyBreakdown) ?> periods</span>
             </div>
+            <div class="wk-table-scroll">
             <table class="wk-table">
                 <thead>
                     <tr><th>MONTH</th><th>ASSIGNED</th><th>COMPLETED</th><th>PROGRESS</th></tr>
@@ -263,6 +266,7 @@ $workHistory = [
                     <?php endforeach; ?>
                 </tbody>
             </table>
+            </div>
         </div>
     </div>
 
@@ -326,6 +330,7 @@ $workHistory = [
             <div class="wk-table-header">
                 <p><i class="fa-solid fa-list-check" style="color:#1a3a6b;margin-right:6px;"></i>Work History</p>
             </div>
+            <div class="wk-table-scroll">
             <table class="wk-table">
                 <thead>
                     <tr><th>DATE</th><th>TASK</th><th>COURSE</th><th>TYPE</th><th>HOURS</th><th>STATUS</th></tr>
@@ -343,6 +348,7 @@ $workHistory = [
                     <?php endforeach; ?>
                 </tbody>
             </table>
+            </div>
         </div>
     </div>
 </div>

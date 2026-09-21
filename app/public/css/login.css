@@ -15,6 +15,18 @@
     align-items: center;
     gap: 15px;
     margin-bottom: 40px;
+    flex-shrink: 0;
+}
+
+/* Takes up the remaining height below the logo and centers the marketing
+   copy inside it, instead of everything sitting top-left with a large
+   empty area under it on tall/wide screens. */
+.left-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    max-width: 460px;
 }
 
 .logo-icon {
@@ -288,4 +300,49 @@ input:focus, select:focus {
 
 .right-footer .version {
     font-family: var(--font-mono);
+}
+
+/* ==============================
+   Responsive (1024px/480px per tokens.css). The container itself stacks
+   to a column via global.css; this page's own panel/card/text rules are
+   loaded after global.css so the padding/size tweaks need to live here to
+   actually take effect.
+   ============================== */
+@media (max-width: 1024px) {
+    .left-panel {
+        padding: 40px 48px;
+    }
+
+    .right-panel {
+        padding: 32px 48px;
+    }
+}
+
+@media (max-width: 480px) {
+    .left-panel {
+        padding: 32px 24px;
+    }
+
+    .right-panel {
+        padding: 24px 20px;
+    }
+
+    .feature-title h2 {
+        font-size: 26px;
+    }
+
+    .feature-description {
+        font-size: 14px;
+        margin: 16px 0 28px;
+    }
+
+    .login-card {
+        padding: 20px;
+    }
+
+    .right-footer {
+        flex-direction: column;
+        gap: 6px;
+        text-align: center;
+    }
 }

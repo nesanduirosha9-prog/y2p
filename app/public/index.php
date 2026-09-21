@@ -32,8 +32,11 @@ $router = new Router();
 
 // Define routes. Callbacks receive (Request, Response) and may return string
 $router->get('/', function (Request $request, Response $response) {
-    $controller = new HomeController();
-    return $controller->index();
+    if (isset($_SESSION['staff_code'])) {
+        $response->redirect((new AuthController())->dashboardUrlForRole($_SESSION['role']));
+        return;
+    }
+    $response->redirect('/login');
 });
 
 $router->get('/about', function (Request $request, Response $response) {
@@ -61,6 +64,12 @@ $router->get('/forgot-password', function (Request $request, Response $response)
 });
 $router->post('/forgot-password', function (Request $request, Response $response) {
     return (new AuthController())->resetPassword($request, $response);
+});
+$router->post('/forgot-password/send-otp', function (Request $request, Response $response) {
+    return (new AuthController())->sendOtp($request, $response);
+});
+$router->post('/forgot-password/verify-otp', function (Request $request, Response $response) {
+    return (new AuthController())->verifyOtp($request, $response);
 });
 
 $router->get('/logout', function (Request $request, Response $response) {
@@ -91,11 +100,6 @@ $router->put('/lecture-halls/{code}', function (Request $request, Response $resp
 
 $router->get('/settings', function (Request $request, Response $response) {
     return (new SettingsController())->index($request);
-});
-
-// API route returning JSON
-$router->get('/api/users', function (Request $request, Response $response) {
-    (new HomeController())->usersJson($response);
 });
 
 // Example legacy redirect handler

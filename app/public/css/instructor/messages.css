@@ -425,3 +425,52 @@
 }
 
 .modal-close:hover { background: #f4f6f9; }
+
+/* ==============================
+   Responsive (768px/480px per tokens.css). The sidebar/thread/group-info
+   three-pane layout doesn't have a "conversation open" state to switch
+   panes on — it stacks the list above a shorter thread instead of hiding
+   either pane, and turns the group-info aside into a full-screen overlay
+   since it's already toggled via [hidden] by messages.js.
+   ============================== */
+@media (max-width: 768px) {
+    .msg-container {
+        flex-direction: column;
+        height: auto;
+        min-height: 100%;
+        overflow: visible;
+    }
+
+    .msg-sidebar {
+        width: 100%;
+        max-height: 280px;
+        border-right: none;
+        border-bottom: 1px solid #dde3ee;
+    }
+
+    .msg-thread {
+        min-height: 480px;
+    }
+
+    .msg-group-info {
+        position: fixed;
+        inset: 0;
+        width: 100%;
+        z-index: 1600;
+        border-left: none;
+    }
+}
+
+@media (max-width: 480px) {
+    .msg-bubble {
+        max-width: 85%;
+    }
+
+    .msg-thread-header {
+        padding: 10px 14px;
+    }
+
+    .msg-thread-sub {
+        display: none;
+    }
+}

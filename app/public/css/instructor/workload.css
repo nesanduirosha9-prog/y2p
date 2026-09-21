@@ -293,6 +293,7 @@
 
 .wk-table {
     width: 100%;
+    min-width: 560px;
     border-collapse: collapse;
 }
 
@@ -585,4 +586,62 @@
     font-size: 11px;
     color: #9ca3af;
     border-top: 1px solid #eef1f6;
+}
+
+/* Wraps each <table class="wk-table"> so it scrolls within its own card
+   instead of squeezing columns or forcing page-level horizontal scroll —
+   same pattern as .dir-scroll in directory.css. */
+.wk-table-scroll {
+    overflow-x: auto;
+}
+
+/* ==============================
+   Responsive (768px/480px per tokens.css)
+   ============================== */
+@media (max-width: 1024px) {
+    .wk-overview-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 768px) {
+    .wk-tabs {
+        overflow-x: auto;
+        padding: 0 12px;
+    }
+
+    .wk-tab {
+        white-space: nowrap;
+        flex-shrink: 0;
+    }
+
+    .wk-body {
+        padding: 16px;
+    }
+
+    .wk-table th,
+    .wk-table td {
+        padding: 10px 14px;
+    }
+}
+
+@media (max-width: 480px) {
+    .wk-overview-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .wk-cover-item,
+    .wk-assigned-item {
+        flex-wrap: wrap;
+    }
+
+    .wk-cover-actions {
+        width: 100%;
+        justify-content: flex-end;
+    }
+
+    .wk-assigned-hours {
+        text-align: left;
+        margin-left: 48px;
+    }
 }

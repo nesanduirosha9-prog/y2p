@@ -162,3 +162,17 @@
 .modal .notif-item.unread { background: #eff6ff; }
 .modal .notif-title-text { color: #111827; }
 .modal .notif-icon-wrap { color: #6b7280; }
+
+/* The dropdown is 380px wide, anchored via `right: 0` to the bell button
+   inside .notification-wrapper — on a phone-width header that puts most
+   of it off-screen. Pin it to the viewport instead of the button below
+   the tablet breakpoint. */
+@media (max-width: 480px) {
+    .notif-dropdown {
+        position: fixed;
+        top: 60px;
+        left: 12px;
+        right: 12px;
+        width: auto;
+    }
+}
