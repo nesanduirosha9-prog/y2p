@@ -65,7 +65,7 @@ $messages = $activeConv['messages'];
     <!-- Conversation List -->
     <div class="msg-sidebar">
         <div class="msg-sidebar-header">
-            
+             
             <div class="msg-search-box">
                 <i class="fa-solid fa-search search-icon"></i>
                 <input type="text" placeholder="Search conversations..." id="msgSearchInput">
@@ -147,6 +147,28 @@ $messages = $activeConv['messages'];
             <div class="msg-group-members-list" id="msgGroupMembersList"></div>
         </div>
     </aside>
+
+    <i id="toggleBtnARROW" class="fa-solid fa-arrow-right" style=
+       "
+       position: fixed;
+       top: 50%;
+       left: 10px;
+       transform: translateY(-50%);
+       z-index: 1000;
+       cursor: pointer;
+       width: 42px;
+       height: 42px;
+       display: flex;
+       align-items: center;
+       justify-content: center;
+       background: #1e1d1dff;
+       color: #ffffff;
+       border-radius: 50%;
+       box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+       font-size: 18px;
+       transition: all 0.2s ease;
+   "
+    ></i>
 </div>
 
 <script>
@@ -166,6 +188,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+
     // Go back to the conversation list on mobile
     if (msgBackBtn) {
         msgBackBtn.addEventListener('click', () => {
@@ -173,6 +196,40 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 });
+
+
+    const side = document.getElementById('dashSidebar');
+    const back = document.getElementById('sidebarBackdrop');
+    const toggleBtnARROW = document.getElementById('toggleBtnARROW');
+
+    if (!side || !back || !toggleBtnARROW) {
+       console.log("Not working buttons")
+    }
+
+    function openSidebar() {
+        side.classList.add('open');
+        back.classList.add('visible');
+    }
+
+    function closeSidebar() {
+        side.classList.remove('open');
+        back.classList.remove('visible');
+    }
+
+    toggleBtnARROW.addEventListener('click', function () {
+        console.log("clicked");
+        if (side.classList.contains('open')) {
+            closeSidebar();
+        } else {
+            openSidebar();
+        }
+    });
+
+    back.addEventListener('click', closeSidebar);
+
+
+
+
 </script>
 
 <script type="application/json" id="conversationsData"><?= json_encode($conversationsData) ?></script>

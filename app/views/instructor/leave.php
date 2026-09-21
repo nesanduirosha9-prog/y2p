@@ -4,15 +4,14 @@
 // NOTE (gap): every figure/row below is hardcoded demo data, not read from
 // the `leave_requests` table (migration 009) — see LeaveController.php.
 // 1. Summary stats (balance/used/upcoming/total).
-// 2. $upcomingLeaves / $historyLeaves — the two table sections.
-$title = "Leave Management";
+// 2. $upcomingLeaves / $historyLeaves — the two table sections.$title = "Leave Management";
 
 $annualBalance = 15;
 $daysUsed = 6;
 $upcomingDays = 0;
 $totalRequests = 2;
 
-$upcomingLeaves = []; // Empty for demo
+$upcomingLeaves = []; /* Empty for demo */
 $historyLeaves = [
     ['id' => 1, 'type' => 'Casual Leave', 'dates' => '2025-06-10 – 2025-06-12', 'reason' => 'Family event', 'cover' => 'Dr. N. Perera', 'status' => 'Approved'],
     ['id' => 2, 'type' => 'Sick Leave', 'dates' => '2025-04-05', 'reason' => 'Fever', 'cover' => '—', 'status' => 'Approved'],
@@ -107,7 +106,7 @@ $historyLeaves = [
                         </tr>
                     </thead>
                     <tbody>
-                        <?php foreach($historyLeaves as $l): ?>
+                        <?php foreach($historyLeaves as$l): ?>
                             <tr>
                                 <td class="lv-td-type"><?= htmlspecialchars($l['type']) ?></td>
                                 <td><?= htmlspecialchars($l['dates']) ?></td>
@@ -156,17 +155,10 @@ $historyLeaves = [
 
             <div class="form-group full-width">
                 <label>SELECT DATES &mdash; click dates on the calendar or type manually</label>
-                <div class="lv-calendar" id="lvCalendar">
-                    <div class="lv-calendar-header">
-                        <button type="button" id="lvPrevMonth"><i class="fa-solid fa-chevron-left"></i></button>
-                        <span id="lvCalendarLabel"></span>
-                        <button type="button" id="lvNextMonth"><i class="fa-solid fa-chevron-right"></i></button>
-                    </div>
-                    <div class="lv-calendar-weekdays">
-                        <span>Mo</span><span>Tu</span><span>We</span><span>Th</span><span>Fr</span><span>Sa</span><span>Su</span>
-                    </div>
-                    <div class="lv-calendar-grid" id="lvCalendarGrid"></div>
-                </div>
+                
+                <!-- Reusable Component Included Here -->
+                <?php include __DIR__ . '/../components/calendar.php'; ?>
+
                 <div class="lv-manual-date">
                     <input type="text" class="req-input" id="lvManualDate" placeholder="Or type a date, e.g. 2026-09-28">
                     <button type="button" class="btn-outline" id="lvAddManualDate">Add</button>
