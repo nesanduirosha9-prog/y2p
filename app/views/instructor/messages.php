@@ -57,7 +57,7 @@ $conversationsData = [
 ];
 
 $activeConv = $conversationsData[0];
-$conversations = $conversationsData; // keep the existing list-render loop below working
+$conversations = $conversationsData; 
 $messages = $activeConv['messages'];
 ?>
 
@@ -65,7 +65,7 @@ $messages = $activeConv['messages'];
     <!-- Conversation List -->
     <div class="msg-sidebar">
         <div class="msg-sidebar-header">
-            <h2>Messages</h2>
+            
             <div class="msg-search-box">
                 <i class="fa-solid fa-search search-icon"></i>
                 <input type="text" placeholder="Search conversations..." id="msgSearchInput">
@@ -96,7 +96,13 @@ $messages = $activeConv['messages'];
     <div class="msg-thread">
         <div class="msg-thread-header">
             <div class="msg-thread-info">
-                <div class="msg-avatar" id="msgThreadAvatar" style="background: <?= htmlspecialchars($activeConv['color']) ?>;"><?= htmlspecialchars($activeConv['avatar']) ?></div>
+                <!-- Mobile Back Button -->
+                <button type="button" class="msg-btn-back" id="msgBackBtn" aria-label="Back to conversations">
+                    <i class="fa-solid fa-arrow-left"></i>
+                </button>
+                <div class="msg-avatar" id="msgThreadAvatar" style="background: <?= htmlspecialchars($activeConv['color']) ?>;">
+                    <?= htmlspecialchars($activeConv['avatar']) ?>
+                </div>
                 <div>
                     <p class="msg-thread-name" id="msgThreadName"><?= htmlspecialchars($activeConv['name']) ?></p>
                     <p class="msg-thread-sub" id="msgThreadSub"><?= $activeConv['isGroup'] ? 'Group &middot; ' . count($activeConv['members']) . ' members' : 'Direct message' ?></p>
@@ -142,6 +148,32 @@ $messages = $activeConv['messages'];
         </div>
     </aside>
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const msgContainer = document.querySelector('.msg-container');
+    const msgList = document.getElementById('msgList');
+    const msgBackBtn = document.getElementById('msgBackBtn');
+
+    // Show thread on mobile when a conversation is clicked
+    if (msgList) {
+        msgList.addEventListener('click', (e) => {
+            const item = e.target.closest('.msg-list-item');
+            if (item) {
+                // By adding this class, CSS takes over and overlays the thread
+                msgContainer.classList.add('show-thread');
+            }
+        });
+    }
+
+    // Go back to the conversation list on mobile
+    if (msgBackBtn) {
+        msgBackBtn.addEventListener('click', () => {
+            msgContainer.classList.remove('show-thread');
+        });
+    }
+});
+</script>
 
 <script type="application/json" id="conversationsData"><?= json_encode($conversationsData) ?></script>
 <script src="/js/instructor/messages.js"></script>
