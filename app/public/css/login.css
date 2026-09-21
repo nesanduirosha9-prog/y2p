@@ -1,12 +1,12 @@
-
 /* ==============================
    Left Panel Content Styles
    ============================== */
 .left-panel {
     /* Adding padding to push content away from the edges */
-    padding: 80px 60px; 
+    padding: 80px 60px;
     color: #ffffff;
-    box-sizing: border-box; /* Ensures padding doesn't break the 40% width */
+    box-sizing: border-box;
+    /* Ensures padding doesn't break the 40% width */
 }
 
 /* Branding Section */
@@ -31,7 +31,8 @@
 
 .logo-icon {
     font-size: 36px;
-    color: #3b82f6; /* Accent blue */
+    color: #3b82f6;
+    /* Accent blue */
 }
 
 .logo-text h1 {
@@ -62,12 +63,14 @@
 
 /* Feature List */
 .feature-list {
-    list-style: none; /* Removes default bullet points */
+    list-style: none;
+    /* Removes default bullet points */
     padding: 0;
     margin: 0;
     display: flex;
     flex-direction: column;
-    gap: 15px; /* Spaces out the list items */
+    gap: 15px;
+    /* Spaces out the list items */
 }
 
 .feature-list li {
@@ -100,7 +103,8 @@
     box-sizing: border-box;
     display: flex;
     flex-direction: column;
-    justify-content: space-between; /* Pushes nav up, footer down, form center */
+    justify-content: space-between;
+    /* Pushes nav up, footer down, form center */
 }
 
 .top-nav {
@@ -120,7 +124,8 @@
 
 .login-main {
     max-width: 400px;
-    margin: 0 auto; /* Centers the form horizontally */
+    margin: 0 auto;
+    /* Centers the form horizontally */
     width: 100%;
 }
 
@@ -163,7 +168,8 @@ label {
     font-size: 14px;
     font-weight: 500;
     color: #374151;
-    display: block; /* Ensures label sits above input */
+    display: block;
+    /* Ensures label sits above input */
     margin-bottom: 6px;
 }
 
@@ -196,7 +202,8 @@ input::placeholder {
     color: #9ca3af;
 }
 
-input:focus, select:focus {
+input:focus,
+select:focus {
     border-color: var(--color-primary);
     outline: none;
     box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
@@ -302,38 +309,30 @@ input:focus, select:focus {
     font-family: var(--font-mono);
 }
 
+
 /* ==============================
-   Responsive (1024px/480px per tokens.css). The container itself stacks
-   to a column via global.css; this page's own panel/card/text rules are
-   loaded after global.css so the padding/size tweaks need to live here to
-   actually take effect.
+   Responsive (1024px/480px per tokens.css). 
    ============================== */
 @media (max-width: 1024px) {
+
+    /* Hide the left panel on tablet and mobile to prevent stacking/distortion */
     .left-panel {
-        padding: 40px 48px;
+        display: none;
     }
 
+    /* Make the right panel take the full width of the screen */
     .right-panel {
+        width: 100%;
         padding: 32px 48px;
     }
 }
 
 @media (max-width: 480px) {
-    .left-panel {
-        padding: 32px 24px;
-    }
 
+    /* Left panel is already hidden by the rule above. 
+       Just adjust the right panel's padding for small phone screens. */
     .right-panel {
         padding: 24px 20px;
-    }
-
-    .feature-title h2 {
-        font-size: 26px;
-    }
-
-    .feature-description {
-        font-size: 14px;
-        margin: 16px 0 28px;
     }
 
     .login-card {

@@ -5,6 +5,7 @@
     height: 100%;
     overflow: hidden;
     background: #f4f6f9;
+    position: relative;
 }
 
 .msg-sidebar {
@@ -152,6 +153,7 @@
     display: flex;
     flex-direction: column;
     overflow: hidden;
+    background: #f4f6f9;
 }
 
 .msg-thread-header {
@@ -168,6 +170,25 @@
     display: flex;
     align-items: center;
     gap: 12px;
+}
+
+/* Hidden by default on desktop */
+.msg-btn-back {
+    display: none;
+    align-items: center;
+    justify-content: center;
+    background: transparent;
+    border: none;
+    color: #6b7c96;
+    font-size: 16px;
+    cursor: pointer;
+    padding: 4px;
+    margin-right: 4px;
+    transition: color 0.2s;
+}
+
+.msg-btn-back:hover {
+    color: #0f1c2e;
 }
 
 .msg-thread-info .msg-avatar {
@@ -286,7 +307,9 @@
     font-size: 15px;
 }
 
-.msg-attach-btn:hover { color: #6b7c96; }
+.msg-attach-btn:hover {
+    color: #6b7c96;
+}
 
 .msg-input {
     flex: 1;
@@ -311,9 +334,13 @@
     transition: background 0.2s;
 }
 
-.msg-send-btn:hover { background: #0f2a55; }
+.msg-send-btn:hover {
+    background: #0f2a55;
+}
 
-.msg-list-item.filtered-out { display: none; }
+.msg-list-item.filtered-out {
+    display: none;
+}
 
 /* ==============================
    Group Info panel
@@ -327,7 +354,9 @@
     flex-direction: column;
 }
 
-.msg-group-info[hidden] { display: none; }
+.msg-group-info[hidden] {
+    display: none;
+}
 
 .msg-group-info-header {
     display: flex;
@@ -424,39 +453,57 @@
     flex-shrink: 0;
 }
 
-.modal-close:hover { background: #f4f6f9; }
+.modal-close:hover {
+    background: #f4f6f9;
+}
 
 /* ==============================
-   Responsive (768px/480px per tokens.css). The sidebar/thread/group-info
-   three-pane layout doesn't have a "conversation open" state to switch
-   panes on — it stacks the list above a shorter thread instead of hiding
-   either pane, and turns the group-info aside into a full-screen overlay
-   since it's already toggled via [hidden] by messages.js.
+   Responsive Layout (Mobile App Pattern)
    ============================== */
 @media (max-width: 768px) {
     .msg-container {
-        flex-direction: column;
-        height: auto;
-        min-height: 100%;
-        overflow: visible;
+        height: 100%;
+        overflow: hidden;
     }
 
+    /* By default on mobile, show the sidebar */
     .msg-sidebar {
         width: 100%;
-        max-height: 280px;
+        max-height: none;
         border-right: none;
-        border-bottom: 1px solid #dde3ee;
     }
 
+    /* Hide the thread on mobile initially */
     .msg-thread {
-        min-height: 480px;
+        display: none;
     }
 
+    /* Display the back button on mobile sizes */
+    .msg-btn-back {
+        display: flex;
+    }
+
+    /* When active, pop the thread OVER the entire screen layout (like the group info panel) */
+    .msg-container.show-thread .msg-thread {
+        display: flex;
+        position: fixed;
+        inset: 0;
+        /* Equivalent to top: 0; left: 0; right: 0; bottom: 0; */
+        width: 100%;
+        height: 100%;
+        z-index: 1500;
+        /* High enough to cover navbars, but below group info modal (1600) */
+        background: #f4f6f9;
+        /* Ensure it's opaque */
+    }
+
+    /* Make the group-info slide over entirely as a modal */
     .msg-group-info {
         position: fixed;
         inset: 0;
         width: 100%;
         z-index: 1600;
+        /* Ensure this covers everything, including the fixed thread */
         border-left: none;
     }
 }
@@ -470,7 +517,19 @@
         padding: 10px 14px;
     }
 
+    /* Save space on smallest screens by hiding subtitle */
     .msg-thread-sub {
+        display: none;
+    }
+
+    /* Icon only for members button */
+    .msg-btn-members {
+        padding: 6px;
+        font-size: 14px;
+    }
+
+    .msg-btn-members span,
+    .msg-btn-members .fa-chevron-down {
         display: none;
     }
 }

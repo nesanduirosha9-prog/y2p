@@ -47,7 +47,8 @@
 .step::after {
     content: "";
     position: absolute;
-    top: 15px; /* vertical center of the 30px circle */
+    top: 15px;
+    /* vertical center of the 30px circle */
     height: 1px;
     width: calc(50% - 15px);
     background-color: rgba(25, 60, 184, 0.6);
@@ -120,7 +121,7 @@
 /* A line segment is green once the step to its left is done: the
    completed step's own right half, and the following step's left half. */
 .step.completed::after,
-.step.completed + .step::before {
+.step.completed+.step::before {
     background-color: rgba(0, 212, 146, 0.7);
 }
 
@@ -385,7 +386,10 @@ input[type="password"]:focus {
 .slider {
     position: absolute;
     cursor: pointer;
-    top: 0; left: 0; right: 0; bottom: 0;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
     background-color: #dde3ee;
     transition: .3s;
     border-radius: 34px;
@@ -394,19 +398,21 @@ input[type="password"]:focus {
 .slider:before {
     position: absolute;
     content: "";
-    height: 16px; width: 16px;
-    left: 3px; bottom: 3px;
+    height: 16px;
+    width: 16px;
+    left: 3px;
+    bottom: 3px;
     background-color: white;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1), 0 1px 2px rgba(0, 0, 0, 0.1);
     transition: .3s;
     border-radius: 50%;
 }
 
-input:checked + .slider {
+input:checked+.slider {
     background-color: #00bc7d;
 }
 
-input:checked + .slider:before {
+input:checked+.slider:before {
     transform: translateX(18px);
 }
 
@@ -445,20 +451,171 @@ input:checked + .slider:before {
 }
 
 /* ==============================
-   Responsive (1024px/480px per tokens.css). The container itself stacks
-   to a column via global.css; .right-panel/.login-card are redefined in
-   this file (loaded after global.css), so their padding tweaks need to
-   live here too.
+   Responsive (1024px/480px per tokens.css). 
+   Custom mobile behavior for Signup: Stack panels, elegant stepper 
+   with connecting lines, white background, and reordered content.
    ============================== */
+
 @media (max-width: 1024px) {
+
+    /* Stack panels vertically */
+    .login-layout-container {
+        flex-direction: column !important;
+        background: #ffffff;
+        /* Force white background */
+    }
+
+    /* Left panel as a flexible white top header */
+    .left-panel {
+        width: 100%;
+        min-height: auto;
+        padding: 24px 48px 16px;
+        background: #ffffff;
+        background-image: none;
+        border-bottom: 1px solid #eaeaea;
+    }
+
+    /* Hide branding, extra text, "STEPS TO COMPLETE", AND the "Step 1 of 3" badge */
+    .left-panel .branding,
+    .left-panel .feature-title,
+    .left-panel .feature-description,
+    .progress-label,
+    .step-badge {
+        display: none !important;
+    }
+
+    /* =========================================
+       ELEGANT STEPPER WITH CONNECTING LINES 
+       ========================================= */
+    .progress-tracker {
+        display: flex;
+        flex-direction: row;
+        justify-content: space-between;
+        width: 100%;
+        gap: 0;
+        /* Remove gap so flex: 1 spaces them perfectly */
+    }
+
+    .step {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 6px;
+        position: relative;
+    }
+
+    /* The Connecting Line (Draws from center to center) */
+    .step:not(:last-child)::after {
+        content: '';
+        position: absolute;
+        top: 14px;
+        /* Exactly half the circle's height (28px / 2) */
+        left: 50%;
+        width: 100%;
+        height: 2px;
+        background-color: #e5e7eb;
+        /* Default non-completed line: Grey */
+        z-index: 1;
+    }
+
+    /* Base Circle (Non-completed: Grey) */
+    .step-circle {
+        position: relative;
+        z-index: 2;
+        /* Sits on top of the line */
+        width: 28px;
+        height: 28px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        border-radius: 50%;
+        font-size: 13px;
+        font-weight: 600;
+        background-color: #ffffff;
+        color: #9ca3af;
+        border: 2px solid #e5e7eb;
+    }
+
+    .step-text {
+        color: #9ca3af;
+        font-weight: 500;
+        font-size: 11px;
+        text-align: center;
+    }
+
+    /* --- STEP STATES --- */
+
+    /* 1. COMPLETED STEPS (Any step that comes BEFORE the active step) -> Green */
+    .step:has(~ .step.active) .step-circle {
+        background-color: #10b981;
+        border-color: #10b981;
+        color: #ffffff;
+    }
+
+    .step:has(~ .step.active) .step-text {
+        color: #10b981;
+    }
+
+    .step:has(~ .step.active)::after {
+        background-color: #10b981;
+        /* Completed line turns Green */
+    }
+
+    /* 2. CURRENT ACTIVE STEP -> Black */
+    .step.active .step-circle {
+        background-color: #111827;
+        border-color: #111827;
+        color: #ffffff;
+    }
+
+    .step.active .step-text {
+        color: #111827;
+        font-weight: 700;
+    }
+
+    /* Note: The active step's ::after line stays grey because the next step isn't complete yet */
+    /* ========================================= */
+
+    /* Turn right panel into a Flexbox column to reorder its contents */
     .right-panel {
-        padding: 32px 48px;
+        width: 100%;
+        padding: 24px 48px 32px;
+        display: flex;
+        flex-direction: column;
+        background: #ffffff;
+    }
+
+    /* 1. Form content stays at the top */
+    .login-main {
+        order: 1;
+    }
+
+    /* 2. Top Nav ("Already have an account") moved below the form */
+    .top-nav {
+        position: static;
+        order: 2;
+        display: flex;
+        justify-content: center;
+        margin-top: 30px;
+        margin-bottom: 20px;
+    }
+
+    /* 3. Footer stays at the very bottom */
+    .right-footer {
+        order: 3;
     }
 }
 
 @media (max-width: 480px) {
+
+    /* Adjust padding for smaller phone screens */
+    .left-panel {
+        padding: 20px 20px 12px;
+    }
+
     .right-panel {
-        padding: 24px 20px;
+        padding: 15px 20px 24px;
     }
 
     .login-card {
@@ -471,9 +628,7 @@ input:checked + .slider:before {
         text-align: center;
     }
 
-    /* 6 fixed-width boxes (41px + 7px gap) can just overflow a 375px
-       screen once panel/card padding is included — shrink slightly
-       rather than letting them wrap or scroll. */
+    /* Slightly shrink OTP inputs so they don't cause horizontal scrolling on tiny screens */
     .otp-input-group {
         gap: 5px;
     }
@@ -482,9 +637,5 @@ input:checked + .slider:before {
         width: 36px;
         height: 42px;
         font-size: 17px;
-    }
-
-    .step-text {
-        font-size: 10px;
     }
 }

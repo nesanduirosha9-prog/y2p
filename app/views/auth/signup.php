@@ -51,9 +51,7 @@
 
             </div>
 
-            <footer class="left-footer">
-                <p>&copy; <?= date('Y') ?> University of Colombo. All rights reserved.</p>
-            </footer>
+       
         </aside>
 
         <!-- ==================== RIGHT PANEL ==================== -->
