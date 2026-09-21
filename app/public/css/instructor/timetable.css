@@ -56,10 +56,21 @@
     flex-shrink: 0;
 }
 
-.chip-lab { background: #a684ff; }
-.chip-practical { background: #00d492; }
-.chip-lecture { background: #51a2ff; }
-.chip-assignment { background: #f97316; }
+.chip-lab {
+    background: #a684ff;
+}
+
+.chip-practical {
+    background: #00d492;
+}
+
+.chip-lecture {
+    background: #51a2ff;
+}
+
+.chip-assignment {
+    background: #f97316;
+}
 
 /* Week navigator (replaces Sem1/Sem2 toggle in My Timetable mode) */
 .tt-week-nav {
@@ -200,9 +211,19 @@
     justify-content: center;
 }
 
-.type-assignment { background: #ffedd5; border-left-color: #f97316; color: #7c2d12; }
-.dot-assignment { background: #f97316; }
-.dot-mine { background: #f0b100; }
+.type-assignment {
+    background: #ffedd5;
+    border-left-color: #f97316;
+    color: #7c2d12;
+}
+
+.dot-assignment {
+    background: #f97316;
+}
+
+.dot-mine {
+    background: #f0b100;
+}
 
 /* ==============================
    Right-side panel (Session Details / Request forms / My Requests)
@@ -264,7 +285,7 @@
     gap: 10px;
 }
 
-.tsp-footer .btn-row > * {
+.tsp-footer .btn-row>* {
     flex: 1;
 }
 
@@ -411,8 +432,15 @@
     letter-spacing: 0.3px;
 }
 
-.tsp-req-status.approved { background: #d0fae5; color: #004f3b; }
-.tsp-req-status.pending { background: #fef3c7; color: #92400e; }
+.tsp-req-status.approved {
+    background: #d0fae5;
+    color: #004f3b;
+}
+
+.tsp-req-status.pending {
+    background: #fef3c7;
+    color: #92400e;
+}
 
 .tsp-req-meta {
     font-size: 11px;
@@ -518,6 +546,7 @@
    Responsive (768px tablet breakpoint per tokens.css)
    ============================== */
 @media (max-width: 768px) {
+
     /* .tt-body is flex-direction:column here (see timetable.css) — the
        fixed 300px side panel would otherwise force page-level horizontal
        overflow next to the grid section. */
