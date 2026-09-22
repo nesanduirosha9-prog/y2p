@@ -1,0 +1,479 @@
+/* ==============================================================
+   scheduler.css — Modern, Responsive Styles for Duty Scheduler,
+   Requests Queue, and Invitation Modals.
+   ============================================================== */
+
+.scheduler-container {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+}
+
+/* ---- Quick Stats KPI Grid ---- */
+.sched-kpi-grid {
+    margin-bottom: 2px;
+}
+
+/* ---- Modern Segmented Tab Navigation ---- */
+.sched-nav-tabs {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    border-bottom: 2px solid #e2e8f0;
+    padding-bottom: 2px;
+}
+
+.sched-nav-tab {
+    background: transparent;
+    border: none;
+    padding: 12px 18px;
+    font-size: 14px;
+    font-weight: 700;
+    color: #64748b;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    position: relative;
+    border-radius: 8px 8px 0 0;
+    transition: all 0.2s ease;
+}
+
+.sched-nav-tab:hover {
+    color: var(--color-primary, #2563eb);
+    background: #f1f5f9;
+}
+
+.sched-nav-tab.active {
+    color: var(--color-primary, #2563eb);
+    background: #ffffff;
+}
+
+.sched-nav-tab.active::after {
+    content: '';
+    position: absolute;
+    bottom: -4px;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: var(--color-primary, #2563eb);
+    border-radius: 3px 3px 0 0;
+}
+
+.sched-tab-badge {
+    background: #f1f5f9;
+    color: #475569;
+    font-size: 11px;
+    font-weight: 700;
+    padding: 2px 8px;
+    border-radius: 12px;
+}
+
+.sched-nav-tab.active .sched-tab-badge {
+    background: #eff6ff;
+    color: #2563eb;
+}
+
+.alert-badge {
+    background: #fef3c7 !important;
+    color: #b45309 !important;
+}
+
+/* ---- Panel Container ---- */
+.sched-view-panel {
+    animation: fadeIn 0.2s ease;
+}
+
+.sched-card {
+    padding: 20px;
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: var(--radius-lg, 12px);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
+}
+
+.sched-panel-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-bottom: 20px;
+    padding-bottom: 14px;
+    border-bottom: 1px solid #f1f5f9;
+}
+
+.sched-panel-header h3 {
+    margin: 0;
+    font-size: 16px;
+    font-weight: 800;
+    color: #0f1c2e;
+}
+
+/* Legend */
+.sched-legend {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    font-size: 12px;
+    color: #64748b;
+    font-weight: 500;
+}
+
+.legend-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.legend-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+}
+
+.dot-green { background: #10b981; }
+.dot-yellow { background: #f59e0b; }
+.dot-red { background: #ef4444; }
+
+/* ---- Duty Cards Grid ---- */
+.duty-cards-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 16px;
+}
+
+.duty-session-card {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+    position: relative;
+}
+
+.duty-session-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+}
+
+.duty-session-card.is-fulfilled {
+    border-left: 4px solid #10b981;
+}
+
+.duty-session-card.is-pending {
+    border-left: 4px solid #f59e0b;
+    background: #fffdfa;
+}
+
+.duty-session-card.is-conflict {
+    border-left: 4px solid #ef4444;
+    background: #fffafa;
+}
+
+/* Card Top Bar */
+.session-card-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 8px;
+}
+
+.session-day-badge {
+    display: flex;
+    align-items: baseline;
+    gap: 6px;
+}
+
+.session-day {
+    font-size: 13px;
+    font-weight: 800;
+    color: #0f1c2e;
+}
+
+.session-date {
+    font-size: 11px;
+    color: #64748b;
+}
+
+.session-time-pill {
+    font-size: 11px;
+    font-weight: 700;
+    font-family: var(--font-mono, monospace);
+    background: #f1f5f9;
+    color: #334155;
+    padding: 3px 8px;
+    border-radius: 6px;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+}
+
+/* Card Middle Info */
+.session-title {
+    font-size: 14px;
+    font-weight: 700;
+    color: #0f1c2e;
+    margin: 6px 0 2px 0;
+    line-height: 1.35;
+}
+
+.session-course-sub {
+    font-size: 12px;
+    color: #64748b;
+    margin: 0;
+}
+
+/* Conflict Alert Banner */
+.session-conflict-alert {
+    background: #fef2f2;
+    border: 1px solid #fecaca;
+    color: #b91c1c;
+    padding: 8px 10px;
+    border-radius: 6px;
+    font-size: 11px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+/* Card Bottom Info */
+.session-card-bottom {
+    margin-top: auto;
+    padding-top: 12px;
+    border-top: 1px solid #f1f5f9;
+}
+
+.session-assignees-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+}
+
+.assignees-title {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: #64748b;
+}
+
+.status-chip {
+    font-size: 11px;
+    font-weight: 700;
+    padding: 2px 8px;
+    border-radius: 12px;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.chip-success {
+    background: #dcfce7;
+    color: #15803d;
+}
+
+.chip-warning {
+    background: #fef3c7;
+    color: #b45309;
+}
+
+.session-staff-pills {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    min-height: 26px;
+    align-items: center;
+}
+
+.unassigned-notice {
+    font-size: 11px;
+    color: #94a3b8;
+    font-style: italic;
+    margin: 0;
+}
+
+/* ---- Requests Queue Batch Bar ---- */
+.sched-batch-actions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.btn-batch-start {
+    background: #f59e0b;
+    color: #ffffff;
+    border: none;
+    border-radius: 8px;
+    padding: 8px 16px;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+    transition: background-color 0.15s ease;
+}
+
+.btn-batch-start:hover:not(:disabled) {
+    background: #d97706;
+}
+
+/* Time Slot Chips */
+.time-slots-chips {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
+    gap: 8px;
+}
+
+.time-slot-chip {
+    position: relative;
+    cursor: pointer;
+    user-select: none;
+}
+
+.time-slot-chip input[type="checkbox"] {
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
+}
+
+.chip-text {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 8px 6px;
+    border: 1px solid #cbd5e1;
+    border-radius: 8px;
+    font-size: 12px;
+    font-weight: 700;
+    font-family: var(--font-mono, monospace);
+    background: #ffffff;
+    color: #334155;
+    transition: all 0.15s ease;
+}
+
+.chip-hover-label {
+    display: none;
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #0f1c2e;
+    color: #fff;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 10px;
+    white-space: nowrap;
+    z-index: 10;
+}
+
+.time-slot-chip:hover .chip-hover-label {
+    display: block;
+}
+
+.time-slot-chip input:checked + .chip-text {
+    background: var(--color-primary, #2563eb);
+    border-color: var(--color-primary-dark, #1d4ed8);
+    color: #ffffff;
+    box-shadow: 0 1px 3px rgba(37, 99, 235, 0.3);
+}
+
+.number-counter {
+    display: inline-flex;
+    align-items: center;
+    border: 1px solid #cbd5e1;
+    border-radius: 8px;
+    background: #fff;
+    overflow: hidden;
+}
+
+.counter-btn {
+    background: #f1f5f9;
+    border: none;
+    width: 38px;
+    height: 38px;
+    cursor: pointer;
+    font-size: 12px;
+    color: #334155;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.counter-btn:hover { background: #e2e8f0; }
+
+.counter-input {
+    width: 50px;
+    height: 38px;
+    border: none;
+    text-align: center;
+    font-size: 14px;
+    font-weight: 700;
+    color: #0f1c2e;
+    font-family: var(--font-mono, monospace);
+}
+
+/* Email preview modal */
+.email-preview-box {
+    background: #fff8eb;
+    border: 1px solid #fed7aa;
+    border-radius: 8px;
+    padding: 18px;
+    font-family: var(--font-sans, sans-serif);
+    color: #1e293b;
+    font-size: 13px;
+    line-height: 1.6;
+}
+
+.email-preview-header {
+    background: #feeed5;
+    padding: 10px 14px;
+    border-radius: 6px;
+    font-weight: 600;
+    margin-bottom: 12px;
+}
+
+.email-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 12px 0;
+    background: #ffffff;
+}
+
+.email-table th, .email-table td {
+    border: 1px solid #e2e8f0;
+    padding: 8px 10px;
+    text-align: left;
+    font-size: 12px;
+}
+
+.email-table th {
+    background: #ffedd5;
+    font-weight: 700;
+}
+
+/* ---- Mobile Responsiveness ---- */
+@media (max-width: 768px) {
+    .sched-nav-tabs {
+        overflow-x: auto;
+        flex-wrap: nowrap;
+    }
+    .duty-cards-grid {
+        grid-template-columns: 1fr;
+    }
+    .sched-panel-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    .sched-legend {
+        width: 100%;
+        justify-content: space-between;
+    }
+}

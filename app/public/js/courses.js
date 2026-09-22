@@ -58,9 +58,9 @@ document.addEventListener('DOMContentLoaded', function () {
     wireSegmented(programFilter, function (v) { programValue = v; });
     wireSegmented(yearFilter, function (v) { yearValue = v; });
 
-    // ---- Modal ----
     const modal = document.getElementById('courseModal');
     const modalTitle = document.getElementById('courseModalTitle');
+    const modalSubtitle = document.getElementById('courseModalSubtitle');
     const form = document.getElementById('courseForm');
     const editingCode = document.getElementById('editingCode');
     const submitBtn = document.getElementById('courseSubmitBtn');
@@ -154,6 +154,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
         if (mode === 'edit' && row) {
             modalTitle.textContent = 'Edit Course';
+            if (modalSubtitle) modalSubtitle.textContent = 'Update course metadata and assigned academic staff';
             submitBtn.textContent = 'Save Changes';
             editingCode.value = row.dataset.code;
             fieldCode.value = row.dataset.code;
@@ -165,6 +166,7 @@ document.addEventListener('DOMContentLoaded', function () {
             (row.dataset.instructors ? row.dataset.instructors.split(',') : []).forEach(function (c) { picked.instructors.add(c); });
         } else {
             modalTitle.textContent = 'Add New Course';
+            if (modalSubtitle) modalSubtitle.textContent = 'Enter course details and staff assignments';
             submitBtn.textContent = 'Add Course';
             editingCode.value = '';
         }

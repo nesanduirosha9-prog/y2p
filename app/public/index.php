@@ -85,7 +85,11 @@ $router->get('/dashboard', function (Request $request, Response $response) {
 $router->get('/timetable', function (Request $request, Response $response) {
     return (new TimetableController())->index($request);
 });
-$router->get('/courses', function (Request $request, Response $response) {
+$router->get('/course-details', function (Request $request, Response $response) {
+    if (isset($_SESSION['role']) && $_SESSION['role'] === 'academic_staff') {
+        $response->redirect('/instructor/my-courses');
+        return;
+    }
     return (new CoursesController())->index($request);
 });
 $router->get('/lecturers', function (Request $request, Response $response) {
@@ -110,12 +114,18 @@ $router->get('/oldabout', function (Request $request, Response $response) {
     (new HomeController())->oldAbout($response);
 });
 
-// Instructor Routes
+// Instructor & Lecturer-in-charge Routes
 $router->get('/instructor/timetable', function (Request $request, Response $response) {
     return (new \app\controllers\instructor\TimetableController())->index($request);
 });
 $router->get('/instructor/workload', function (Request $request, Response $response) {
     return (new \app\controllers\instructor\WorkloadController())->index($request);
+});
+$router->get('/instructor/my-courses', function (Request $request, Response $response) {
+    return (new \app\controllers\instructor\CoursesController())->index($request);
+});
+$router->get('/instructor/evaluations', function (Request $request, Response $response) {
+    return (new \app\controllers\instructor\EvaluationsController())->index($request);
 });
 $router->get('/instructor/requests', function (Request $request, Response $response) {
     return (new \app\controllers\instructor\RequestsController())->index($request);
@@ -135,6 +145,15 @@ $router->post('/instructor/settings', function (Request $request, Response $resp
 
 // Coordinator Routes (also reachable by In-Charge, which carries every
 // coordinator ability plus its own Accounts screen below)
+$router->get('/coordinator/workload/distribution', function (Request $request, Response $response) {
+    return (new \app\controllers\coordinator\WorkloadController())->distribution($request);
+});
+$router->get('/coordinator/workload/scheduler', function (Request $request, Response $response) {
+    return (new \app\controllers\coordinator\WorkloadController())->scheduler($request);
+});
+$router->get('/coordinator/evaluations', function (Request $request, Response $response) {
+    return (new \app\controllers\coordinator\EvaluationsController())->index($request);
+});
 $router->get('/coordinator/staff', function (Request $request, Response $response) {
     return (new StaffController())->index($request);
 });
@@ -146,6 +165,12 @@ $router->post('/coordinator/staff/{code}/reject', function (Request $request, Re
 });
 
 // In-Charge Routes
+$router->get('/in-charge/workload/distribution', function (Request $request, Response $response) {
+    return (new \app\controllers\in_charge\WorkloadController())->distribution($request);
+});
+$router->get('/in-charge/evaluations', function (Request $request, Response $response) {
+    return (new \app\controllers\in_charge\EvaluationsController())->index($request);
+});
 $router->get('/in-charge/accounts', function (Request $request, Response $response) {
     return (new AccountsController())->index($request);
 });

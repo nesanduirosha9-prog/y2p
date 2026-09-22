@@ -38,9 +38,10 @@ class TimetableController extends Controller
         $sem = in_array($sem, [1, 2], true) ? $sem : 1;
         $year = in_array($year, [1, 2, 3, 4], true) ? $year : 1;
 
-        // 3. Load the course catalogue + scheduled sessions for the grid.
+        // 3. Load the course catalogue + scheduled sessions + rooms for the grid.
         $courses = (new CourseModel())->forDeptYear($dept, $year);
         $sessions = (new TimetableSessionModel())->forDeptSemYear($dept, $sem, $year);
+        $rooms = (new \app\models\RoomModel())->all();
 
         // 4. Render inside the shared dashboard shell.
         return $this->render('timetable_officer/timetable', [
@@ -54,6 +55,7 @@ class TimetableController extends Controller
             'year' => $year,
             'courses' => $courses,
             'sessions' => $sessions,
+            'rooms' => $rooms,
         ]);
     }
 }

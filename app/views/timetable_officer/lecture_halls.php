@@ -67,29 +67,32 @@ $total = count($rooms);
     </div>
 </div>
 
-<!-- Edit Lecture Hall modal -->
-<div class="modal-overlay" id="hallModal" hidden>
-    <div class="modal">
-        <div class="modal-head">
-            <h3>Edit Lecture Hall</h3>
-            <button type="button" class="modal-close" data-close><i class="fa-solid fa-xmark"></i></button>
+<!-- Edit Lecture Hall Side Drawer (Slide-out panel matching media_1790082539024.png) -->
+<div class="side-drawer-overlay" id="hallModal" hidden>
+    <div class="side-drawer" role="dialog" aria-modal="true" aria-labelledby="hallModalTitle">
+        <div class="side-drawer-header">
+            <div>
+                <h3 class="side-drawer-title" id="hallModalTitle">Edit Lecture Hall</h3>
+                <p class="side-drawer-subtitle">Update capacity and venue type configuration</p>
+            </div>
+            <button type="button" class="side-drawer-close" data-close aria-label="Close drawer"><i class="fa-solid fa-xmark"></i></button>
         </div>
 
-        <form class="modal-body" id="hallForm">
+        <form class="side-drawer-body" id="hallForm">
             <input type="hidden" id="hallEditCode" value="">
 
             <div class="form-row">
-                <label for="hallFieldName">Name</label>
+                <label for="hallFieldName">Venue Code / Name</label>
                 <input type="text" id="hallFieldName" disabled>
             </div>
 
             <div class="field-grid">
                 <div class="form-row">
-                    <label for="hallFieldCapacity">Capacity</label>
+                    <label for="hallFieldCapacity">Capacity (Seats)</label>
                     <input type="number" id="hallFieldCapacity" min="1" required>
                 </div>
                 <div class="form-row">
-                    <label for="hallFieldType">Type</label>
+                    <label for="hallFieldType">Venue Type</label>
                     <select id="hallFieldType" required>
                         <?php foreach ($typeLabels as $value => $label): ?>
                             <option value="<?= htmlspecialchars($value) ?>"><?= htmlspecialchars($label) ?></option>
@@ -100,9 +103,9 @@ $total = count($rooms);
             <p class="form-error" id="hallFormError" hidden></p>
         </form>
 
-        <div class="modal-foot">
-            <button type="submit" form="hallForm" class="btn-block" id="hallSubmitBtn">Save Changes</button>
-            <button type="button" class="btn-cancel" data-close>Cancel</button>
+        <div class="side-drawer-footer">
+            <button type="button" class="btn-drawer-cancel" data-close>Cancel</button>
+            <button type="submit" form="hallForm" class="btn-drawer-submit" id="hallSubmitBtn">Save Changes</button>
         </div>
     </div>
 </div>

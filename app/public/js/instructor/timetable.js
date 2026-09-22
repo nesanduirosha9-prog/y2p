@@ -478,7 +478,23 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     function buildStudentGrid(dept, year) {
-        const list = studentData[`${dept}-${year}`] || [];
+        // 1. Check if the Timetable Officer published a live schedule for this batch
+        const storageKey = `staffsync_published_${dept}_1_${year}`;
+        let list = null;
+        try {
+            const saved = localStorage.getItem(storageKey);
+            if (saved) {
+                list = JSON.parse(saved);
+            }
+        } catch (e) {
+            console.warn('Error reading published timetable:', e);
+        }
+
+        // 2. Fallback to default mock dataset if nothing published yet
+        if (!list || !list.length) {
+            list = studentData[`${dept}-${year}`] || [];
+        }
+
         const occupied = {};
         list.forEach(s => {
             for (let i = 0; i < s.duration; i++) occupied[s.day] = occupied[s.day] || {};
@@ -527,8 +543,11 @@ document.addEventListener('DOMContentLoaded', () => {
             return `<span>${days[k].slice(0, 3)} <b>${free}h</b></span>`;
         }).join('');
 
+        const pubTime = localStorage.getItem(`staffsync_published_time_${dept}_1_${year}`);
+        const pubNote = pubTime ? ` · Live published timetable (synced at ${pubTime})` : '';
+
         document.getElementById('stCaption').textContent =
-            `${dept.toUpperCase()} Y${year} schedule · ★ = your courses · empty cells = students are free`;
+            `${dept.toUpperCase()} Y${year} schedule · ★ = your courses · empty cells = students are free${pubNote}`;
     }
 
     document.getElementById('stDeptToggle').addEventListener('click', (e) => {

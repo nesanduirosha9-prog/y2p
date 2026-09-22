@@ -13,43 +13,56 @@ use app\core\Application;
 
 $role = $_SESSION['role'] ?? 'timetable_officer';
 $position = $_SESSION['position'] ?? null; // additive: 'coordinator' | 'in_charge' | null
+$academicRank = $_SESSION['academic_rank'] ?? null;
 $isInstructor = $role === 'academic_staff';
 $active = $active ?? 'timetable';
 $userEmail = $_SESSION['user_email'] ?? ($isInstructor ? 'tmf@ucsc.cmb.ac.lk' : 'tmo@ucsc.cmb.ac.lk');
 
-// Settings is kept out of $navItemsByRole and appended last below, after any
-// role-specific extra tabs — every user gets it as the final nav item.
+// Base nav items per role
 $navItemsByRole = [
     'timetable_officer' => [
-        ['href' => '/timetable', 'icon' => 'fa-solid fa-calendar-days', 'label' => 'Timetable', 'key' => 'timetable'],
-        ['href' => '/courses',   'icon' => 'fa-solid fa-book-open',     'label' => 'Courses',   'key' => 'courses'],
-        ['href' => '/lecturers',     'icon' => 'fa-solid fa-users',      'label' => 'Staff Details',  'key' => 'lecturers'],
-        ['href' => '/lecture-halls', 'icon' => 'fa-solid fa-building',   'label' => 'Lecture Halls',  'key' => 'lecture-halls'],
+        ['href' => '/timetable',      'icon' => 'fa-solid fa-calendar-days', 'label' => 'Timetable',      'key' => 'timetable'],
+        ['href' => '/course-details', 'icon' => 'fa-solid fa-book-open',     'label' => 'Course Details', 'key' => 'courses'],
+        ['href' => '/lecturers',      'icon' => 'fa-solid fa-users',         'label' => 'Staff Details',  'key' => 'lecturers'],
+        ['href' => '/lecture-halls',  'icon' => 'fa-solid fa-building',      'label' => 'Lecture Halls',  'key' => 'lecture-halls'],
     ],
     'academic_staff' => [
-        ['href' => '/instructor/timetable', 'icon' => 'fa-solid fa-calendar-days',   'label' => 'Timetable',   'key' => 'timetable'],
-        ['href' => '/instructor/workload',  'icon' => 'fa-solid fa-layer-group',     'label' => 'My Workload', 'key' => 'workload'],
-        ['href' => '/instructor/leave',     'icon' => 'fa-regular fa-calendar-minus','label' => 'Leave',       'key' => 'leave'],
-        ['href' => '/instructor/messages',  'icon' => 'fa-regular fa-message',       'label' => 'Messages',    'key' => 'messages'],
+        ['href' => '/instructor/timetable',  'icon' => 'fa-solid fa-calendar-days', 'label' => 'Timetable',   'key' => 'timetable'],
+        ['href' => '/instructor/workload',   'icon' => 'fa-solid fa-layer-group',   'label' => 'My Workload', 'key' => 'workload'],
+        ['href' => '/instructor/my-courses', 'icon' => 'fa-solid fa-book-open',     'label' => 'My Courses',  'key' => 'courses'],
     ],
 ];
 $navItems = $navItemsByRole[$isInstructor ? 'academic_staff' : 'timetable_officer'];
 
-// Coordinator/In-Charge are additive `position`s on top of academic_staff, not
-// separate roles — they get the same base nav above, plus extra tabs for
-// their elevated responsibilities.
-if ($isInstructor && in_array($position, ['coordinator', 'in_charge'], true)) {
-    $navItems[] = ['href' => '/coordinator/staff', 'icon' => 'fa-solid fa-user-check', 'label' => 'Staff', 'key' => 'staff'];
-}
-if ($isInstructor && $position === 'in_charge') {
-    $navItems[] = ['href' => '/in-charge/accounts', 'icon' => 'fa-solid fa-people-arrows', 'label' => 'Accounts', 'key' => 'accounts'];
+// Role-specific Workload & Evaluation extensions
+if ($isInstructor) {
+    if ($position === 'coordinator') {
+        $navItems[] = ['href' => '/coordinator/workload/distribution', 'icon' => 'fa-solid fa-table-cells',     'label' => 'Workload Matrix', 'key' => 'workload-dist'];
+        $navItems[] = ['href' => '/coordinator/workload/scheduler',    'icon' => 'fa-solid fa-calendar-check',  'label' => 'Duty Scheduler',  'key' => 'workload-sched'];
+        $navItems[] = ['href' => '/coordinator/staff',                 'icon' => 'fa-solid fa-user-check',      'label' => 'Staff',           'key' => 'staff'];
+        $navItems[] = ['href' => '/coordinator/evaluations',           'icon' => 'fa-solid fa-clipboard-check', 'label' => 'Evaluations',     'key' => 'evaluations'];
+    } elseif ($position === 'in_charge') {
+        $navItems[] = ['href' => '/in-charge/workload/distribution',    'icon' => 'fa-solid fa-table-cells',     'label' => 'Workload Matrix', 'key' => 'workload-dist'];
+        $navItems[] = ['href' => '/coordinator/staff',                 'icon' => 'fa-solid fa-user-check',      'label' => 'Staff',           'key' => 'staff'];
+        $navItems[] = ['href' => '/in-charge/accounts',                'icon' => 'fa-solid fa-people-arrows',   'label' => 'Accounts',        'key' => 'accounts'];
+        $navItems[] = ['href' => '/in-charge/evaluations',             'icon' => 'fa-solid fa-award',           'label' => 'Appraisals',      'key' => 'evaluations'];
+    } elseif ($academicRank === 'senior') {
+        // Lecturer-in-charge
+        $navItems[] = ['href' => '/instructor/evaluations',            'icon' => 'fa-solid fa-star-half-stroke', 'label' => 'Evaluations',     'key' => 'evaluations'];
+    } else {
+        // Junior Staff / Instructor
+        $navItems[] = ['href' => '/instructor/evaluations',            'icon' => 'fa-solid fa-star-half-stroke', 'label' => 'Evaluations',     'key' => 'evaluations'];
+    }
+
+    $navItems[] = ['href' => '/instructor/leave',    'icon' => 'fa-regular fa-calendar-minus', 'label' => 'Leave',    'key' => 'leave'];
+    $navItems[] = ['href' => '/instructor/messages', 'icon' => 'fa-regular fa-message',        'label' => 'Messages', 'key' => 'messages'];
 }
 
 $navItems[] = $isInstructor
     ? ['href' => '/instructor/settings', 'icon' => 'fa-solid fa-gear', 'label' => 'Settings', 'key' => 'settings']
     : ['href' => '/settings',            'icon' => 'fa-solid fa-gear', 'label' => 'Settings', 'key' => 'settings'];
 
-$userChipLabel = $isInstructor ? ($position ? ucwords(str_replace('_', ' ', $position)) : 'Instructor') : 'Timetable Officer';
+$userChipLabel = $isInstructor ? ($position ? ucwords(str_replace('_', ' ', $position)) : ($academicRank === 'senior' ? 'Lecturer' : 'Instructor')) : 'Timetable Officer';
 $userAvatarInitials = $isInstructor ? 'IN' : 'TO';
 $userAvatarStyle = $isInstructor ? 'style="background: #4d179a;"' : '';
 $titleSuffix = $isInstructor ? 'StaffSync - Instructor' : 'StaffSync';

@@ -27,11 +27,11 @@ class CoursesController extends Controller
             return;
         }
 
-        return $this->render('timetable_officer/courses', [
-            'title' => 'Course Management',
+        return $this->render('timetable_officer/course_details', [
+            'title' => 'Course Details',
             'css_file' => ['/css/directory.css', '/css/courses.css'],
             'active' => 'courses',
-            'pageTitle' => 'Course Management',
+            'pageTitle' => 'Course Details',
             'notificationCount' => (new NotificationModel())->unreadCount($_SESSION['staff_code']),
             'courses' => (new CourseModel())->listing(),
             'lecturers' => (new LecturerModel())->all(),

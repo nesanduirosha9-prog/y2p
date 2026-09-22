@@ -121,3 +121,638 @@
     color: #2563eb;
     font-weight: 700;
 }
+
+/* ==============================================================
+   Assigned Courses & Session Filter Styling (Lecturer & Instructor)
+   ============================================================== */
+
+/* ---- Session Type Filter Dropdown ---- */
+.session-dropdown-wrapper {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: #eef1f6;
+    border-radius: 11px;
+    padding: 3px 6px 3px 12px;
+}
+
+.session-filter-label {
+    font-size: 12px;
+    font-weight: 700;
+    color: #475569;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    white-space: nowrap;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+}
+
+.session-filter-label i {
+    color: #1a3a6b;
+}
+
+.session-select-box {
+    position: relative;
+    display: inline-block;
+}
+
+.session-dropdown {
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    background: #ffffff;
+    border: 1px solid #cbd5e1;
+    border-radius: 8px;
+    padding: 6px 32px 6px 12px;
+    font-size: 12.5px;
+    font-weight: 600;
+    color: #0f1c2e;
+    cursor: pointer;
+    outline: none;
+    transition: all 0.15s ease;
+    height: 34px;
+}
+
+.session-dropdown:focus {
+    border-color: #2563eb;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+}
+
+.session-select-box .select-chevron {
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 10px;
+    color: #64748b;
+    pointer-events: none;
+}
+
+/* ---- Course Sessions Hint ---- */
+.course-sessions-hint {
+    margin-top: 4px;
+    font-size: 11px;
+    color: #64748b;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-weight: 500;
+}
+
+.course-sessions-hint i {
+    color: #94a3b8;
+    font-size: 10px;
+}
+
+/* ---- Evaluate Action Button in Courses Table ---- */
+.btn-evaluate-course {
+    background: #1a3a6b;
+    color: #ffffff;
+    border: 1px solid #1a3a6b;
+    border-radius: 7px;
+    padding: 6px 12px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    transition: all 0.15s ease;
+    white-space: nowrap;
+}
+
+.btn-evaluate-course:hover {
+    background: #15305a;
+    border-color: #15305a;
+    box-shadow: 0 2px 4px rgba(26, 58, 107, 0.2);
+    transform: translateY(-1px);
+}
+
+.btn-evaluate-course.evaluated {
+    background: #ecfdf5;
+    color: #007a55;
+    border-color: #a7f3d0;
+}
+
+.btn-evaluate-course.evaluated:hover {
+    background: #d1fae5;
+    color: #006042;
+}
+
+/* ==============================================================
+   Master-Detail Sliding Flow for Course Evaluation (Images 2 & 3)
+   ============================================================== */
+
+.courses-flow-wrapper {
+    position: relative;
+    width: 100%;
+    min-height: 480px;
+}
+
+.courses-flow-pane {
+    width: 100%;
+    transition: opacity 0.25s ease, transform 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+#coursesListPane {
+    display: block;
+}
+
+#coursesEvalPane {
+    display: none;
+}
+
+/* Active State: Show Evaluation Pane, Hide List Pane */
+.courses-flow-wrapper.show-eval #coursesListPane {
+    display: none;
+}
+
+.courses-flow-wrapper.show-eval #coursesEvalPane {
+    display: block;
+    animation: evalPaneSlideIn 0.26s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes evalPaneSlideIn {
+    from {
+        opacity: 0;
+        transform: translateX(36px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+/* ---- Evaluation Flow Header (Matching Messages Header in Image 3) ---- */
+.eval-flow-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 14px;
+    margin-bottom: 18px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid #dde3ee;
+}
+
+.eval-flow-left {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex: 1 1 320px;
+}
+
+/* Round Back Arrow Button (Matching Image 3) */
+.btn-flow-back {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 38px;
+    height: 38px;
+    border-radius: 9px;
+    background: #ffffff;
+    border: 1px solid #dde3ee;
+    color: #1a3a6b;
+    font-size: 15px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    flex-shrink: 0;
+}
+
+.btn-flow-back:hover {
+    background: #f0f3f8;
+    border-color: #cbd5e1;
+    color: #0f1c2e;
+    transform: translateX(-2px);
+}
+
+.eval-course-avatar {
+    width: 42px;
+    height: 42px;
+    border-radius: 10px;
+    background: #1a3a6b;
+    color: #ffffff;
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 700;
+    font-size: 15px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    box-shadow: 0 2px 4px rgba(26, 58, 107, 0.2);
+}
+
+.eval-course-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.eval-course-title-group {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.eval-course-heading {
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-size: 19px;
+    font-weight: 800;
+    color: #0f1c2e;
+    margin: 0;
+}
+
+.eval-course-subtext {
+    font-size: 12.5px;
+    color: #64748b;
+    margin: 3px 0 0 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.meta-dot {
+    color: #cbd5e1;
+    font-weight: bold;
+}
+
+.eval-flow-actions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.btn-submit-eval {
+    background: #1a3a6b;
+    color: #ffffff;
+    border: none;
+    border-radius: 8px;
+    padding: 9px 18px;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    box-shadow: 0 1px 3px rgba(26, 58, 107, 0.25);
+    transition: all 0.15s ease;
+}
+
+.btn-submit-eval:hover {
+    background: #15305a;
+    box-shadow: 0 3px 8px rgba(26, 58, 107, 0.35);
+    transform: translateY(-1px);
+}
+
+.btn-submit-eval:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+    transform: none;
+}
+
+/* ---- Sleek Notice Banner ---- */
+.eval-flow-notice {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-left: 4px solid #1a3a6b;
+    border-radius: 8px;
+    padding: 12px 16px;
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    margin-bottom: 20px;
+    color: #334155;
+}
+
+.eval-flow-notice i {
+    font-size: 16px;
+    color: #1a3a6b;
+    margin-top: 2px;
+    flex-shrink: 0;
+}
+
+.eval-flow-notice strong {
+    font-size: 13px;
+    display: block;
+    color: #0f1c2e;
+    margin-bottom: 2px;
+}
+
+.eval-flow-notice p {
+    font-size: 12px;
+    margin: 0;
+    color: #64748b;
+    line-height: 1.45;
+}
+
+/* ---- Submission Success Banner ---- */
+.eval-submit-banner {
+    background: #ecfdf5;
+    border: 1px solid #a7f3d0;
+    border-radius: 10px;
+    padding: 14px 18px;
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    margin-bottom: 20px;
+    color: #065f46;
+    animation: fadeIn 0.25s ease;
+}
+
+.eval-submit-banner i {
+    font-size: 18px;
+    color: #059669;
+    margin-top: 2px;
+    flex-shrink: 0;
+}
+
+.eval-submit-banner strong {
+    font-size: 14px;
+    display: block;
+    color: #064e3b;
+    margin-bottom: 3px;
+}
+
+.eval-submit-banner p {
+    font-size: 12.5px;
+    margin: 0;
+    color: #047857;
+    line-height: 1.45;
+}
+
+/* ==============================================================
+   Modern Instructor Evaluation Cards (Pure Vertical Scroll)
+   ============================================================== */
+
+.eval-instructors-list {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    margin-bottom: 30px;
+}
+
+.instructor-eval-card {
+    background: #ffffff;
+    border: 1px solid #dde3ee;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 1px 3px rgba(15, 28, 46, 0.04);
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.instructor-eval-card:hover {
+    border-color: #cbd5e1;
+    box-shadow: 0 4px 12px -2px rgba(15, 28, 46, 0.08);
+}
+
+.inst-card-header {
+    background: #f8fafc;
+    border-bottom: 1px solid #eef1f6;
+    padding: 14px 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
+.inst-profile {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.inst-avatar {
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    background: #eff6ff;
+    color: #1a3a6b;
+    font-weight: 700;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 2px solid #bfdbfe;
+    flex-shrink: 0;
+}
+
+.inst-details {
+    display: flex;
+    flex-direction: column;
+}
+
+.inst-name-row {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.inst-name {
+    font-size: 15px;
+    font-weight: 700;
+    color: #0f1c2e;
+    margin: 0;
+}
+
+.inst-meta {
+    font-size: 12px;
+    color: #64748b;
+    margin-top: 2px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.inst-score-summary {
+    display: flex;
+    align-items: center;
+}
+
+.rating-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 11.5px;
+    font-weight: 700;
+}
+
+.rating-badge-active {
+    background: #fef3c7;
+    color: #92400e;
+    border: 1px solid #fde68a;
+}
+
+.rating-badge-empty {
+    background: #f1f5f9;
+    color: #64748b;
+}
+
+.inst-card-body {
+    padding: 20px;
+    display: grid;
+    grid-template-columns: 320px 1fr;
+    gap: 24px;
+    align-items: start;
+}
+
+.inst-field-label {
+    display: block;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: #475569;
+    margin-bottom: 8px;
+}
+
+.inst-field-label i {
+    color: #1a3a6b;
+    margin-right: 3px;
+}
+
+/* Modern 1-5 Star Picker */
+.modern-star-picker {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.star-picker-btns {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.star-picker-btns .star-btn {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    width: 40px;
+    height: 40px;
+    font-size: 18px;
+    color: #cbd5e1;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.15s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.star-picker-btns .star-btn:hover {
+    background: #fffbeb;
+    border-color: #f59e0b;
+    color: #f59e0b;
+    transform: scale(1.12);
+}
+
+.star-picker-btns .star-btn.active,
+.star-picker-btns .star-btn.hover-active {
+    background: #fef3c7;
+    border-color: #f59e0b;
+    color: #d97706;
+}
+
+.star-rating-hint {
+    font-size: 12px;
+    font-weight: 700;
+    color: #92400e;
+    background: #fffbeb;
+    border: 1px solid #fef3c7;
+    padding: 4px 10px;
+    border-radius: 6px;
+    display: inline-block;
+    width: fit-content;
+}
+
+/* Modern Sleek Comment Textarea */
+.inst-comment-textarea {
+    width: 100%;
+    min-height: 86px;
+    border: 1px solid #dde3ee;
+    border-radius: 8px;
+    padding: 10px 14px;
+    font-size: 13px;
+    font-family: inherit;
+    color: #0f1c2e;
+    background: #ffffff;
+    resize: vertical;
+    line-height: 1.5;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.inst-comment-textarea:focus {
+    outline: none;
+    border-color: #2563eb;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+}
+
+.inst-comment-textarea::placeholder {
+    color: #9ca3af;
+}
+
+/* Empty State Card */
+.eval-empty-card {
+    background: #ffffff;
+    border: 1px dashed #cbd5e1;
+    border-radius: 12px;
+    padding: 40px 20px;
+    text-align: center;
+    color: #64748b;
+}
+
+.eval-empty-card i {
+    font-size: 32px;
+    color: #94a3b8;
+    margin-bottom: 12px;
+    display: block;
+}
+
+.eval-empty-card h4 {
+    font-size: 15px;
+    font-weight: 700;
+    color: #0f1c2e;
+    margin: 0 0 4px;
+}
+
+.eval-empty-card p {
+    font-size: 13px;
+    margin: 0;
+    color: #64748b;
+}
+
+/* Mobile Responsiveness (Zero Horizontal Scroll) */
+@media (max-width: 840px) {
+    .inst-card-body {
+        grid-template-columns: 1fr;
+        gap: 16px;
+    }
+    .eval-flow-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    .eval-flow-actions {
+        width: 100%;
+    }
+    .eval-flow-actions .btn-submit-eval {
+        width: 100%;
+        justify-content: center;
+    }
+    .session-dropdown-wrapper {
+        width: 100%;
+        justify-content: space-between;
+    }
+    .session-select-box {
+        flex: 1;
+    }
+    .session-dropdown {
+        width: 100%;
+    }
+}
+

@@ -43,7 +43,7 @@ $total = count($courses);
         <div class="seg seg-dark" id="yearFilter" role="group" aria-label="Filter by year">
             <button type="button" class="seg-btn active" data-value="">All Years</button>
             <?php foreach ([1, 2, 3, 4] as $y): ?>
-                <button type="button" class="seg-btn" data-value="<?= $y ?>">Year <?= $y ?></option>
+                <button type="button" class="seg-btn" data-value="<?= $y ?>">Year <?= $y ?></button>
             <?php endforeach; ?>
         </div>
     </div>
@@ -109,15 +109,18 @@ $total = count($courses);
     </div>
 </div>
 
-<!-- Add / Edit Course modal -->
-<div class="modal-overlay" id="courseModal" hidden>
-    <div class="modal">
-        <div class="modal-head">
-            <h3 id="courseModalTitle">Add New Course</h3>
-            <button type="button" class="modal-close" data-close><i class="fa-solid fa-xmark"></i></button>
+<!-- Add / Edit Course Side Drawer (Slide-out panel matching media_1790082539024.png) -->
+<div class="side-drawer-overlay" id="courseModal" hidden>
+    <div class="side-drawer" role="dialog" aria-modal="true" aria-labelledby="courseModalTitle">
+        <div class="side-drawer-header">
+            <div>
+                <h3 class="side-drawer-title" id="courseModalTitle">Add New Course</h3>
+                <p class="side-drawer-subtitle" id="courseModalSubtitle">Enter course details and staff assignments</p>
+            </div>
+            <button type="button" class="side-drawer-close" data-close aria-label="Close drawer"><i class="fa-solid fa-xmark"></i></button>
         </div>
 
-        <form class="modal-body" id="courseForm">
+        <form class="side-drawer-body" id="courseForm">
             <input type="hidden" id="editingCode" value="">
 
             <div class="field-grid">
@@ -181,9 +184,9 @@ $total = count($courses);
             </div>
         </form>
 
-        <div class="modal-foot">
-            <button type="submit" form="courseForm" class="btn-block" id="courseSubmitBtn">Add Course</button>
-            <button type="button" class="btn-cancel" data-close>Cancel</button>
+        <div class="side-drawer-footer">
+            <button type="button" class="btn-drawer-cancel" data-close>Cancel</button>
+            <button type="submit" form="courseForm" class="btn-drawer-submit" id="courseSubmitBtn">Add Course</button>
         </div>
     </div>
 </div>
