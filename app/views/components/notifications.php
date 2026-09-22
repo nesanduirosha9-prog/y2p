@@ -12,7 +12,7 @@
 //    all" opens the modal with the full $globalNotifs list.
 $notificationModel = new \app\models\NotificationModel();
 $globalNotifs = $_SESSION['staff_code'] ?? null ? $notificationModel->all($_SESSION['staff_code']) : [];
-$notificationCount = $_SESSION['staff_code'] ?? null ? $notificationModel->unreadCount($_SESSION['staff_code']) : 0;
+$notificationCount = $notificationCount ?? ($_SESSION['staff_code'] ?? null ? $notificationModel->unreadCount($_SESSION['staff_code']) : 0);
 $icons = ['info' => 'fa-circle-info', 'success' => 'fa-circle-check', 'warning' => 'fa-triangle-exclamation'];
 $displayNotifs = array_slice($globalNotifs, 0, 5); // Show top 5
 ?>

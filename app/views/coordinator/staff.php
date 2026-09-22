@@ -1,5 +1,7 @@
 <?php
 
+use app\core\ViewHelpers;
+
 // Coordinator "Staff" screen — pulled from Figma node 34:5043 (canvas
 // "Coordinator"), frame "Document" > "Dashboard" > "StaffManagement".
 // $pending and $activeStaff are read from the database by StaffController
@@ -22,13 +24,6 @@ function staffRoleLabel(array $s): string
         return $rank . ' · In-Charge';
     }
     return $rank;
-}
-
-function staffInitials(string $name): string
-{
-    $parts = preg_split('/\s+/', trim($name));
-    $letters = array_map(fn($p) => strtoupper(substr($p, 0, 1)), array_slice($parts, 0, 2));
-    return implode('', $letters);
 }
 ?>
 
@@ -66,7 +61,7 @@ function staffInitials(string $name): string
                         <tr data-code="<?= htmlspecialchars($p['code']) ?>">
                             <td>
                                 <div class="lec-identity">
-                                    <span class="lec-avatar"><?= htmlspecialchars(staffInitials($p['name'])) ?></span>
+                                    <span class="lec-avatar"><?= htmlspecialchars(ViewHelpers::staffInitials($p['name'])) ?></span>
                                     <span class="lec-name"><?= htmlspecialchars($p['name']) ?></span>
                                 </div>
                             </td>
@@ -141,7 +136,7 @@ function staffInitials(string $name): string
                         <tr data-role="<?= htmlspecialchars($rankKey) ?>" data-search="<?= htmlspecialchars($search) ?>">
                             <td>
                                 <div class="lec-identity">
-                                    <span class="lec-avatar"><?= htmlspecialchars(staffInitials($s['name'])) ?></span>
+                                    <span class="lec-avatar"><?= htmlspecialchars(ViewHelpers::staffInitials($s['name'])) ?></span>
                                     <span class="lec-name"><?= htmlspecialchars($s['name']) ?></span>
                                 </div>
                             </td>

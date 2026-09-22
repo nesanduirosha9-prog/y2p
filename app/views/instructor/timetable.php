@@ -1,18 +1,13 @@
 <?php
 
+use app\core\ViewHelpers;
+
 // Instructor Timetable View — matches the Figma "My Timetable" / "Student Timetable"
 // wireframes (file SWhtq4yyK9R8QerlDiK40v, page "Instructor"). Session actions
 // (Request Support Staff / Request Time Change / My Requests) are DOM-only demo
 // flows — nothing persists server-side.
 $days = ['mon' => 'Monday', 'tue' => 'Tuesday', 'wed' => 'Wednesday', 'thu' => 'Thursday', 'fri' => 'Friday'];
 $hours = [8, 9, 10, 11, 12, 13, 14, 15, 16, 17];
-
-function hourLabel(int $h): string
-{
-    $suffix = $h < 12 ? 'AM' : 'PM';
-    $display = $h % 12 === 0 ? 12 : $h % 12;
-    return "{$display} {$suffix}";
-}
 
 function weekDateObj(string $dayKey): DateTime
 {
@@ -124,7 +119,7 @@ $weekStart = weekDateObj('mon')->format('Y-m-d');
                     <?php endforeach; ?>
 
                     <?php foreach ($hours as $rowIndex => $h): ?>
-                        <div class="tt-grid-time"><?= hourLabel($h) ?></div>
+                        <div class="tt-grid-time"><?= ViewHelpers::hourLabel($h) ?></div>
                         <?php foreach ($days as $dayKey => $dayLabel):
                             $cell = $occupied[$dayKey][$h] ?? null;
                             $isLunch = $h === 12;
@@ -138,7 +133,7 @@ $weekStart = weekDateObj('mon')->format('Y-m-d');
                                      data-location="<?= htmlspecialchars($cell['location']) ?>"
                                      data-type="<?= htmlspecialchars($cell['type']) ?>"
                                      data-day="<?= htmlspecialchars($dayLabel) ?>"
-                                     data-start="<?= hourLabel($h) ?>"
+                                     data-start="<?= ViewHelpers::hourLabel($h) ?>"
                                      data-duration="<?= $cell['duration'] ?>"
                                      data-batch="<?= htmlspecialchars($batchLabel) ?>"
                                      data-date="<?= htmlspecialchars(weekDateFor($dayKey)) ?>">
@@ -152,7 +147,7 @@ $weekStart = weekDateObj('mon')->format('Y-m-d');
                                      data-day="<?= htmlspecialchars($dayLabel) ?>"
                                      data-day-key="<?= $dayKey ?>"
                                      data-hour="<?= $h ?>"
-                                     data-hour-label="<?= hourLabel($h) ?>"
+                                     data-hour-label="<?= ViewHelpers::hourLabel($h) ?>"
                                      <?= $isLunch ? 'data-lunch="1"' : '' ?>>
                                     <?= $isLunch && $dayKey === 'wed' ? '<span class="lunch-label">Lunch Break</span>' : '' ?>
                                 </div>

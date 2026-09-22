@@ -1,18 +1,13 @@
 <?php
 
+use app\core\ViewHelpers;
+
 // Timetable view: department/semester/year filters + weekly grid + the
 // side panel for slot details (edit/save/delete), publish button, and
 // past academic years archive dropdown.
 
 $days = ['mon' => 'Monday', 'tue' => 'Tuesday', 'wed' => 'Wednesday', 'thu' => 'Thursday', 'fri' => 'Friday'];
 $hours = [8, 9, 10, 11, 12, 13, 14, 15, 16];
-
-function hourLabel(int $h): string
-{
-    $suffix = $h < 12 ? 'AM' : 'PM';
-    $display = $h % 12 === 0 ? 12 : $h % 12;
-    return "{$display} {$suffix}";
-}
 
 function ttUrl(string $dept, int $sem, int $year): string
 {
@@ -128,7 +123,7 @@ $lecturers = array_values(array_unique(array_filter(array_map(fn($c) => $c['lect
                     <?php endforeach; ?>
 
                     <?php foreach ($hours as $rowIndex => $h): ?>
-                        <div class="tt-grid-time" style="grid-column: 1; grid-row: <?= $rowIndex + 2 ?>;"><?= hourLabel($h) ?></div>
+                        <div class="tt-grid-time" style="grid-column: 1; grid-row: <?= $rowIndex + 2 ?>;"><?= ViewHelpers::hourLabel($h) ?></div>
                         <?php foreach ($days as $dayKey => $dayLabel):
                             $cell = $occupied[$dayKey][$h] ?? null;
                             $isLunch = $h === 12;
@@ -144,7 +139,7 @@ $lecturers = array_values(array_unique(array_filter(array_map(fn($c) => $c['lect
                                      data-type="<?= htmlspecialchars($cell['type']) ?>"
                                      data-day="<?= htmlspecialchars($dayLabel) ?>"
                                      data-day-key="<?= $dayKey ?>"
-                                     data-start="<?= hourLabel($h) ?>"
+                                     data-start="<?= ViewHelpers::hourLabel($h) ?>"
                                      data-start-hour="<?= $h ?>"
                                      data-duration="<?= $cell['duration'] ?>"
                                      data-lecturer="<?= htmlspecialchars($courses[$cell['code']]['lecturer'] ?? 'TBA') ?>">
@@ -158,7 +153,7 @@ $lecturers = array_values(array_unique(array_filter(array_map(fn($c) => $c['lect
                                      data-day="<?= htmlspecialchars($dayLabel) ?>"
                                      data-day-key="<?= $dayKey ?>"
                                      data-hour="<?= $h ?>"
-                                     data-hour-label="<?= hourLabel($h) ?>"
+                                     data-hour-label="<?= ViewHelpers::hourLabel($h) ?>"
                                      <?= $isLunch ? 'data-lunch="1"' : '' ?>>
                                     <?= $isLunch && $dayKey === 'wed' ? '<span class="lunch-label">Lunch Break</span>' : '' ?>
                                 </div>

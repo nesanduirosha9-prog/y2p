@@ -1,28 +1,6 @@
 // evaluations.js — Interactive star rating buttons, submission feedback, and review modal.
 
 document.addEventListener('DOMContentLoaded', function () {
-    // ---- Criteria Rating Buttons ----
-    const ratingGroups = document.querySelectorAll('.criterion-rating-group');
-    ratingGroups.forEach(group => {
-        group.addEventListener('click', function (e) {
-            const btn = e.target.closest('.rating-btn');
-            if (!btn) return;
-            group.querySelectorAll('.rating-btn').forEach(b => b.classList.remove('active'));
-            btn.classList.add('active');
-        });
-    });
-
-    // Form submission handler
-    window.handleEvaluationSubmit = function () {
-        const staffSelect = document.getElementById('evalStaffSelect');
-        const courseSelect = document.getElementById('evalCourseSelect');
-        const staffName = staffSelect.options[staffSelect.selectedIndex]?.text || 'Staff Member';
-        
-        alert(`Evaluation successfully recorded for ${staffName}!\n\nThe Course Coordinator and Department In-Charge have been notified.`);
-        const form = document.getElementById('juniorStaffEvalForm');
-        if (form) form.reset();
-    };
-
     // ---- Review Dashboard: Details Drawer & Search ----
     const searchInput = document.getElementById('evalSearchInput');
     const table = document.getElementById('evaluationsTable');

@@ -63,4 +63,10 @@ class Controller
     {
         Application::$app->getResponse()->redirect($url);
     }
+
+    protected function forbidden(): string
+    {
+        Application::$app->getResponse()->setStatusCode(403);
+        return $this->renderPartial('errors/forbidden');
+    }
 }

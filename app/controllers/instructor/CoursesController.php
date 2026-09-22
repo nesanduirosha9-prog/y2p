@@ -12,11 +12,23 @@ class CoursesController extends Controller
         $this->setLayout('dashboard');
     }
 
-    public function index(Request $request)
+    private function checkAccess(): ?string
     {
         if (!isset($_SESSION['staff_code'])) {
             $this->redirect('/login');
             return '';
+        }
+        if (($_SESSION['role'] ?? '') !== 'academic_staff') {
+            return $this->forbidden();
+        }
+        return null;
+    }
+
+    public function index(Request $request)
+    {
+        $denied = $this->checkAccess();
+        if ($denied !== null) {
+            return $denied;
         }
 
         $staffCode = $_SESSION['staff_code'] ?? 'MKA';

@@ -1,7 +1,6 @@
 <!-- errors/forbidden.php — standalone 403 "Access Denied" page.
-     NOTE (gap): nothing in app/controllers or app/core currently renders
-     this — every role guard in this codebase does $this->redirect('/login')
-     instead, so this page exists but is unreachable via normal navigation. -->
+     Rendered via Controller::forbidden() with HTTP status 403 when an
+     authenticated user lacks the required role or position. -->
 <!DOCTYPE html>
 <html lang="en">
 <head>

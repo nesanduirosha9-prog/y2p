@@ -76,9 +76,13 @@ $router->get('/logout', function (Request $request, Response $response) {
     (new AuthController())->logout();
 });
 
-// Dashboard: the officer's home is the Timetable view
+// Dashboard: redirects based on role in one hop
 $router->get('/dashboard', function (Request $request, Response $response) {
-    $response->redirect('/timetable');
+    if (isset($_SESSION['staff_code'])) {
+        $response->redirect((new AuthController())->dashboardUrlForRole($_SESSION['role'] ?? ''));
+        return;
+    }
+    $response->redirect('/login');
 });
 
 // Timetable Officer Routes

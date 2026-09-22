@@ -6,7 +6,6 @@
 // 3. fetch    — cache-first, falls back to the network on a miss.
 const CACHE_NAME = 'mvc-app-cache-v1';
 const urlsToCache = [
-  '/',
   '/css/style.css',
   '/js/main.js',
   '/manifest.json',

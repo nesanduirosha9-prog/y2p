@@ -152,6 +152,10 @@ class AuthController extends Controller
             return $this->jsonResponse($response, ['success' => false, 'message' => 'Enter a valid email address'], 400);
         }
 
+        if (defined('DEMO_AUTH') && DEMO_AUTH) {
+            return $this->jsonResponse($response, ['success' => true, 'message' => 'If this email is registered, a code has been sent.']);
+        }
+
         $otpModel = new OtpCodeModel();
         if ($otpModel->countRequestsSince($email, 'password_reset', 60) > 0) {
             return $this->jsonResponse($response, ['success' => false, 'message' => 'Please wait a minute before requesting another code.'], 429);
@@ -189,6 +193,11 @@ class AuthController extends Controller
 
         if (!preg_match('/^\d{6}$/', $otp)) {
             return $this->jsonResponse($response, ['success' => false, 'message' => 'Enter the 6-digit code'], 400);
+        }
+
+        if (defined('DEMO_AUTH') && DEMO_AUTH) {
+            $_SESSION['password_reset_verified'] = ['email' => $email, 'until' => time() + 300];
+            return $this->jsonResponse($response, ['success' => true]);
         }
 
         $otpModel = new OtpCodeModel();

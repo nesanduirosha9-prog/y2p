@@ -159,17 +159,7 @@ $leaveRecords = [
                         <span class="lv-selected-count-badge" id="lvDateCountBadge" style="display: none;">0 Days</span>
                     </div>
                     <div class="lv-calendar-card">
-                        <div class="lv-calendar" id="lvCalendar">
-                            <div class="lv-calendar-header">
-                                <button type="button" id="lvPrevMonth" title="Previous Month"><i class="fa-solid fa-chevron-left"></i></button>
-                                <span id="lvCalendarLabel"></span>
-                                <button type="button" id="lvNextMonth" title="Next Month"><i class="fa-solid fa-chevron-right"></i></button>
-                            </div>
-                            <div class="lv-calendar-weekdays">
-                                <span>Mo</span><span>Tu</span><span>We</span><span>Th</span><span>Fr</span><span>Sa</span><span>Su</span>
-                            </div>
-                            <div class="lv-calendar-grid" id="lvCalendarGrid"></div>
-                        </div>
+                        <?php require \app\core\Application::$ROOT_DIR . '/views/components/calendar.php'; ?>
                         <div class="lv-manual-date-row">
                             <i class="fa-regular fa-keyboard lv-manual-icon"></i>
                             <input type="text" class="req-input lv-manual-input" id="lvManualDate" placeholder="Type date (YYYY-MM-DD)">

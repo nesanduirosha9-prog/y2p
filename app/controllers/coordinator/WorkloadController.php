@@ -12,11 +12,23 @@ class WorkloadController extends Controller
         $this->setLayout('dashboard');
     }
 
-    public function distribution(Request $request)
+    private function checkAccess(): ?string
     {
         if (!isset($_SESSION['staff_code'])) {
             $this->redirect('/login');
             return '';
+        }
+        if (($_SESSION['position'] ?? '') !== 'coordinator') {
+            return $this->forbidden();
+        }
+        return null;
+    }
+
+    public function distribution(Request $request)
+    {
+        $denied = $this->checkAccess();
+        if ($denied !== null) {
+            return $denied;
         }
 
         return $this->render('coordinator/workload_distribution', [
@@ -30,9 +42,9 @@ class WorkloadController extends Controller
 
     public function scheduler(Request $request)
     {
-        if (!isset($_SESSION['staff_code'])) {
-            $this->redirect('/login');
-            return '';
+        $denied = $this->checkAccess();
+        if ($denied !== null) {
+            return $denied;
         }
 
         return $this->render('coordinator/workload_scheduler', [

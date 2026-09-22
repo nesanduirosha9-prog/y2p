@@ -1,5 +1,7 @@
 <?php
 
+use app\core\ViewHelpers;
+
 // Staff Details: read-only directory of teaching staff, split into two tabs
 // — Lecturer Details and Junior Staff Details — matching the EER's Senior
 // Lecturer / Junior Staff distinction. $lecturers, $juniorStaff, $courseMeta
@@ -7,13 +9,6 @@
 // renders empty tables). Search and the program/year filters run
 // client-side (lecturers.js); the year/program filters match a staff member
 // if ANY course they teach matches.
-
-function staffInitials(string $name): string
-{
-    $parts = preg_split('/\s+/', trim($name));
-    $letters = array_map(fn($p) => strtoupper(substr($p, 0, 1)), array_slice($parts, 0, 2));
-    return implode('', $letters);
-}
 
 /** Renders one staff directory table (used for both tabs below). */
 function renderStaffTable(string $idPrefix, array $staff, array $courseMeta, string $emptyLabel): void
@@ -72,7 +67,7 @@ function renderStaffTable(string $idPrefix, array $staff, array $courseMeta, str
                             <td><span class="pill pill-muted"><?= htmlspecialchars($code) ?></span></td>
                             <td>
                                 <div class="lec-identity">
-                                    <span class="lec-avatar"><?= htmlspecialchars(staffInitials($s['name'])) ?></span>
+                                    <span class="lec-avatar"><?= htmlspecialchars(ViewHelpers::staffInitials($s['name'])) ?></span>
                                     <span>
                                         <span class="lec-name"><?= htmlspecialchars($s['name']) ?></span>
                                         <span class="lec-dept"><?= htmlspecialchars($dept) ?></span>

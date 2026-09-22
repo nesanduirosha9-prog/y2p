@@ -81,6 +81,9 @@ $scheduledDuties = [
             <p class="page-head-sub">Allocate supportive members for weekly sessions, balance workloads automatically, and dispatch invites</p>
         </div>
         <div class="page-head-actions">
+            <button type="button" class="btn-outline" id="newSmRequestBtn">
+                <i class="fa-solid fa-user-plus"></i> New SM Request
+            </button>
             <button type="button" class="btn-primary" id="autoAllocateBtn">
                 <i class="fa-solid fa-wand-magic-sparkles"></i> Auto-Allocate (Lowest Workload)
             </button>
@@ -362,4 +365,5 @@ $scheduledDuties = [
     </div>
 </div>
 
+<?php require Application::$ROOT_DIR . '/views/components/sm_request_modal.php'; ?>
 <script src="/js/scheduler.js"></script>

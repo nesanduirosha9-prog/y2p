@@ -1,17 +1,11 @@
 <?php
 
+use app\core\ViewHelpers;
+
 // In-Charge "Accounts" / Role Assignment — Figma node 34:5044, frames
 // "Accounts" / "Account -> Change". $holders comes from
 // StaffModel::roleHolders(): the current Timetable Officer plus every
 // active Coordinator/In-Charge.
-
-function roleHolderLabel(array $h): string
-{
-    if ($h['role'] === 'timetable_officer') {
-        return 'Timetable Officer';
-    }
-    return $h['position'] === 'in_charge' ? 'In-Charge' : 'Coordinator';
-}
 
 function roleHolderPositionKey(array $h): string
 {
@@ -38,7 +32,7 @@ function roleHolderPositionKey(array $h): string
                 <tbody>
                     <?php foreach ($holders as $h): ?>
                         <tr>
-                            <td><span class="pill pill-muted"><?= htmlspecialchars(roleHolderLabel($h)) ?></span></td>
+                            <td><span class="pill pill-muted"><?= htmlspecialchars(ViewHelpers::roleHolderLabel($h)) ?></span></td>
                             <td><?= htmlspecialchars($h['name']) ?></td>
                             <td><?= htmlspecialchars($h['email']) ?></td>
                             <td>

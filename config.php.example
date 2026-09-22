@@ -19,3 +19,7 @@ define('DB_NAME', 'staffsync_db');
 // displays it with.
 define('SMTP_USERNAME', 'you@gmail.com');
 define('SMTP_APP_PASSWORD', '');
+
+// Demo mode: OTP delivery and verification are simulated. No code is emailed
+// and any 6-digit entry is accepted. Set false + fill SMTP creds for real auth.
+define('DEMO_AUTH', true);

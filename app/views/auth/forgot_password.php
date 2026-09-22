@@ -143,7 +143,7 @@
                     </div>
                 
                     <div class="login-card">
-                        <form id="passwordForm" action="/forgot-password/complete" method="POST">
+                        <form id="passwordForm" action="/forgot-password" method="POST">
                             <div class="form-group">
                                 <label for="create-password">New Password</label>
                                 <input type="password" id="create-password" name="create-password" required placeholder="Min. 8 characters">
