@@ -1,7 +1,7 @@
 # Routing refactor — role names out of URLs
 
 **Branch:** `refactor/resource-routes`
-**Status:** Phase 1 complete. Phases 2–3 follow in separate commits.
+**Status:** Phases 0–3c complete. Phase 3d assessed and not done (see below).
 
 ## Why
 
@@ -235,7 +235,137 @@ if a role ever needs a different landing page again.
 
 ## Phase 3 — collapsed stacks
 
-*(written when Phase 3 lands)*
+Three duplicated stacks collapsed, one commit each so any of them reverts alone.
+
+### 3a. Settings
+
+`instructor/SettingsController` and `timetable_officer/SettingsController` were
+the same file apart from the role they guarded and the view they rendered;
+`instructor/settings.php` and `timetable_officer/settings.php` were the same nine
+lines apart from a `$roleLabel` string.
+
+Now `app/controllers/SettingsController.php` (namespace `app\controllers`) and
+`app/views/settings.php`. `$roleLabel` is derived from the session. The guard is
+a login check, not a role check — Settings is open to everybody — so `index()`
+uses `requireLogin()` and `update()` uses `guardJson($response, 'role')` with no
+allowed values. The In-Charge handover panel logic is unchanged.
+
+### 3b. Workload distribution
+
+`coordinator\WorkloadController::distribution` and
+`in_charge\WorkloadController::distribution` differed in the position they
+guarded, four strings, and which 20-line view they rendered — and both views set
+`$mode = 'full'; $showSummaryCards = true;` and required the same
+`components/workload_matrix.php`.
+
+Now `app/controllers/WorkloadController.php` with `distribution()` and
+`scheduler()`, rendering `app/views/workload_distribution.php`. The page copy
+lives in a `COPY` constant keyed by position. **Both wordings and both wrapper
+CSS classes are preserved verbatim** — `workload_matrix.css` styles
+`.coordinator-workload-view` and `.in-charge-workload-view` separately, and the
+Coordinator's heading ("Course Workload Matrix", allocating) and the In-Charge's
+("Faculty Workload & Course Allocation", overseeing) are different on purpose.
+The scheduler button renders only for the Coordinator.
+
+`views/coordinator/workload_scheduler.php` moved to `views/workload_scheduler.php`
+so the view path still mirrors the controller that renders it.
+
+### 3c. Evaluations
+
+Three controllers — `instructor/`, `coordinator/`, `in_charge/` — differed in what
+they guarded and four strings each; the two that rendered anything both required
+`components/evaluations_review.php`.
+
+Now `app/controllers/EvaluationsController.php` and `app/views/evaluations.php`,
+same `COPY`-keyed-by-position approach, both wordings and both wrapper classes
+verbatim. A lecturer with no position is still redirected to `/courses`, because
+evaluations are done per course module — which is what the instructor controller
+already did, and which is why `views/instructor/evaluations.php` was unreachable.
+It was deleted along with the controller that would have rendered it.
+
+### 3d. Timetable and Courses — NOT done
+
+Deferred by decision, and on inspection only half of it is worth doing:
+
+- **Timetable — mergeable.** The two controllers (56 + 62 lines) share the
+  filter-parsing block and both model calls verbatim. They differ in the guard,
+  the title, the CSS, and one extra `RoomModel` call on the officer side. A merge
+  would save roughly 50 lines. The two views (209 and 322 lines) are genuinely
+  different markup and would stay separate.
+- **Courses — not worth merging.** `instructor/CoursesController` is 244 lines,
+  of which ~210 is a hardcoded course catalogue plus per-course assignment and
+  evaluation logic. `timetable_officer/CoursesController` is 42 lines that call
+  three models. They share nothing but the class name; merging them would produce
+  one class holding two unrelated methods and would make the code worse.
+
+### Files deleted
+
+| File | Phase |
+|---|---|
+| `app/controllers/instructor/SettingsController.php` | 3a |
+| `app/controllers/timetable_officer/SettingsController.php` | 3a |
+| `app/views/instructor/settings.php` | 3a |
+| `app/views/timetable_officer/settings.php` | 3a |
+| `app/controllers/coordinator/WorkloadController.php` | 3b |
+| `app/controllers/in_charge/WorkloadController.php` | 3b |
+| `app/views/coordinator/workload_distribution.php` | 3b |
+| `app/views/in_charge/workload_distribution.php` | 3b |
+| `app/controllers/instructor/EvaluationsController.php` | 3c |
+| `app/controllers/coordinator/EvaluationsController.php` | 3c |
+| `app/views/coordinator/evaluations.php` | 3c |
+| `app/controllers/in_charge/EvaluationsController.php` | 3c |
+| `app/views/in_charge/evaluations.php` | 3c |
+| `app/views/instructor/evaluations.php` | 3c — was unreachable |
+
+Net: **8 controllers and 7 views removed, 3 controllers and 3 views added.**
+
+### Still unreachable, deliberately left alone
+
+- `AccountsController::index()` and `views/in_charge/accounts.php` — the
+  standalone "Role Assignment" page. No route calls it: `/settings/handover`
+  redirects to the handover tab inside Settings, exactly as `/in-charge/accounts`
+  did before. Removing it is a separate cleanup, not part of a routing refactor.
+
+## Verification record
+
+Everything below was run against this branch.
+
+### Static
+
+- `php -l` clean on every `.php` file under `app/`.
+- 62 routes registered; all 31 pre-refactor paths still resolve.
+- 36 canonical routes, **none containing a role name**.
+- All 19 legacy redirect targets resolve to a registered route.
+- Every `render()` / `renderPartial()` target exists on disk.
+- `grep -rn -oE "['\"\`]/(instructor|coordinator|in-charge)/" --include="*.php" --include="*.js" app/`
+  returns hits **only** inside the `LEGACY ROUTE SHIMS` block of `index.php`.
+
+### End-to-end (php -S against the seeded MySQL, all four account types)
+
+**94 checks, 0 failures, 0 PHP errors in the server log.**
+
+- **70 navigation checks** — every sidebar item for the timetable officer, junior
+  academic staff, coordinator and in-charge; every legacy GET shim; the signed-out
+  boundary; the wrong-role boundary; the in-charge handover GET steps.
+- **24 write checks** — `POST /settings` for all four roles plus its validation
+  and signed-out paths; `POST /staff/{code}/approve|reject`;
+  `PUT /lecture-halls/{code}`; `POST /settings/handover/select|verify`; and each
+  legacy POST alias, confirming it reaches the controller rather than redirecting.
+- Rendered sidebars dumped per role: every `href` is role-free, and the in-charge
+  Staff item now points at `/staff` rather than `/coordinator/staff`.
+- Profile saves confirmed persisted in the database, including through the legacy
+  `POST /instructor/settings` alias. The four staff rows touched by the test were
+  restored to their `database/seeds/001_staff.sql` values afterwards.
+
+### Not covered by the automated run
+
+- Real browser rendering: CSS, JavaScript behaviour, and the visual state of each
+  screen. The checks above assert status codes, redirect targets, JSON bodies and
+  the absence of PHP errors — not that a page *looks* right.
+- The OTP step of the handover flow end to end, which needs a working SMTP
+  configuration to deliver the code.
+- Apache/XAMPP rewrite rules. The run used PHP's built-in server with
+  `app/public/index.php` as the router.
 
 ## Shim-removal checklist
 
