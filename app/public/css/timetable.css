@@ -138,6 +138,7 @@
     border: 1px solid #dde3ee;
     border-radius: 15px;
     overflow: auto;
+    max-height: max(360px, calc(100dvh - 210px));
 }
 
 .tt-grid {
@@ -621,6 +622,8 @@
        width next to a grid that already needs to scroll horizontally. */
     .tt-body {
         flex-direction: column;
+        align-items: stretch;
+        width: 100%;
     }
 
     .tt-year-tabs {
@@ -898,6 +901,33 @@
     background: #fafbfc;
 }
 
+.tsp-header-left {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.tsp-btn-back {
+    display: none;
+    align-items: center;
+    justify-content: center;
+    background: transparent;
+    border: none;
+    color: #64748b;
+    font-size: 16px;
+    cursor: pointer;
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    transition: all 0.15s ease;
+    flex-shrink: 0;
+}
+
+.tsp-btn-back:hover {
+    background: #f1f5f9;
+    color: #0f1c2e;
+}
+
 .tsp-header h2 {
     font-size: 15px;
     font-weight: 700;
@@ -1151,3 +1181,166 @@
     }
 }
 
+
+/* ==============================
+   Mobile Day Navigator
+   ============================== */
+.tt-day-nav {
+    display: none;
+    align-items: center;
+    justify-content: space-between;
+    padding: 6px 14px;
+    height: 56px;
+    box-sizing: border-box;
+    background: #ffffff;
+    border-bottom: 1px solid #eef1f6;
+    user-select: none;
+    position: sticky;
+    top: 0;
+    z-index: 5;
+    width: 100%;
+}
+
+.tt-day-nav-info {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+}
+
+.tt-day-nav-title {
+    font-size: 14px;
+    font-weight: 700;
+    color: #0f1c2e;
+    letter-spacing: -0.01em;
+}
+
+.tt-day-nav-date {
+    font-size: 11.5px;
+    font-weight: 500;
+    color: #6b7c96;
+}
+
+.tt-day-nav-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    min-width: 44px;
+    min-height: 44px;
+    border-radius: 8px;
+    background: #f8fafc;
+    border: 1px solid #dde3ee;
+    color: #1a3a6b;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.tt-day-nav-btn:hover:not(:disabled) {
+    background: #eef2f7;
+    border-color: #cbd5e1;
+    color: #0f172a;
+}
+
+.tt-day-nav-btn:disabled {
+    opacity: 0.3;
+    cursor: not-allowed;
+    pointer-events: none;
+}
+
+/* ==============================
+   Mobile / Responsive Overlays & Grid Fitting
+   ============================== */
+@media (max-width: 960px) {
+    .tt-grid-card {
+        border-radius: 12px;
+        overflow-x: hidden;
+    }
+
+    .tt-grid {
+        min-width: 0 !important;
+        width: 100% !important;
+    }
+
+    .tt-grid-corner,
+    .tt-grid-day-head {
+        top: 56px;
+        z-index: 4;
+    }
+}
+
+@media (max-width: 768px) {
+    /* Show mobile back button */
+    .tsp-btn-back {
+        display: flex;
+    }
+
+    /* Fixed full panel overlay matching Messages and Leave */
+    .tt-side-panel:not([hidden]) {
+        display: flex !important;
+        position: fixed;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        max-height: 100vh;
+        z-index: 1500;
+        background: #ffffff;
+        border-radius: 0;
+        border: none;
+        box-shadow: none;
+        overflow-y: auto;
+        animation: ttSlideUp 0.22s ease-out;
+    }
+
+    body.tt-panel-open {
+        overflow: hidden;
+    }
+
+    .tsp-header {
+        position: sticky;
+        top: 0;
+        z-index: 10;
+        background: #ffffff;
+        padding: 14px 18px;
+        border-bottom: 1px solid #eef1f6;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+    }
+
+    .tsp-body {
+        padding: 18px;
+        flex: 1;
+    }
+
+    .tsp-footer {
+        position: sticky;
+        bottom: 0;
+        z-index: 10;
+        background: #ffffff;
+        border-top: 1px solid #eef1f6;
+        padding: 14px 18px;
+        box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.05);
+    }
+
+    .tt-confirm-bar {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        border-radius: 0;
+        z-index: 1200;
+        margin-top: 0;
+    }
+}
+
+@keyframes ttSlideUp {
+    from {
+        opacity: 0;
+        transform: translateY(24px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}

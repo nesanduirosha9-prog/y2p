@@ -14,7 +14,10 @@ class NotificationModel
 {
     /**
      * The feed for one staff member, newest first:
-     *   [['type'=>'info', 'read'=>false, 'title'=>..., 'body'=>..., 'time'=>'10 minutes ago'], ...]
+     *   [['id'=>'<uuid>', 'type'=>'info', 'read'=>false, 'title'=>..., 'body'=>..., 'time'=>'10 minutes ago'], ...]
+     *
+     * `id` is the notification UUID, which the panel sends back to
+     * markRead() when the recipient opens one.
      */
     public function all(string $staffCode): array
     {
@@ -22,7 +25,7 @@ class NotificationModel
         // Age is computed against the DB clock (TIMESTAMPDIFF) so it doesn't
         // depend on PHP and MySQL agreeing on a timezone.
         $stmt = $pdo->prepare(
-            "SELECT n.type, n.title, n.body, nr.is_read,
+            "SELECT n.id, n.type, n.title, n.body, nr.is_read,
                     TIMESTAMPDIFF(SECOND, n.created_at, NOW()) AS age_seconds
              FROM notification_recipients nr
              JOIN notifications n ON n.id = nr.notification_id
@@ -33,6 +36,7 @@ class NotificationModel
 
         return array_map(function ($r) {
             return [
+                'id' => $r['id'],
                 'type' => $r['type'],
                 'read' => (bool) $r['is_read'],
                 'title' => $r['title'],
@@ -40,6 +44,47 @@ class NotificationModel
                 'time' => self::relativeTime((int) $r['age_seconds']),
             ];
         }, $stmt->fetchAll(PDO::FETCH_ASSOC));
+    }
+
+    /**
+     * Marks one notification read for one recipient. Scoped by staff_code as
+     * well as notification_id, so a forged id can only ever affect the
+     * caller's own row — is_read lives per (staff, notification) pair, which
+     * is the whole point of notification_recipients.
+     *
+     * Returns false when the pair does not exist; re-marking an already-read
+     * notification returns true (rowCount() is 0 for an unchanged row, so the
+     * check is on existence, not on rows affected).
+     */
+    public function markRead(string $staffCode, string $notificationId): bool
+    {
+        $pdo = Database::getConnection();
+        $stmt = $pdo->prepare(
+            "UPDATE notification_recipients
+                SET is_read = 1, read_at = COALESCE(read_at, NOW())
+              WHERE staff_code = :staff_code AND notification_id = :id"
+        );
+        $stmt->execute(['staff_code' => $staffCode, 'id' => $notificationId]);
+
+        $exists = $pdo->prepare(
+            "SELECT 1 FROM notification_recipients
+              WHERE staff_code = :staff_code AND notification_id = :id"
+        );
+        $exists->execute(['staff_code' => $staffCode, 'id' => $notificationId]);
+        return (bool) $exists->fetchColumn();
+    }
+
+    /** Marks every unread notification read for one recipient; returns how many changed. */
+    public function markAllRead(string $staffCode): int
+    {
+        $pdo = Database::getConnection();
+        $stmt = $pdo->prepare(
+            "UPDATE notification_recipients
+                SET is_read = 1, read_at = COALESCE(read_at, NOW())
+              WHERE staff_code = :staff_code AND is_read = 0"
+        );
+        $stmt->execute(['staff_code' => $staffCode]);
+        return $stmt->rowCount();
     }
 
     /** Count of unread notifications for one staff member. */

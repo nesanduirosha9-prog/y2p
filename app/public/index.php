@@ -25,6 +25,8 @@ use app\controllers\SettingsController;
 use app\controllers\WorkloadController;
 use app\controllers\EvaluationsController;
 use app\controllers\TimetableController;
+use app\controllers\MessagesController;
+use app\controllers\NotificationsController;
 
 // Several resources have one controller per role, so the class names collide
 // (there are two TimetableControllers, three EvaluationsControllers, ...).
@@ -39,7 +41,6 @@ use app\controllers\timetable_officer\LectureHallsController;
 use app\controllers\instructor\CoursesController as StaffCoursesController;
 use app\controllers\instructor\WorkloadController as StaffWorkloadController;
 use app\controllers\instructor\LeaveController;
-use app\controllers\instructor\MessagesController;
 use app\controllers\instructor\RequestsController;
 
 use app\controllers\coordinator\StaffController;
@@ -197,15 +198,35 @@ $router->get('/evaluations', function (Request $request, Response $response) {
     return (new EvaluationsController())->index($request);
 });
 
+// --- Messages --------------------------------------------------------------
+// One screen for both roles, differing only in the seeded conversations and in
+// whether group chats exist — the officer's are all direct messages, with the
+// Coordinator and the In-Charge only. Branching lives in the controller.
+$router->get('/messages', function (Request $request, Response $response) {
+    return (new MessagesController())->index($request);
+});
+
 // --- Academic staff screens with no officer equivalent ---------------------
 $router->get('/leave', function (Request $request, Response $response) {
     return (new LeaveController())->index($request);
 });
-$router->get('/messages', function (Request $request, Response $response) {
-    return (new MessagesController())->index($request);
-});
 $router->get('/requests', function (Request $request, Response $response) {
     return (new RequestsController())->index($request);
+});
+
+// --- Notifications ---------------------------------------------------------
+// JSON only — the feed itself is rendered inline on every dashboard page by
+// views/components/notifications.php. These two just persist "seen", so the
+// bell badge survives a reload. Open to every signed-in role; both are scoped
+// to the caller's own staff_code inside the controller.
+//
+// ORDERING: /notifications/read-all is two segments and /notifications/{id}/read
+// is three, so the {param} loop cannot shadow the literal whatever the order.
+$router->post('/notifications/read-all', function (Request $request, Response $response) {
+    return (new NotificationsController())->markAllRead($request, $response);
+});
+$router->post('/notifications/{id}/read', function (Request $request, Response $response, array $params) {
+    return (new NotificationsController())->markRead($request, $response, $params);
 });
 
 // --- Settings --------------------------------------------------------------

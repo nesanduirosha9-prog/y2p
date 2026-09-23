@@ -6,7 +6,7 @@
 // demo data set (dates generated relative to "today" so upcoming/history
 // always split sensibly regardless of when the page is opened), embedded as
 // JSON and rendered entirely client-side by /js/instructor/leave.js — the
-// same JSON-payload + JS-render approach instructor/messages.php uses for
+// same JSON-payload + JS-render approach views/messages.php uses for
 // $conversationsData, so stat totals, the Upcoming Leaves list, and the
 // History table all stay derived from one source instead of three.
 $title = "Leave Management";
@@ -20,14 +20,78 @@ function lvOffsetDate(DateTime $base, int $days): string
     return $d->format('Y-m-d');
 }
 
-$coverStaffOptions = ['Dr. N. Perera', 'Prof. A. Silva', 'Mr. K. Bandara', 'Dr. S. Rajapaksa', 'Ms. L. Wickramasinghe'];
+$instructorRoster = [
+    ['code' => 'TMF', 'name' => 'Ms. Thilini Fernando', 'department' => 'Computer Science'],
+    ['code' => 'MKA', 'name' => 'Mr. Kwame Addo', 'department' => 'Computer Science'],
+    ['code' => 'MEM', 'name' => 'Ms. Efua Mensah', 'department' => 'Computer Science'],
+    ['code' => 'MAB', 'name' => 'Mr. Ato Baidoo', 'department' => 'Computer Science'],
+    ['code' => 'MYD', 'name' => 'Ms. Yaa Darko', 'department' => 'Computer Science'],
+    ['code' => 'MKO', 'name' => 'Mr. Kojo Amoah', 'department' => 'Computer Science'],
+    ['code' => 'MNA', 'name' => 'Ms. Nana Ama', 'department' => 'Computer Science'],
+    ['code' => 'MAT', 'name' => 'Mr. Atta Tetteh', 'department' => 'Computer Science'],
+    ['code' => 'MEQ', 'name' => 'Ms. Esi Quaye', 'department' => 'Computer Science'],
+    ['code' => 'MAD', 'name' => 'Mr. Adom Boateng', 'department' => 'Computer Science'],
+    ['code' => 'MYB', 'name' => 'Ms. Yaw Bediako', 'department' => 'Information Systems'],
+];
 
 $leaveRecords = [
-    ['id' => 1, 'type' => 'Annual Leave', 'dates' => [lvOffsetDate($today, 12), lvOffsetDate($today, 13), lvOffsetDate($today, 14)], 'reason' => 'Family holiday', 'cover' => 'Dr. N. Perera', 'cancelled' => false],
-    ['id' => 2, 'type' => 'Medical Leave', 'dates' => [lvOffsetDate($today, 3)], 'reason' => 'Medical appointment', 'cover' => '', 'cancelled' => false, 'timeFrom' => '09:00', 'timeTo' => '12:00'],
-    ['id' => 3, 'type' => 'Casual Leave', 'dates' => [lvOffsetDate($today, -35), lvOffsetDate($today, -34), lvOffsetDate($today, -33)], 'reason' => 'Family event', 'cover' => 'Dr. N. Perera', 'cancelled' => false],
-    ['id' => 4, 'type' => 'Sick Leave', 'dates' => [lvOffsetDate($today, -70)], 'reason' => 'Fever', 'cover' => '', 'cancelled' => false],
-    ['id' => 5, 'type' => 'Conference Leave', 'dates' => [lvOffsetDate($today, -20), lvOffsetDate($today, -19)], 'reason' => 'ICCS 2025 Conference', 'cover' => 'Prof. A. Silva', 'cancelled' => true],
+    [
+        'id' => 1,
+        'type' => 'Study Leave',
+        'dates' => [lvOffsetDate($today, 12), lvOffsetDate($today, 13), lvOffsetDate($today, 14)],
+        'reason' => 'Curriculum research',
+        'cover_staff' => [
+            ['code' => 'MKO', 'name' => 'Mr. Kojo Amoah', 'date' => lvOffsetDate($today, 12)],
+            ['code' => 'MKO', 'name' => 'Mr. Kojo Amoah', 'date' => lvOffsetDate($today, 13)],
+            ['code' => 'MNA', 'name' => 'Ms. Nana Ama', 'date' => lvOffsetDate($today, 14)],
+        ],
+        'cancelled' => false,
+    ],
+    [
+        'id' => 2,
+        'type' => 'Sick Leave',
+        'dates' => [lvOffsetDate($today, 3)],
+        'reason' => 'Medical appointment',
+        'cover_staff' => [
+            ['code' => 'MEM', 'name' => 'Ms. Efua Mensah', 'date' => lvOffsetDate($today, 3)],
+        ],
+        'cancelled' => false,
+        'timeFrom' => '09:00',
+        'timeTo' => '12:00',
+    ],
+    [
+        'id' => 3,
+        'type' => 'Other',
+        'dates' => [lvOffsetDate($today, -35), lvOffsetDate($today, -34), lvOffsetDate($today, -33)],
+        'reason' => 'Family event',
+        'cover_staff' => [
+            ['code' => 'MNA', 'name' => 'Ms. Nana Ama', 'date' => lvOffsetDate($today, -35)],
+            ['code' => 'MAB', 'name' => 'Mr. Ato Baidoo', 'date' => lvOffsetDate($today, -34)],
+            ['code' => 'MAB', 'name' => 'Mr. Ato Baidoo', 'date' => lvOffsetDate($today, -33)],
+        ],
+        'cancelled' => false,
+    ],
+    [
+        'id' => 4,
+        'type' => 'Sick Leave',
+        'dates' => [lvOffsetDate($today, -70)],
+        'reason' => 'Fever recovery',
+        'cover_staff' => [
+            ['code' => 'MYD', 'name' => 'Ms. Yaa Darko', 'date' => lvOffsetDate($today, -70)],
+        ],
+        'cancelled' => false,
+    ],
+    [
+        'id' => 5,
+        'type' => 'Study Leave',
+        'dates' => [lvOffsetDate($today, -20), lvOffsetDate($today, -19)],
+        'reason' => 'ICCS 2025 Workshop',
+        'cover_staff' => [
+            ['code' => 'MAB', 'name' => 'Mr. Ato Baidoo', 'date' => lvOffsetDate($today, -20)],
+            ['code' => 'TMF', 'name' => 'Ms. Thilini Fernando', 'date' => lvOffsetDate($today, -19)],
+        ],
+        'cancelled' => true,
+    ],
 ];
 ?>
 
@@ -136,20 +200,23 @@ $leaveRecords = [
                 <button type="button" class="modal-close" id="closeLeaveModal" title="Close" aria-label="Close"><i class="fa-solid fa-xmark"></i></button>
             </div>
             <div class="lv-panel-body">
-                <div class="form-group full-width">
-                    <label class="lv-field-label"><i class="fa-solid fa-layer-group"></i> Leave Type</label>
-                    <div class="req-select-wrapper">
-                        <select class="req-select" id="lvType">
-                            <option value="">Select leave type&hellip;</option>
-                            <option>Annual Leave</option>
-                            <option>Casual Leave</option>
-                            <option>Sick Leave</option>
-                            <option>Conference Leave</option>
-                            <option>Study Leave</option>
-                            <option>Maternity Leave</option>
-                            <option>No-Pay Leave</option>
-                        </select>
-                        <i class="fa-solid fa-chevron-down chevron"></i>
+                <div class="lv-form-row-2">
+                    <div class="form-group">
+                        <label class="lv-field-label"><i class="fa-solid fa-layer-group"></i> Leave Type</label>
+                        <div class="req-select-wrapper">
+                            <select class="req-select" id="lvType">
+                                <option value="">Select type&hellip;</option>
+                                <option>Sick Leave</option>
+                                <option>Study Leave</option>
+                                <option>Other</option>
+                            </select>
+                            <i class="fa-solid fa-chevron-down chevron"></i>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="lv-field-label"><i class="fa-regular fa-pen-to-square"></i> Reason <span class="lv-optional" style="font-weight: 400; color: #94a3b8; font-size: 11px;">(Optional)</span></label>
+                        <input type="text" class="req-input" id="lvReason" placeholder="Reason (optional)..." autocomplete="off">
                     </div>
                 </div>
 
@@ -160,71 +227,52 @@ $leaveRecords = [
                     </div>
                     <div class="lv-calendar-card">
                         <?php require \app\core\Application::$ROOT_DIR . '/views/components/calendar.php'; ?>
-                        <div class="lv-manual-date-row">
-                            <i class="fa-regular fa-keyboard lv-manual-icon"></i>
-                            <input type="text" class="req-input lv-manual-input" id="lvManualDate" placeholder="Type date (YYYY-MM-DD)">
-                            <button type="button" class="btn-outline-sm" id="lvAddManualDate">Add</button>
+                        <div class="lv-time-range-bar">
+                            <div class="lv-time-bar-top">
+                                <label class="lv-time-bar-label"><i class="fa-regular fa-clock"></i> Leave Hours</label>
+                                <div class="lv-seg" id="lvDurationSeg" role="group" aria-label="Leave hours">
+                                    <button type="button" class="lv-seg-btn active" data-duration="full">Full Day</button>
+                                    <button type="button" class="lv-seg-btn" data-duration="partial">Specific Time</button>
+                                </div>
+                            </div>
+                            <div class="lv-time-inputs-row" id="lvTimeInputsRow" hidden>
+                                <div class="lv-time-group">
+                                    <div class="lv-time-box">
+                                        <span class="lv-time-tag">From</span>
+                                        <input type="time" class="lv-time-clean-input" id="lvTimeFrom" value="08:00">
+                                    </div>
+                                    <span class="lv-time-divider"><i class="fa-solid fa-arrow-right"></i></span>
+                                    <div class="lv-time-box">
+                                        <span class="lv-time-tag">To</span>
+                                        <input type="time" class="lv-time-clean-input" id="lvTimeTo" value="12:00">
+                                    </div>
+                                </div>
+                                <div class="lv-time-summary-chip" id="lvTimePreviewText">
+                                    <i class="fa-regular fa-clock"></i> 8:00 AM &ndash; 12:00 PM <strong>(4 hrs)</strong>
+                                </div>
+                            </div>
                         </div>
                     </div>
                     <div class="lv-selected-dates" id="lvSelectedDates"></div>
                 </div>
 
-                <div class="lv-partial-card">
-                    <div class="lv-partial-head">
-                        <div class="lv-partial-head-left">
-                            <div class="lv-partial-icon"><i class="fa-regular fa-clock"></i></div>
-                            <div>
-                                <p class="lv-partial-title">Partial Day Leave</p>
-                                <p class="lv-partial-desc">Specify specific hours instead of full day</p>
-                            </div>
-                        </div>
-                        <div class="lv-toggle" id="lvPartialToggle" role="button" tabindex="0">
-                            <div class="lv-toggle-track" id="lvPartialTrack">
-                                <div class="lv-toggle-thumb"></div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="lv-partial-body" id="lvPartialBody" hidden>
-                        <div class="lv-time-grid">
-                            <div class="form-group" style="margin:0">
-                                <label class="lv-time-label">FROM TIME</label>
-                                <div class="lv-time-input-wrap">
-                                    <input type="time" class="req-input lv-time-input" id="lvTimeFrom" value="08:00">
-                                </div>
-                            </div>
-                            <div class="form-group" style="margin:0">
-                                <label class="lv-time-label">TO TIME</label>
-                                <div class="lv-time-input-wrap">
-                                    <input type="time" class="req-input lv-time-input" id="lvTimeTo" value="10:00">
-                                </div>
-                            </div>
-                            <div class="lv-time-preview" id="lvTimePreview">
-                                <i class="fa-regular fa-clock"></i>
-                                <span id="lvTimePreviewText"></span>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="lv-fullday-note" id="lvFulldayNote">
-                        <i class="fa-solid fa-circle-info"></i>
-                        <span>Full day leave &mdash; absent for the entire day</span>
-                    </div>
-                </div>
-
+                <!-- Per-Day Cover Staff Assignment (Instructors Only, Mandatory) -->
                 <div class="form-group full-width">
-                    <label class="lv-field-label"><i class="fa-regular fa-pen-to-square"></i> Reason</label>
-                    <textarea class="req-input req-textarea" id="lvReason" rows="3" placeholder="Briefly describe the reason for your leave request..."></textarea>
-                </div>
-
-                <div class="form-group full-width">
-                    <label class="lv-field-label"><i class="fa-solid fa-user-shield"></i> Cover Staff <span class="lv-optional">(optional)</span></label>
-                    <div class="req-select-wrapper">
-                        <select class="req-select" id="lvCover">
-                            <option value="">Select cover staff member&hellip;</option>
-                            <?php foreach ($coverStaffOptions as $name): ?>
-                                <option value="<?= htmlspecialchars($name) ?>"><?= htmlspecialchars($name) ?></option>
-                            <?php endforeach; ?>
-                        </select>
-                        <i class="fa-solid fa-chevron-down chevron"></i>
+                    <div class="lv-section-header">
+                        <label class="lv-field-label" style="margin: 0;">
+                            <i class="fa-solid fa-user-shield"></i> Cover Staff by Date <span class="lv-required" style="color: #ef4444; font-size: 11px; font-weight: 700;">* Required</span>
+                        </label>
+                        <button type="button" class="lv-apply-all-btn" id="lvApplyAllBtn" style="display: none;">
+                            <i class="fa-solid fa-clone"></i> Apply to all days
+                        </button>
+                    </div>
+                    <p class="lv-field-hint" style="font-size: 11.5px; color: #64748b; margin-top: 3px; margin-bottom: 8px;">
+                        Assign fellow instructors to cover each date of your leave. Every leave day must have an assigned cover instructor before submitting.
+                    </p>
+                    <div id="lvPerDayCoverContainer">
+                        <div class="lv-no-dates-cover-hint" id="lvNoDatesCoverHint">
+                            <i class="fa-regular fa-calendar-check"></i> Select dates from the calendar above to assign cover instructors.
+                        </div>
                     </div>
                 </div>
             </div>
@@ -240,5 +288,11 @@ $leaveRecords = [
     </div>
 </div>
 
-<script type="application/json" id="leaveData"><?= json_encode(['today' => $today->format('Y-m-d'), 'records' => $leaveRecords]) ?></script>
+<script type="application/json" id="leaveData"><?= json_encode([
+    'today' => $today->format('Y-m-d'),
+    'records' => $leaveRecords,
+    'instructors' => $instructorRoster,
+    'currentUser' => $_SESSION['staff_code'] ?? 'MKA',
+]) ?></script>
 <script src="/js/instructor/leave.js"></script>
+

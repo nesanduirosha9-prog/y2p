@@ -63,6 +63,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const tspBody = document.getElementById('tspBody');
     const tspFooter = document.getElementById('tspFooter');
     document.getElementById('tspClose').addEventListener('click', closePanel);
+    document.getElementById('tspBack')?.addEventListener('click', closePanel);
 
     function openPanel(title, subtitle, bodyHtml, footerHtml) {
         tspTitle.textContent = title;
@@ -70,10 +71,12 @@ document.addEventListener('DOMContentLoaded', () => {
         tspBody.innerHTML = bodyHtml;
         tspFooter.innerHTML = footerHtml || '';
         sidePanel.hidden = false;
+        document.body.classList.add('tt-panel-open');
     }
 
     function closePanel() {
         sidePanel.hidden = true;
+        document.body.classList.remove('tt-panel-open');
         exitPicking();
     }
 
@@ -352,10 +355,272 @@ document.addEventListener('DOMContentLoaded', () => {
             const head = document.querySelector(`.tt-grid-day-head[data-day-key="${key}"] .tt-day-num`);
             if (head) head.textContent = addDays(baseMonday, i).getDate();
         });
+        updateDayView(true);
     }
 
     document.getElementById('weekPrevBtn').addEventListener('click', () => { weekOffset -= 1; updateWeekDisplay(); });
     document.getElementById('weekNextBtn').addEventListener('click', () => { weekOffset += 1; updateWeekDisplay(); });
+
+    // ------------------------------------------------------------------
+    // Day Navigator & Resolution-based Day Fitting
+    // ------------------------------------------------------------------
+    const dayShort = { mon: 'Mon', tue: 'Tue', wed: 'Wed', thu: 'Thu', fri: 'Fri' };
+
+    function getContainerWidth() {
+        const section = document.querySelector('.tt-section:not([hidden])');
+        const card = section?.querySelector('.tt-grid-card') || document.querySelector('.tt-grid-card');
+        const w = card ? card.getBoundingClientRect().width : 0;
+        return w > 0 ? w : window.innerWidth;
+    }
+
+    function getVisibleDaysCount() {
+        const width = getContainerWidth();
+        if (width < 420) return 1;
+        if (width < 640) return 2;
+        if (width < 900) return 3;
+        return 5;
+    }
+
+    function getInitialDayIndex(visibleCount) {
+        const today = new Date();
+        const dayOfWeek = today.getDay(); // 0: Sun, 1: Mon, 2: Tue, 3: Wed, 4: Thu, 5: Fri, 6: Sat
+        let dayIdx = 0; // default Monday
+        if (dayOfWeek >= 1 && dayOfWeek <= 5) {
+            dayIdx = dayOfWeek - 1; // 0 for Mon, 1 for Tue, 2 for Wed, 3 for Thu, 4 for Fri
+        }
+        const maxStart = Math.max(0, 5 - visibleCount);
+        return Math.min(dayIdx, maxStart);
+    }
+
+    let currentStartDayIndex = getInitialDayIndex(getVisibleDaysCount());
+
+    function getDayDate(i) {
+        if (!weekStartStr) return null;
+        const baseMonday = addDays(new Date(`${weekStartStr}T00:00:00`), weekOffset * 7);
+        return addDays(baseMonday, i);
+    }
+
+    function formatDayNavDate(date) {
+        if (!date) return '';
+        return `${date.getDate()} ${monthNames[date.getMonth()]} ${date.getFullYear()}`;
+    }
+
+    function formatDayNavDateShort(date) {
+        if (!date) return '';
+        return `${date.getDate()} ${monthNames[date.getMonth()]}`;
+    }
+
+    function updateDayNavDisplay(visibleKeys, visibleCount) {
+        const firstIdx = dayKeys.indexOf(visibleKeys[0]);
+        const lastIdx = dayKeys.indexOf(visibleKeys[visibleKeys.length - 1]);
+        const firstDate = getDayDate(firstIdx);
+        const lastDate = getDayDate(lastIdx);
+
+        let title = '';
+        let sub = '';
+
+        if (visibleCount === 1) {
+            title = days[visibleKeys[0]];
+            sub = formatDayNavDate(firstDate);
+        } else {
+            title = `${dayShort[visibleKeys[0]]} – ${dayShort[visibleKeys[visibleKeys.length - 1]]}`;
+            sub = `${formatDayNavDateShort(firstDate)} – ${formatDayNavDateShort(lastDate)}`;
+        }
+
+        const myTitle = document.getElementById('dayNavTitle');
+        const mySub = document.getElementById('dayNavDate');
+        if (myTitle) myTitle.textContent = title;
+        if (mySub) mySub.textContent = sub;
+
+        const stTitle = document.getElementById('stDayNavTitle');
+        const stSub = document.getElementById('stDayNavDate');
+        if (stTitle) stTitle.textContent = title;
+        if (stSub) stSub.textContent = sub;
+
+        // Boundary state: Monday only Next active, Friday only Prev active
+        const isAtStart = (firstIdx === 0);
+        const isAtEnd = (lastIdx >= dayKeys.length - 1);
+
+        const prevBtn = document.getElementById('dayPrevBtn');
+        const nextBtn = document.getElementById('dayNextBtn');
+        if (prevBtn) prevBtn.disabled = isAtStart;
+        if (nextBtn) nextBtn.disabled = isAtEnd;
+
+        const stPrevBtn = document.getElementById('stDayPrevBtn');
+        const stNextBtn = document.getElementById('stDayNextBtn');
+        if (stPrevBtn) stPrevBtn.disabled = isAtStart;
+        if (stNextBtn) stNextBtn.disabled = isAtEnd;
+    }
+
+    function applyDayVisibilityToGrid(gridEl, visibleKeys, visibleCount) {
+        if (!gridEl) return;
+
+        if (visibleCount >= 5) {
+            gridEl.style.gridTemplateColumns = '';
+            gridEl.style.minWidth = '';
+            gridEl.style.width = '';
+
+            gridEl.querySelectorAll('.tt-grid-day-head').forEach((head, idx) => {
+                head.style.display = '';
+                head.style.gridColumn = String(idx + 2);
+            });
+
+            gridEl.querySelectorAll('.tt-cell, .tt-block').forEach(el => {
+                const k = el.dataset.dayKey;
+                const originalCol = dayKeys.indexOf(k) + 2;
+                el.style.display = '';
+                el.style.gridColumn = String(originalCol);
+            });
+            return;
+        }
+
+        gridEl.style.gridTemplateColumns = `54px repeat(${visibleCount}, minmax(0, 1fr))`;
+        gridEl.style.minWidth = '0';
+        gridEl.style.width = '100%';
+
+        gridEl.querySelectorAll('.tt-grid-day-head').forEach(head => {
+            const k = head.dataset.dayKey;
+            if (visibleKeys.includes(k)) {
+                const colPos = visibleKeys.indexOf(k) + 2;
+                head.style.display = 'flex';
+                head.style.gridColumn = String(colPos);
+            } else {
+                head.style.display = 'none';
+            }
+        });
+
+        gridEl.querySelectorAll('.tt-cell, .tt-block').forEach(el => {
+            const k = el.dataset.dayKey;
+            if (visibleKeys.includes(k)) {
+                const colPos = visibleKeys.indexOf(k) + 2;
+                el.style.display = '';
+                el.style.gridColumn = String(colPos);
+            } else {
+                el.style.display = 'none';
+            }
+        });
+
+        // Ensure the first visible day on row 6 displays the Lunch Break label
+        const lunchCells = gridEl.querySelectorAll('.tt-cell-lunch');
+        lunchCells.forEach(cell => {
+            const k = cell.dataset.dayKey;
+            const existingLabel = cell.querySelector('.lunch-label');
+            if (visibleKeys.includes(k) && k === visibleKeys[0]) {
+                if (!existingLabel) {
+                    const span = document.createElement('span');
+                    span.className = 'lunch-label';
+                    span.textContent = 'Lunch Break';
+                    cell.appendChild(span);
+                }
+            } else {
+                if (existingLabel && k !== 'wed') {
+                    existingLabel.remove();
+                }
+            }
+        });
+    }
+
+    let lastVisibleCount = null;
+    function updateDayView(force = false) {
+        const visibleCount = getVisibleDaysCount();
+        if (!force && visibleCount === lastVisibleCount) return;
+        lastVisibleCount = visibleCount;
+
+        const dayNavs = document.querySelectorAll('.tt-day-nav');
+
+        if (visibleCount >= 5) {
+            dayNavs.forEach(nav => nav.style.display = 'none');
+            const myGrid = document.querySelector('#myTimetableSection .tt-grid');
+            if (myGrid) applyDayVisibilityToGrid(myGrid, dayKeys, 5);
+            const stGrid = document.getElementById('stGrid');
+            if (stGrid) applyDayVisibilityToGrid(stGrid, dayKeys, 5);
+            return;
+        }
+
+        dayNavs.forEach(nav => nav.style.display = 'flex');
+
+        const maxStart = Math.max(0, 5 - visibleCount);
+        currentStartDayIndex = Math.max(0, Math.min(currentStartDayIndex, maxStart));
+        const visibleKeys = dayKeys.slice(currentStartDayIndex, currentStartDayIndex + visibleCount);
+
+        updateDayNavDisplay(visibleKeys, visibleCount);
+
+        const myGrid = document.querySelector('#myTimetableSection .tt-grid');
+        if (myGrid) applyDayVisibilityToGrid(myGrid, visibleKeys, visibleCount);
+        const stGrid = document.getElementById('stGrid');
+        if (stGrid) applyDayVisibilityToGrid(stGrid, visibleKeys, visibleCount);
+    }
+
+    function goPrevDay() {
+        if (currentStartDayIndex > 0) {
+            currentStartDayIndex = Math.max(0, currentStartDayIndex - 1);
+            updateDayView(true);
+        }
+    }
+
+    function goNextDay() {
+        const visibleCount = getVisibleDaysCount();
+        const maxStart = Math.max(0, 5 - visibleCount);
+        if (currentStartDayIndex < maxStart) {
+            currentStartDayIndex = Math.min(maxStart, currentStartDayIndex + 1);
+            updateDayView(true);
+        }
+    }
+
+    document.getElementById('dayPrevBtn')?.addEventListener('click', goPrevDay);
+    document.getElementById('dayNextBtn')?.addEventListener('click', goNextDay);
+    document.getElementById('stDayPrevBtn')?.addEventListener('click', goPrevDay);
+    document.getElementById('stDayNextBtn')?.addEventListener('click', goNextDay);
+
+    function bindSwipeGestures(element) {
+        if (!element) return;
+        let touchStartX = 0;
+        let touchStartY = 0;
+
+        element.addEventListener('touchstart', (e) => {
+            if (e.touches.length === 1) {
+                touchStartX = e.touches[0].clientX;
+                touchStartY = e.touches[0].clientY;
+            }
+        }, { passive: true });
+
+        element.addEventListener('touchend', (e) => {
+            if (getVisibleDaysCount() >= 5) return;
+            const touchEndX = e.changedTouches[0].clientX;
+            const touchEndY = e.changedTouches[0].clientY;
+            const diffX = touchEndX - touchStartX;
+            const diffY = touchEndY - touchStartY;
+
+            if (Math.abs(diffX) > 40 && Math.abs(diffX) > Math.abs(diffY) * 1.5) {
+                if (diffX < 0) {
+                    goNextDay();
+                } else {
+                    goPrevDay();
+                }
+            }
+        }, { passive: true });
+    }
+
+    bindSwipeGestures(document.querySelector('#myTimetableSection .tt-grid-card'));
+    bindSwipeGestures(document.querySelector('#studentTimetableSection .tt-grid-card'));
+
+    if (window.ResizeObserver) {
+        const ro = new ResizeObserver(() => {
+            updateDayView();
+        });
+        document.querySelectorAll('.tt-grid-card').forEach(c => ro.observe(c));
+    } else {
+        let resizeTimer = null;
+        window.addEventListener('resize', () => {
+            clearTimeout(resizeTimer);
+            resizeTimer = setTimeout(() => {
+                updateDayView();
+            }, 80);
+        });
+    }
+
+    // Initial calculation on page load
+    updateDayView(true);
 
     // ------------------------------------------------------------------
     // Grid click delegation: session blocks + free-cell picking
@@ -455,10 +720,12 @@ document.addEventListener('DOMContentLoaded', () => {
         myFilters.hidden = isStudent;
         stFilters.hidden = !isStudent;
         ttActionsMy.hidden = isStudent;
-        ttLegendInline.hidden = isStudent;
+        ttLegendInline.hidden = false;
+        document.getElementById('chipMine').hidden = !isStudent;
         myTimetableSection.hidden = isStudent;
         studentTimetableSection.hidden = !isStudent;
         if (isStudent) renderStudentTimetable();
+        updateDayView(true);
     });
 
     // ------------------------------------------------------------------
@@ -502,7 +769,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
 
         let html = '<div class="tt-grid-corner"></div>';
-        dayKeys.forEach(k => { html += `<div class="tt-grid-day-head">${days[k]}</div>`; });
+        dayKeys.forEach(k => { html += `<div class="tt-grid-day-head" data-day-key="${k}">${days[k]}</div>`; });
 
         hours.forEach((h, rowIndex) => {
             html += `<div class="tt-grid-time">${hourLabel(h)}</div>`;
@@ -515,13 +782,14 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (cell) {
                     const isMine = myCourseCodes.includes(cell.code);
                     html += `<div class="tt-block type-${cell.type}${isMine ? ' st-block-mine' : ''}"
+                        data-day-key="${dayKey}"
                         style="grid-column:${col}; grid-row:${row} / span ${cell.duration};">
                         <p class="tt-block-code">${cell.code}</p>
                         <p class="tt-block-title">${cell.title}</p>
                         <p class="tt-block-loc">${cell.location}</p>
                     </div>`;
                 } else {
-                    html += `<div class="tt-cell ${isLunch ? 'tt-cell-lunch' : ''}" style="grid-column:${col}; grid-row:${row};">
+                    html += `<div class="tt-cell ${isLunch ? 'tt-cell-lunch' : ''}" data-day-key="${dayKey}" style="grid-column:${col}; grid-row:${row};">
                         ${isLunch && dayKey === 'wed' ? '<span class="lunch-label">Lunch Break</span>' : ''}
                     </div>`;
                 }
@@ -548,6 +816,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
         document.getElementById('stCaption').textContent =
             `${dept.toUpperCase()} Y${year} schedule · ★ = your courses · empty cells = students are free${pubNote}`;
+
+        updateDayView(true);
     }
 
     document.getElementById('stDeptToggle').addEventListener('click', (e) => {

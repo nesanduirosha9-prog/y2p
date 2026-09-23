@@ -2,7 +2,7 @@
 // date-range filtering) and the Request Leave modal (multi-date calendar
 // picker + partial-day toggle) all render from the `leaveData` JSON payload
 // embedded by the view — same JSON-payload + client-render approach as
-// instructor/messages.js. DOM-only demo — nothing persists past a reload.
+// messages.js. DOM-only demo — nothing persists past a reload.
 document.addEventListener('DOMContentLoaded', () => {
     const dataEl = document.getElementById('leaveData');
     if (!dataEl) return;
@@ -11,6 +11,11 @@ document.addEventListener('DOMContentLoaded', () => {
     const TODAY = payload.today;
     let leaves = payload.records;
     let nextId = Math.max(0, ...leaves.map(l => l.id)) + 1;
+
+    const INSTRUCTORS = payload.instructors || [];
+    const CURRENT_USER = payload.currentUser || '';
+    // Only junior instructors, excluding the logged-in user
+    const availableInstructors = INSTRUCTORS.filter(i => i.code !== CURRENT_USER);
 
     const ANNUAL_ALLOWANCE = 21;
 
@@ -25,6 +30,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function fmtTime(t) {
+        if (!t) return '';
         const [h, m] = t.split(':').map(Number);
         const suffix = h >= 12 ? 'PM' : 'AM';
         const hour12 = h % 12 || 12;
@@ -33,11 +39,61 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function esc(str) {
         const div = document.createElement('div');
-        div.textContent = str;
+        div.textContent = str || '';
         return div.innerHTML;
     }
 
     function isPartial(l) { return !!(l.timeFrom && l.timeTo); }
+
+    function renderCoverBadges(l) {
+        let staffList = [];
+        if (Array.isArray(l.cover_staff) && l.cover_staff.length > 0) {
+            staffList = l.cover_staff;
+        } else if (l.perDayCover && Object.keys(l.perDayCover).length > 0) {
+            staffList = Object.entries(l.perDayCover).map(([d, c]) => ({ date: d, code: c.code, name: c.name }));
+        } else if (l.cover) {
+            const matched = INSTRUCTORS.find(i => i.name === l.cover || i.code === l.cover);
+            if (matched) {
+                staffList = [{ code: matched.code, name: matched.name, date: '' }];
+            } else {
+                return `<span class="lv-cover-label">${esc(l.cover)}</span>`;
+            }
+        }
+
+        if (!staffList.length) {
+            return '<span style="color:#94a3b8;">&mdash;</span>';
+        }
+
+        // Group by instructor code preserving order of appearance
+        const map = new Map();
+        staffList.forEach(item => {
+            if (!item || !item.code) return;
+            if (!map.has(item.code)) {
+                map.set(item.code, {
+                    code: item.code,
+                    name: item.name || item.code,
+                    dates: []
+                });
+            }
+            if (item.date) {
+                map.get(item.code).dates.push(item.date);
+            }
+        });
+
+        if (map.size === 0) {
+            return '<span style="color:#94a3b8;">&mdash;</span>';
+        }
+
+        const badges = Array.from(map.values()).map(info => {
+            let title = info.name;
+            if (info.dates.length > 0) {
+                title += ` (${info.dates.join(', ')})`;
+            }
+            return `<span class="tag tag-instructor" title="${esc(title)}">${esc(info.code)}</span>`;
+        });
+
+        return `<div class="tag-row">${badges.join('')}</div>`;
+    }
 
     // ---- Stats / Upcoming / History rendering ----
 
@@ -67,9 +123,10 @@ document.addEventListener('DOMContentLoaded', () => {
             const sorted = sortedDates(l);
             const partial = isPartial(l);
             const canCancel = sorted[0] >= TODAY;
+            const metaReason = (l.reason && l.reason !== '—') ? ` &middot; ${esc(l.reason)}` : '';
             const meta = partial
-                ? `${fmtDates(sorted)} &middot; ${fmtTime(l.timeFrom)} &ndash; ${fmtTime(l.timeTo)} &middot; ${esc(l.reason)}`
-                : `${fmtDates(sorted)} &middot; ${l.dates.length} day${l.dates.length !== 1 ? 's' : ''} &middot; ${esc(l.reason)}`;
+                ? `${fmtDates(sorted)} &middot; ${fmtTime(l.timeFrom)} &ndash; ${fmtTime(l.timeTo)}${metaReason}`
+                : `${fmtDates(sorted)} &middot; ${l.dates.length} day${l.dates.length !== 1 ? 's' : ''}${metaReason}`;
 
             return `
                 <div class="lv-row">
@@ -78,7 +135,10 @@ document.addEventListener('DOMContentLoaded', () => {
                         <div class="lv-row-type">${esc(l.type)}${partial ? ' <span class="lv-badge-partial">PARTIAL DAY</span>' : ''}</div>
                         <div class="lv-row-meta">${meta}</div>
                     </div>
-                    ${l.cover ? `<span class="lv-cover-label">Cover: ${esc(l.cover)}</span>` : ''}
+                    <div class="lv-cover-badges-wrap">
+                        <span class="lv-cover-hint-text">Cover:</span>
+                        ${renderCoverBadges(l)}
+                    </div>
                     ${canCancel ? `<button type="button" class="lv-btn-cancel" data-cancel-id="${l.id}">Cancel Leave</button>` : ''}
                 </div>
             `;
@@ -132,7 +192,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     </td>
                     <td>${daysCell}</td>
                     <td>${esc(l.reason)}</td>
-                    <td>${esc(l.cover || '—')}</td>
+                    <td>${renderCoverBadges(l)}</td>
                     <td>${noteCell}</td>
                 </tr>
             `;
@@ -163,12 +223,20 @@ document.addEventListener('DOMContentLoaded', () => {
     let viewDate = new Date();
     let selectedDates = [];
     let isPartialDay = false;
+    let perDayCover = {}; // { 'YYYY-MM-DD': { code: 'MKO', name: 'Mr. Kojo Amoah' } }
 
     function fmt(date) {
         const y = date.getFullYear();
         const m = String(date.getMonth() + 1).padStart(2, '0');
         const d = String(date.getDate()).padStart(2, '0');
         return `${y}-${m}-${d}`;
+    }
+
+    function formatDayLabel(dateStr) {
+        const [y, m, d] = dateStr.split('-').map(Number);
+        const dateObj = new Date(y, m - 1, d);
+        const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+        return `${dateStr} (${days[dateObj.getDay()]})`;
     }
 
     function renderCalendar() {
@@ -200,6 +268,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (idx > -1) selectedDates.splice(idx, 1); else selectedDates.push(dateStr);
                 renderCalendar();
                 renderSelectedChips();
+                renderPerDayCoverCards();
                 validateForm();
             });
         });
@@ -228,10 +297,221 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (idx > -1) selectedDates.splice(idx, 1);
                 renderCalendar();
                 renderSelectedChips();
+                renderPerDayCoverCards();
                 validateForm();
             });
         });
     }
+
+    function renderPerDayCoverCards() {
+        const container = document.getElementById('lvPerDayCoverContainer');
+        const applyAllBtn = document.getElementById('lvApplyAllBtn');
+        if (!container) return;
+
+        // Purge unselected dates from perDayCover dictionary
+        Object.keys(perDayCover).forEach(d => {
+            if (!selectedDates.includes(d)) delete perDayCover[d];
+        });
+
+        if (selectedDates.length === 0) {
+            container.innerHTML = `
+                <div class="lv-no-dates-cover-hint" id="lvNoDatesCoverHint">
+                    <i class="fa-regular fa-calendar-check"></i> Select dates from the calendar above to assign cover instructors.
+                </div>
+            `;
+            if (applyAllBtn) applyAllBtn.style.display = 'none';
+            return;
+        }
+
+        selectedDates.sort();
+
+        const hasAnyAssignment = selectedDates.some(d => !!perDayCover[d]);
+        if (applyAllBtn) {
+            applyAllBtn.style.display = (selectedDates.length > 1 && hasAnyAssignment) ? 'inline-flex' : 'none';
+        }
+
+        let html = '<div class="lv-per-day-list">';
+        selectedDates.forEach(d => {
+            const assigned = perDayCover[d];
+            const hasAssigned = !!assigned;
+
+            let triggerHtml = '';
+            if (hasAssigned) {
+                triggerHtml = `
+                    <span class="lv-combobox-selected-text">
+                        <span class="tag tag-instructor" style="margin-right: 6px;">${esc(assigned.code)}</span>
+                        <strong>${esc(assigned.name)}</strong>
+                    </span>
+                    <button type="button" class="lv-combobox-clear-btn" data-clear-date="${esc(d)}" title="Clear assignment"><i class="fa-solid fa-xmark"></i></button>
+                `;
+            } else {
+                triggerHtml = `
+                    <span class="lv-combobox-selected-text">
+                        <span class="lv-combobox-placeholder"><i class="fa-solid fa-user-plus" style="margin-right: 6px;"></i>Select cover instructor...</span>
+                    </span>
+                    <i class="fa-solid fa-chevron-down lv-combobox-chevron"></i>
+                `;
+            }
+
+            const itemsHtml = availableInstructors.map(inst => {
+                const isSel = hasAssigned && assigned.code === inst.code;
+                return `
+                    <div class="lv-combobox-item ${isSel ? 'selected' : ''}" data-date="${esc(d)}" data-code="${esc(inst.code)}" data-name="${esc(inst.name)}">
+                        <span class="tag tag-instructor">${esc(inst.code)}</span>
+                        <span class="lv-combobox-name">${esc(inst.name)}</span>
+                        ${isSel ? '<i class="fa-solid fa-check" style="color: #2563eb; font-size: 11px;"></i>' : ''}
+                    </div>
+                `;
+            }).join('');
+
+            html += `
+                <div class="lv-per-day-card" data-date="${esc(d)}">
+                    <div class="lv-per-day-card-header">
+                        <span class="lv-card-date-badge"><i class="fa-regular fa-calendar"></i> ${esc(formatDayLabel(d))}</span>
+                        ${hasAssigned ? '<span style="font-size: 11px; color: #10b981; font-weight: 700;"><i class="fa-solid fa-circle-check"></i> Assigned</span>' : '<span style="font-size: 11px; color: #ef4444; font-weight: 700;"><i class="fa-solid fa-circle-exclamation"></i> Required</span>'}
+                    </div>
+                    <div class="lv-combobox" data-date="${esc(d)}">
+                        <div class="lv-combobox-trigger" tabindex="0">
+                            ${triggerHtml}
+                        </div>
+                        <div class="lv-combobox-dropdown" hidden>
+                            <div class="lv-combobox-search-wrap">
+                                <i class="fa-solid fa-magnifying-glass"></i>
+                                <input type="text" class="lv-combobox-search-input" placeholder="Search instructor by name or code..." autocomplete="off">
+                            </div>
+                            <div class="lv-combobox-menu">
+                                ${itemsHtml}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        });
+        html += '</div>';
+
+        container.innerHTML = html;
+        validateForm();
+    }
+
+    // Combobox Event Delegation on Container
+    const coverContainer = document.getElementById('lvPerDayCoverContainer');
+    coverContainer?.addEventListener('click', (e) => {
+        // Clear assignment
+        const clearBtn = e.target.closest('.lv-combobox-clear-btn');
+        if (clearBtn) {
+            e.stopPropagation();
+            const dateToClear = clearBtn.dataset.clearDate;
+            if (dateToClear) {
+                delete perDayCover[dateToClear];
+                renderPerDayCoverCards();
+                validateForm();
+            }
+            return;
+        }
+
+        // Click on trigger
+        const trigger = e.target.closest('.lv-combobox-trigger');
+        if (trigger) {
+            const combobox = trigger.closest('.lv-combobox');
+            const dropdown = combobox?.querySelector('.lv-combobox-dropdown');
+            const wasOpen = combobox.classList.contains('open');
+
+            // Close all open comboboxes
+            document.querySelectorAll('.lv-combobox.open').forEach(cb => {
+                cb.classList.remove('open');
+                const dd = cb.querySelector('.lv-combobox-dropdown');
+                if (dd) dd.hidden = true;
+            });
+
+            if (!wasOpen && dropdown) {
+                combobox.classList.add('open');
+                dropdown.hidden = false;
+                const searchInput = dropdown.querySelector('.lv-combobox-search-input');
+                if (searchInput) {
+                    searchInput.value = '';
+                    // Reset item visibility
+                    dropdown.querySelectorAll('.lv-combobox-item').forEach(it => { it.style.display = ''; });
+                    setTimeout(() => searchInput.focus(), 50);
+                }
+            }
+            return;
+        }
+
+        // Click on item in dropdown
+        const item = e.target.closest('.lv-combobox-item');
+        if (item) {
+            const d = item.dataset.date;
+            const code = item.dataset.code;
+            const name = item.dataset.name;
+
+            if (code && name) {
+                perDayCover[d] = { code, name };
+            } else {
+                delete perDayCover[d];
+            }
+
+            renderPerDayCoverCards();
+            return;
+        }
+    });
+
+    // Combobox Search Filtering
+    coverContainer?.addEventListener('input', (e) => {
+        const searchInput = e.target.closest('.lv-combobox-search-input');
+        if (!searchInput) return;
+
+        const q = searchInput.value.trim().toLowerCase();
+        const menu = searchInput.closest('.lv-combobox-dropdown')?.querySelector('.lv-combobox-menu');
+        if (!menu) return;
+
+        let visibleCount = 0;
+        menu.querySelectorAll('.lv-combobox-item:not(.lv-item-clear)').forEach(it => {
+            const code = (it.dataset.code || '').toLowerCase();
+            const name = (it.dataset.name || '').toLowerCase();
+            const match = !q || code.includes(q) || name.includes(q);
+            it.style.display = match ? '' : 'none';
+            if (match) visibleCount++;
+        });
+
+        let emptyMsg = menu.querySelector('.lv-combobox-empty');
+        if (visibleCount === 0 && q) {
+            if (!emptyMsg) {
+                emptyMsg = document.createElement('div');
+                emptyMsg.className = 'lv-combobox-empty';
+                emptyMsg.textContent = 'No matching instructors found.';
+                menu.appendChild(emptyMsg);
+            }
+            emptyMsg.style.display = 'block';
+        } else if (emptyMsg) {
+            emptyMsg.style.display = 'none';
+        }
+    });
+
+    // Close open dropdowns when clicking outside
+    document.addEventListener('click', (e) => {
+        if (!e.target.closest('.lv-combobox')) {
+            document.querySelectorAll('.lv-combobox.open').forEach(cb => {
+                cb.classList.remove('open');
+                const dd = cb.querySelector('.lv-combobox-dropdown');
+                if (dd) dd.hidden = true;
+            });
+        }
+    });
+
+    // Apply first selected instructor to all dates
+    const applyAllBtn = document.getElementById('lvApplyAllBtn');
+    applyAllBtn?.addEventListener('click', () => {
+        const firstAssignedDate = selectedDates.find(d => !!perDayCover[d]);
+        if (!firstAssignedDate) return;
+        const firstCover = perDayCover[firstAssignedDate];
+
+        selectedDates.forEach(d => {
+            perDayCover[d] = { ...firstCover };
+        });
+
+        renderPerDayCoverCards();
+        window.ttToast?.(`Applied ${firstCover.name} as cover for all selected days.`, { icon: 'fa-circle-check' });
+    });
 
     document.getElementById('lvPrevMonth').addEventListener('click', () => {
         viewDate = new Date(viewDate.getFullYear(), viewDate.getMonth() - 1, 1);
@@ -241,61 +521,69 @@ document.addEventListener('DOMContentLoaded', () => {
         viewDate = new Date(viewDate.getFullYear(), viewDate.getMonth() + 1, 1);
         renderCalendar();
     });
-    document.getElementById('lvAddManualDate').addEventListener('click', () => {
-        const input = document.getElementById('lvManualDate');
-        const val = input.value.trim();
-        if (val && !selectedDates.includes(val)) {
-            selectedDates.push(val);
-            input.value = '';
-            renderCalendar();
-            renderSelectedChips();
-            validateForm();
+    function updateTimePreview() {
+        const from = document.getElementById('lvTimeFrom')?.value;
+        const to = document.getElementById('lvTimeTo')?.value;
+        const previewEl = document.getElementById('lvTimePreviewText');
+        if (!previewEl) return;
+        if (from && to) {
+            const [fh, fm] = from.split(':').map(Number);
+            const [th, tm] = to.split(':').map(Number);
+            const diffMins = (th * 60 + tm) - (fh * 60 + fm);
+            const hrs = (diffMins / 60).toFixed(diffMins % 60 === 0 ? 0 : 1);
+            const hrsLabel = diffMins > 0 ? ` (${hrs} hr${hrs !== '1' ? 's' : ''})` : '';
+            previewEl.innerHTML = `<i class="fa-regular fa-clock"></i> ${fmtTime(from)} &ndash; ${fmtTime(to)}${hrsLabel}`;
         }
+    }
+    document.getElementById('lvTimeFrom')?.addEventListener('input', updateTimePreview);
+    document.getElementById('lvTimeTo')?.addEventListener('input', updateTimePreview);
+
+    // Leave Duration Segment (Full Day vs Time Range)
+    const durationSeg = document.getElementById('lvDurationSeg');
+    durationSeg?.addEventListener('click', (e) => {
+        const btn = e.target.closest('.lv-seg-btn, .seg-btn');
+        if (!btn) return;
+        durationSeg.querySelectorAll('.lv-seg-btn, .seg-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+
+        isPartialDay = (btn.dataset.duration === 'partial');
+        const timeRow = document.getElementById('lvTimeInputsRow');
+        if (timeRow) timeRow.hidden = !isPartialDay;
+        if (isPartialDay) updateTimePreview();
     });
 
-    function updateTimePreview() {
-        const from = document.getElementById('lvTimeFrom').value;
-        const to = document.getElementById('lvTimeTo').value;
-        if (from && to) {
-            document.getElementById('lvTimePreviewText').textContent = `Absent from ${fmtTime(from)} to ${fmtTime(to)}`;
-        }
-    }
-    document.getElementById('lvTimeFrom').addEventListener('input', updateTimePreview);
-    document.getElementById('lvTimeTo').addEventListener('input', updateTimePreview);
-
-    function togglePartial() {
-        isPartialDay = !isPartialDay;
-        document.getElementById('lvPartialTrack').classList.toggle('on', isPartialDay);
-        document.getElementById('lvPartialBody').hidden = !isPartialDay;
-        document.getElementById('lvFulldayNote').hidden = isPartialDay;
-        if (isPartialDay) updateTimePreview();
-    }
-    document.getElementById('lvPartialToggle').addEventListener('click', togglePartial);
-
     function validateForm() {
-        const ok = document.getElementById('lvType').value &&
-            selectedDates.length > 0 &&
-            document.getElementById('lvReason').value.trim();
-        document.getElementById('submitLeaveRequest').disabled = !ok;
+        const type = document.getElementById('lvType')?.value;
+        const hasDates = selectedDates.length > 0;
+        const allCovered = hasDates && selectedDates.every(d => !!perDayCover[d]);
+        const ok = !!(type && hasDates && allCovered);
+        const submitBtn = document.getElementById('submitLeaveRequest');
+        if (submitBtn) submitBtn.disabled = !ok;
     }
-    document.getElementById('lvType').addEventListener('input', validateForm);
-    document.getElementById('lvReason').addEventListener('input', validateForm);
+    document.getElementById('lvType')?.addEventListener('input', validateForm);
+    document.getElementById('lvReason')?.addEventListener('input', validateForm);
 
     function openPanel() {
         selectedDates = [];
         isPartialDay = false;
-        document.getElementById('lvType').value = '';
-        document.getElementById('lvReason').value = '';
-        document.getElementById('lvCover').value = '';
-        document.getElementById('lvManualDate').value = '';
-        document.getElementById('lvTimeFrom').value = '08:00';
-        document.getElementById('lvTimeTo').value = '10:00';
-        document.getElementById('lvPartialTrack').classList.remove('on');
-        document.getElementById('lvPartialBody').hidden = true;
-        document.getElementById('lvFulldayNote').hidden = false;
+        perDayCover = {};
+        if (document.getElementById('lvType')) document.getElementById('lvType').value = '';
+        if (document.getElementById('lvReason')) document.getElementById('lvReason').value = '';
+        if (document.getElementById('lvTimeFrom')) document.getElementById('lvTimeFrom').value = '08:00';
+        if (document.getElementById('lvTimeTo')) document.getElementById('lvTimeTo').value = '12:00';
+
+        if (durationSeg) {
+            durationSeg.querySelectorAll('.lv-seg-btn, .seg-btn').forEach(b => {
+                b.classList.toggle('active', b.dataset.duration === 'full');
+            });
+        }
+        const timeRow = document.getElementById('lvTimeInputsRow');
+        if (timeRow) timeRow.hidden = true;
+
         viewDate = new Date();
         renderCalendar();
         renderSelectedChips();
+        renderPerDayCoverCards();
         updateTimePreview();
         validateForm();
         panel.hidden = false;
@@ -319,27 +607,49 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    document.getElementById('submitLeaveRequest').addEventListener('click', () => {
-        const type = document.getElementById('lvType').value;
-        const reason = document.getElementById('lvReason').value.trim();
-        if (!type || !selectedDates.length || !reason) return;
+    document.getElementById('submitLeaveRequest')?.addEventListener('click', () => {
+        const type = document.getElementById('lvType')?.value;
+        const reason = document.getElementById('lvReason')?.value.trim();
+        const hasDates = selectedDates.length > 0;
+        const allCovered = hasDates && selectedDates.every(d => !!perDayCover[d]);
+
+        if (!type || !hasDates) {
+            window.ttToast?.('Please select a leave type and dates.', { icon: 'fa-circle-exclamation' });
+            return;
+        }
+
+        if (!allCovered) {
+            window.ttToast?.('Please assign a cover instructor for each selected date.', { icon: 'fa-circle-exclamation' });
+            return;
+        }
+
+        const coverStaffList = selectedDates.map(d => ({
+            date: d,
+            code: perDayCover[d].code,
+            name: perDayCover[d].name
+        }));
+
+        const uniqueNames = Array.from(new Set(coverStaffList.map(c => c.name)));
+        const coverSummary = uniqueNames.join(', ');
 
         const rec = {
             id: nextId++,
             type,
             dates: [...selectedDates].sort(),
-            reason,
-            cover: document.getElementById('lvCover').value,
+            reason: reason || '—',
+            cover: coverSummary,
+            cover_staff: coverStaffList,
+            perDayCover: { ...perDayCover },
             cancelled: false,
         };
         if (isPartialDay) {
-            rec.timeFrom = document.getElementById('lvTimeFrom').value;
-            rec.timeTo = document.getElementById('lvTimeTo').value;
+            rec.timeFrom = document.getElementById('lvTimeFrom')?.value || '08:00';
+            rec.timeTo = document.getElementById('lvTimeTo')?.value || '12:00';
         }
         leaves = [rec, ...leaves];
         closePanel();
         renderAll();
-        window.ttToast?.('Leave request submitted.');
+        window.ttToast?.('Leave request submitted successfully.', { icon: 'fa-circle-check' });
     });
 
     renderAll();

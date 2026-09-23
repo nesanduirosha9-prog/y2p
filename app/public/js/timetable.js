@@ -115,14 +115,20 @@ document.addEventListener('DOMContentLoaded', function () {
         tspBody.innerHTML = bodyHtml;
         tspFooter.innerHTML = footerHtml || '';
         sidePanel.hidden = false;
+        document.body.classList.add('tt-panel-open');
     }
 
     function closePanel() {
         sidePanel.hidden = true;
+        document.body.classList.remove('tt-panel-open');
     }
 
     if (tspClose) {
         tspClose.addEventListener('click', closePanel);
+    }
+    const tspBack = document.getElementById('tspBack');
+    if (tspBack) {
+        tspBack.addEventListener('click', closePanel);
     }
 
     function field(label, value) {
@@ -375,6 +381,7 @@ document.addEventListener('DOMContentLoaded', function () {
             closePanel();
             setDraftStatus();
             showToast(`Session ${code} deleted.`);
+            if (typeof updateDayView === 'function') updateDayView(true);
         });
     }
 
@@ -499,6 +506,7 @@ document.addEventListener('DOMContentLoaded', function () {
             grid.appendChild(block);
             setDraftStatus();
             showToast(`Added ${code} to timetable.`);
+            if (typeof updateDayView === 'function') updateDayView(true);
             openSessionDetails(block);
         });
     }
@@ -701,6 +709,7 @@ document.addEventListener('DOMContentLoaded', function () {
             exitSelectionMode();
             setDraftStatus();
             showToast(`Added ${code} to timetable.`);
+            if (typeof updateDayView === 'function') updateDayView(true);
             openSessionDetails(block);
         });
     }
@@ -888,16 +897,243 @@ document.addEventListener('DOMContentLoaded', function () {
     // Lecturer & Room Filter Listeners
     // ------------------------------------------------------------------
     function applyFilters() {
-        const lecturer = lecturerFilter ? lecturerFilter.value : '';
-        const room = roomFilter ? roomFilter.value : '';
-        grid.querySelectorAll('.tt-block').forEach(function (block) {
-            const blockLecturer = block.dataset.lecturer || (coursesMap[block.dataset.code] ? coursesMap[block.dataset.code].lecturer : '');
-            const matchesLecturer = !lecturer || (blockLecturer && blockLecturer.includes(lecturer));
-            const matchesRoom = !room || block.dataset.location === room;
-            block.style.display = (matchesLecturer && matchesRoom) ? '' : 'none';
-        });
+        updateDayView(true);
     }
 
     if (lecturerFilter) lecturerFilter.addEventListener('change', applyFilters);
     if (roomFilter) roomFilter.addEventListener('change', applyFilters);
+
+    // ------------------------------------------------------------------
+    // Day Navigator & Resolution-based Day Fitting (Mobile / Tablet)
+    // ------------------------------------------------------------------
+    function getContainerWidth() {
+        const card = view.querySelector('.tt-grid-card');
+        const w = card ? card.getBoundingClientRect().width : 0;
+        return w > 0 ? w : window.innerWidth;
+    }
+
+    function getVisibleDaysCount() {
+        const width = getContainerWidth();
+        if (width < 420) return 1;
+        if (width < 640) return 2;
+        if (width < 900) return 3;
+        return 5;
+    }
+
+    function getInitialDayIndex(visibleCount) {
+        const today = new Date();
+        const dayOfWeek = today.getDay(); // 0: Sun, 1: Mon, ... 5: Fri, 6: Sat
+        let dayIdx = 0; // default Monday
+        if (dayOfWeek >= 1 && dayOfWeek <= 5) {
+            dayIdx = dayOfWeek - 1;
+        }
+        const maxStart = Math.max(0, 5 - visibleCount);
+        return Math.min(dayIdx, maxStart);
+    }
+
+    let currentStartDayIndex = getInitialDayIndex(getVisibleDaysCount());
+
+    function updateDayNavDisplay(visibleKeys, visibleCount) {
+        let title = '';
+        let sub = '';
+
+        if (visibleCount === 1) {
+            title = DAY_LABELS[visibleKeys[0]];
+            sub = DAY_SHORT[visibleKeys[0]];
+        } else {
+            title = `${DAY_SHORT[visibleKeys[0]]} – ${DAY_SHORT[visibleKeys[visibleKeys.length - 1]]}`;
+            sub = `${DAY_LABELS[visibleKeys[0]]} to ${DAY_LABELS[visibleKeys[visibleKeys.length - 1]]}`;
+        }
+
+        const navTitle = document.getElementById('dayNavTitle');
+        const navDate = document.getElementById('dayNavDate');
+        if (navTitle) navTitle.textContent = title;
+        if (navDate) navDate.textContent = sub;
+
+        const firstIdx = DAY_KEYS.indexOf(visibleKeys[0]);
+        const lastIdx = DAY_KEYS.indexOf(visibleKeys[visibleKeys.length - 1]);
+        const isAtStart = (firstIdx === 0);
+        const isAtEnd = (lastIdx >= DAY_KEYS.length - 1);
+
+        const prevBtn = document.getElementById('dayPrevBtn');
+        const nextBtn = document.getElementById('dayNextBtn');
+        if (prevBtn) prevBtn.disabled = isAtStart;
+        if (nextBtn) nextBtn.disabled = isAtEnd;
+    }
+
+    function applyDayVisibilityToGrid(visibleKeys, visibleCount) {
+        if (!grid) return;
+
+        if (visibleCount >= 5) {
+            grid.style.gridTemplateColumns = '';
+            grid.style.minWidth = '';
+            grid.style.width = '';
+
+            grid.querySelectorAll('.tt-grid-day-head').forEach((head, idx) => {
+                head.style.display = '';
+                head.style.gridColumn = String(idx + 2);
+            });
+
+            grid.querySelectorAll('.tt-cell, .tt-block').forEach(el => {
+                const k = el.dataset.dayKey;
+                const originalCol = DAY_KEYS.indexOf(k) + 2;
+                el.style.gridColumn = String(originalCol);
+
+                if (el.classList.contains('tt-block')) {
+                    const lecturer = lecturerFilter ? lecturerFilter.value : '';
+                    const room = roomFilter ? roomFilter.value : '';
+                    const blockLecturer = el.dataset.lecturer || (coursesMap[el.dataset.code] ? coursesMap[el.dataset.code].lecturer : '');
+                    const matchesLecturer = !lecturer || (blockLecturer && blockLecturer.includes(lecturer));
+                    const matchesRoom = !room || el.dataset.location === room;
+                    el.style.display = (matchesLecturer && matchesRoom) ? '' : 'none';
+                } else {
+                    el.style.display = '';
+                }
+            });
+            return;
+        }
+
+        grid.style.gridTemplateColumns = `54px repeat(${visibleCount}, minmax(0, 1fr))`;
+        grid.style.minWidth = '0';
+        grid.style.width = '100%';
+
+        grid.querySelectorAll('.tt-grid-day-head').forEach(head => {
+            const k = head.dataset.dayKey;
+            if (visibleKeys.includes(k)) {
+                const colPos = visibleKeys.indexOf(k) + 2;
+                head.style.display = 'flex';
+                head.style.gridColumn = String(colPos);
+            } else {
+                head.style.display = 'none';
+            }
+        });
+
+        grid.querySelectorAll('.tt-cell, .tt-block').forEach(el => {
+            const k = el.dataset.dayKey;
+            if (visibleKeys.includes(k)) {
+                const colPos = visibleKeys.indexOf(k) + 2;
+                el.style.gridColumn = String(colPos);
+
+                if (el.classList.contains('tt-block')) {
+                    const lecturer = lecturerFilter ? lecturerFilter.value : '';
+                    const room = roomFilter ? roomFilter.value : '';
+                    const blockLecturer = el.dataset.lecturer || (coursesMap[el.dataset.code] ? coursesMap[el.dataset.code].lecturer : '');
+                    const matchesLecturer = !lecturer || (blockLecturer && blockLecturer.includes(lecturer));
+                    const matchesRoom = !room || el.dataset.location === room;
+                    el.style.display = (matchesLecturer && matchesRoom) ? '' : 'none';
+                } else {
+                    el.style.display = '';
+                }
+            } else {
+                el.style.display = 'none';
+            }
+        });
+
+        const lunchCells = grid.querySelectorAll('.tt-cell-lunch');
+        lunchCells.forEach(cell => {
+            const k = cell.dataset.dayKey;
+            const existingLabel = cell.querySelector('.lunch-label');
+            if (visibleKeys.includes(k) && k === visibleKeys[0]) {
+                if (!existingLabel) {
+                    const span = document.createElement('span');
+                    span.className = 'lunch-label';
+                    span.textContent = 'Lunch Break';
+                    cell.appendChild(span);
+                }
+            } else {
+                if (existingLabel && k !== 'wed') {
+                    existingLabel.remove();
+                }
+            }
+        });
+    }
+
+    let lastVisibleCount = null;
+    function updateDayView(force = false) {
+        const visibleCount = getVisibleDaysCount();
+        if (!force && visibleCount === lastVisibleCount) return;
+        lastVisibleCount = visibleCount;
+
+        const dayNav = document.getElementById('ttDayNav');
+
+        if (visibleCount >= 5) {
+            if (dayNav) dayNav.style.display = 'none';
+            applyDayVisibilityToGrid(DAY_KEYS, 5);
+            return;
+        }
+
+        if (dayNav) dayNav.style.display = 'flex';
+
+        const maxStart = Math.max(0, 5 - visibleCount);
+        currentStartDayIndex = Math.max(0, Math.min(currentStartDayIndex, maxStart));
+        const visibleKeys = DAY_KEYS.slice(currentStartDayIndex, currentStartDayIndex + visibleCount);
+
+        updateDayNavDisplay(visibleKeys, visibleCount);
+        applyDayVisibilityToGrid(visibleKeys, visibleCount);
+    }
+
+    function goPrevDay() {
+        if (currentStartDayIndex > 0) {
+            currentStartDayIndex = Math.max(0, currentStartDayIndex - 1);
+            updateDayView(true);
+        }
+    }
+
+    function goNextDay() {
+        const visibleCount = getVisibleDaysCount();
+        const maxStart = Math.max(0, 5 - visibleCount);
+        if (currentStartDayIndex < maxStart) {
+            currentStartDayIndex = Math.min(maxStart, currentStartDayIndex + 1);
+            updateDayView(true);
+        }
+    }
+
+    document.getElementById('dayPrevBtn')?.addEventListener('click', goPrevDay);
+    document.getElementById('dayNextBtn')?.addEventListener('click', goNextDay);
+
+    const gridCard = view.querySelector('.tt-grid-card');
+    if (gridCard) {
+        let touchStartX = 0;
+        let touchStartY = 0;
+
+        gridCard.addEventListener('touchstart', (e) => {
+            if (e.touches.length === 1) {
+                touchStartX = e.touches[0].clientX;
+                touchStartY = e.touches[0].clientY;
+            }
+        }, { passive: true });
+
+        gridCard.addEventListener('touchend', (e) => {
+            if (getVisibleDaysCount() >= 5) return;
+            const touchEndX = e.changedTouches[0].clientX;
+            const touchEndY = e.changedTouches[0].clientY;
+            const diffX = touchEndX - touchStartX;
+            const diffY = touchEndY - touchStartY;
+
+            if (Math.abs(diffX) > 40 && Math.abs(diffX) > Math.abs(diffY) * 1.5) {
+                if (diffX < 0) {
+                    goNextDay();
+                } else {
+                    goPrevDay();
+                }
+            }
+        }, { passive: true });
+    }
+
+    if (window.ResizeObserver && gridCard) {
+        const ro = new ResizeObserver(() => {
+            updateDayView();
+        });
+        ro.observe(gridCard);
+    } else {
+        let officerResizeTimer = null;
+        window.addEventListener('resize', () => {
+            clearTimeout(officerResizeTimer);
+            officerResizeTimer = setTimeout(() => {
+                updateDayView();
+            }, 80);
+        });
+    }
+
+    updateDayView(true);
 });

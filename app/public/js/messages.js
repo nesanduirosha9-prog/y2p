@@ -1,5 +1,10 @@
-// Instructor Messages JS: conversation switching, search, composer, and the
-// Group Info panel. DOM-only demo state — nothing persists across reloads.
+// Messages JS (academic staff + timetable officer): conversation switching,
+// search, composer, and the Group Info panel. DOM-only demo state — nothing
+// persists across reloads.
+//
+// The officer's conversations are all direct messages, so the view renders no
+// Members button and no Group Info panel; every reference to them below is
+// null-guarded rather than assumed present.
 document.addEventListener('DOMContentLoaded', () => {
     const dataEl = document.getElementById('conversationsData');
     if (!dataEl) return;
@@ -48,7 +53,8 @@ document.addEventListener('DOMContentLoaded', () => {
         });
 
         renderThread(conv);
-        if (!document.getElementById('msgGroupInfo').hidden) renderGroupInfo(conv);
+        const panel = document.getElementById('msgGroupInfo');
+        if (panel && !panel.hidden) renderGroupInfo(conv);
     }
 
     document.getElementById('msgList').addEventListener('click', (e) => {
@@ -92,11 +98,15 @@ document.addEventListener('DOMContentLoaded', () => {
         `).join('');
     }
 
+    // Absent entirely on a direct-messages-only page (timetable officer).
     const groupInfoPanel = document.getElementById('msgGroupInfo');
-    document.getElementById('msgMembersBtn').addEventListener('click', () => {
-        const conv = conversations.find(c => c.id === activeId);
-        if (groupInfoPanel.hidden) { renderGroupInfo(conv); groupInfoPanel.hidden = false; }
-        else groupInfoPanel.hidden = true;
-    });
-    document.getElementById('msgCloseGroupInfo').addEventListener('click', () => { groupInfoPanel.hidden = true; });
+    const membersBtn = document.getElementById('msgMembersBtn');
+    if (groupInfoPanel && membersBtn) {
+        membersBtn.addEventListener('click', () => {
+            const conv = conversations.find(c => c.id === activeId);
+            if (groupInfoPanel.hidden) { renderGroupInfo(conv); groupInfoPanel.hidden = false; }
+            else groupInfoPanel.hidden = true;
+        });
+        document.getElementById('msgCloseGroupInfo').addEventListener('click', () => { groupInfoPanel.hidden = true; });
+    }
 });

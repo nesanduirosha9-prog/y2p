@@ -28,8 +28,11 @@ $coverRequests = [
     [
         'id' => 1,
         'code' => 'CS2203',
-        'title' => 'Operating Systems Lab Session',
-        'staff' => 'Dr. Elena Petrov',
+        'title' => 'Operating Systems',
+        'staff_on_leave' => 'Mr. Kojo Amoah',
+        'staff_code' => 'MKO',
+        'lecturer_name' => 'Dr. Elena Petrov',
+        'lecturer_code' => 'DEP',
         'date' => 'Wed, 14:00 - 16:00',
         'duration' => '2 hrs/wk',
         'credits' => 3,
@@ -37,12 +40,16 @@ $coverRequests = [
         'program' => 'CS',
         'role' => 'Lab Assistant',
         'hours' => 2,
+        'sessions' => ['Lectures', 'Practicals', 'Lab Sessions'],
     ],
     [
         'id' => 2,
         'code' => 'IS1103',
-        'title' => 'Spreadsheet Applications Practical',
-        'staff' => 'Dr. Linda Osei',
+        'title' => 'Spreadsheet Applications',
+        'staff_on_leave' => 'Ms. Yaw Bediako',
+        'staff_code' => 'MYB',
+        'lecturer_name' => 'Dr. Linda Osei',
+        'lecturer_code' => 'DLO',
         'date' => 'Thu, 09:00 - 12:00',
         'duration' => '3 hrs/wk',
         'credits' => 3,
@@ -50,6 +57,7 @@ $coverRequests = [
         'program' => 'IS',
         'role' => 'Practical Support',
         'hours' => 3,
+        'sessions' => ['Lectures', 'Practicals', 'Lab Sessions'],
     ],
 ];
 ?>
@@ -294,17 +302,20 @@ $coverRequests = [
                     <div class="wk-cover-item" data-id="<?= $cr['id'] ?>"
                          data-code="<?= htmlspecialchars($cr['code']) ?>"
                          data-name="<?= htmlspecialchars($cr['title']) ?>"
-                         data-staff="<?= htmlspecialchars($cr['staff']) ?>"
+                         data-lecturer-name="<?= htmlspecialchars($cr['lecturer_name']) ?>"
+                         data-lecturer-code="<?= htmlspecialchars($cr['lecturer_code']) ?>"
+                         data-colleague="<?= htmlspecialchars($cr['staff_on_leave']) ?>"
                          data-schedule="<?= htmlspecialchars($cr['date']) ?>"
                          data-credits="<?= (int)$cr['credits'] ?>"
                          data-year="<?= (int)$cr['year'] ?>"
                          data-program="<?= htmlspecialchars($cr['program']) ?>"
                          data-role="<?= htmlspecialchars($cr['role']) ?>"
-                         data-hours="<?= (int)$cr['hours'] ?>">
+                         data-hours="<?= (int)$cr['hours'] ?>"
+                         data-sessions="<?= htmlspecialchars(implode(',', $cr['sessions'] ?? [])) ?>">
                         <div class="wk-cover-icon"><i class="fa-solid fa-user-clock"></i></div>
                         <div class="wk-cover-info">
                             <p class="wk-cover-title"><span class="pill pill-muted" style="margin-right: 6px;"><?= htmlspecialchars($cr['code']) ?></span> <?= htmlspecialchars($cr['title']) ?></p>
-                            <p class="wk-cover-meta">Staff on leave: <strong><?= htmlspecialchars($cr['staff']) ?></strong> · Schedule: <?= htmlspecialchars($cr['date']) ?> · Duration: <?= htmlspecialchars($cr['duration']) ?></p>
+                            <p class="wk-cover-meta">Staff on leave: <strong><?= htmlspecialchars($cr['staff_on_leave']) ?></strong> · Schedule: <?= htmlspecialchars($cr['date']) ?> · Duration: <?= htmlspecialchars($cr['duration']) ?></p>
                         </div>
                         <div class="wk-cover-actions">
                             <button type="button" class="wk-btn-accept" data-accept="<?= $cr['id'] ?>"><i class="fa-solid fa-check"></i> Accept</button>
@@ -324,6 +335,46 @@ $coverRequests = [
                 </div>
                 <span class="wk-table-header-hint" id="wkAssignedCoursesCount"><?= count($assignedCourses ?? []) ?> assigned courses</span>
             </div>
+
+            <!-- Filter Controls for Assigned Courses (Matching Lecturer's View) -->
+            <div class="dir-controls" style="margin-bottom: 0;">
+                <div class="search-box">
+                    <i class="fa-solid fa-magnifying-glass"></i>
+                    <input type="text" id="wkCourseSearch" placeholder="Search courses, staff..." autocomplete="off">
+                </div>
+
+                <div class="seg" id="wkProgramFilter" role="group" aria-label="Filter by program">
+                    <button type="button" class="seg-btn active" data-value="">All Programs</button>
+                    <button type="button" class="seg-btn" data-value="CS">CS</button>
+                    <button type="button" class="seg-btn" data-value="IS">IS</button>
+                </div>
+
+                <div class="seg seg-dark" id="wkYearFilter" role="group" aria-label="Filter by year">
+                    <button type="button" class="seg-btn active" data-value="">All Years</button>
+                    <button type="button" class="seg-btn" data-value="1">Year 1</button>
+                    <button type="button" class="seg-btn" data-value="2">Year 2</button>
+                    <button type="button" class="seg-btn" data-value="3">Year 3</button>
+                    <button type="button" class="seg-btn" data-value="4">Year 4</button>
+                </div>
+
+                <div class="session-dropdown-wrapper">
+                    <label for="wkSessionTypeFilter" class="session-filter-label">
+                        <i class="fa-solid fa-layer-group"></i> Session:
+                    </label>
+                    <div class="session-select-box">
+                        <select id="wkSessionTypeFilter" class="session-dropdown">
+                            <option value="">All Session Types</option>
+                            <option value="Lectures">Lectures</option>
+                            <option value="Tutorials">Tutorials</option>
+                            <option value="Lab Sessions">Lab Sessions</option>
+                            <option value="Practicals">Practicals</option>
+                            <option value="Assignments">Assignments</option>
+                        </select>
+                        <i class="fa-solid fa-chevron-down select-chevron"></i>
+                    </div>
+                </div>
+            </div>
+
             <div class="dir-scroll">
                 <table class="dir-table" id="instructorAssignedCoursesTable">
                     <thead>
@@ -333,30 +384,55 @@ $coverRequests = [
                             <th style="width: 80px;">Credits</th>
                             <th style="width: 90px;">Year</th>
                             <th style="width: 90px;">Program</th>
-                            <th style="min-width: 160px;">Lecturer</th>
-                            <th style="min-width: 180px;">Assigned Role &amp; Sessions</th>
+                            <th style="min-width: 130px;">Lecturers</th>
+                            <th style="min-width: 150px;">Other Instructors</th>
                             <th style="width: 110px; text-align: right;">Weekly Hours</th>
                         </tr>
                     </thead>
                     <tbody id="assignedCoursesTbody">
                         <?php foreach (($assignedCourses ?? []) as $ac): ?>
-                            <tr class="assigned-course-row">
+                            <?php
+                            $lecCodes = array_column($ac['lecturers'] ?? [], 'code');
+                            $lecNames = array_column($ac['lecturers'] ?? [], 'name');
+                            $instCodes = array_column($ac['other_instructors'] ?? [], 'code');
+                            $instNames = array_column($ac['other_instructors'] ?? [], 'name');
+                            $sessionsList = (array)($ac['sessions'] ?? []);
+                            $searchStr = strtolower($ac['code'] . ' ' . $ac['name'] . ' ' . implode(' ', $lecCodes) . ' ' . implode(' ', $lecNames) . ' ' . implode(' ', $instCodes) . ' ' . implode(' ', $instNames) . ' ' . implode(' ', $sessionsList));
+                            ?>
+                            <tr class="assigned-course-row"
+                                data-code="<?= htmlspecialchars($ac['code']) ?>"
+                                data-name="<?= htmlspecialchars($ac['name']) ?>"
+                                data-year="<?= (int)$ac['year'] ?>"
+                                data-program="<?= htmlspecialchars($ac['program']) ?>"
+                                data-sessions="<?= htmlspecialchars(implode(',', $sessionsList)) ?>"
+                                data-search="<?= htmlspecialchars($searchStr) ?>">
                                 <td><span class="pill pill-muted"><?= htmlspecialchars($ac['code']) ?></span></td>
                                 <td>
                                     <strong><?= htmlspecialchars($ac['name']) ?></strong>
-                                    <div style="font-size: 11.5px; color: #64748b; margin-top: 2px;">
-                                        <i class="fa-regular fa-clock"></i> <?= htmlspecialchars($ac['schedule'] ?? 'Allocated') ?>
+                                    <div class="course-sessions-hint" style="font-size: 11.5px; color: #64748b; margin-top: 2px;">
+                                        <i class="fa-regular fa-clock"></i> <?= htmlspecialchars(implode(' · ', $sessionsList)) ?>
                                     </div>
                                 </td>
                                 <td><?= (int)$ac['credits'] ?></td>
                                 <td><span class="pill pill-year-<?= (int)$ac['year'] ?>">Year <?= (int)$ac['year'] ?></span></td>
                                 <td><span class="pill pill-muted"><?= htmlspecialchars($ac['program']) ?></span></td>
                                 <td>
-                                    <span class="tag tag-lecturer"><?= htmlspecialchars($ac['lecturer']) ?></span>
+                                    <div class="tag-row">
+                                        <?php foreach (($ac['lecturers'] ?? []) as $lec): ?>
+                                            <span class="tag tag-lecturer" title="<?= htmlspecialchars($lec['name']) ?>"><?= htmlspecialchars($lec['code']) ?></span>
+                                        <?php endforeach; ?>
+                                    </div>
                                 </td>
                                 <td>
-                                    <strong><?= htmlspecialchars($ac['role']) ?></strong>
-                                    <div style="font-size: 11.5px; color: #64748b;"><?= htmlspecialchars($ac['sessions']) ?></div>
+                                    <div class="tag-row">
+                                        <?php if (!empty($ac['other_instructors'])): ?>
+                                            <?php foreach ($ac['other_instructors'] as $oInst): ?>
+                                                <span class="tag tag-instructor" title="<?= htmlspecialchars($oInst['name']) ?>"><?= htmlspecialchars($oInst['code']) ?></span>
+                                            <?php endforeach; ?>
+                                        <?php else: ?>
+                                            <span style="color: #94a3b8; font-size: 13px;">—</span>
+                                        <?php endif; ?>
+                                    </div>
                                 </td>
                                 <td style="text-align: right; font-weight: 700; color: #1a3a6b;">
                                     <?= (int)$ac['hours'] ?> hrs/wk
@@ -365,6 +441,7 @@ $coverRequests = [
                         <?php endforeach; ?>
                     </tbody>
                 </table>
+                <p class="dir-empty" id="wkCoursesEmptyMsg" style="display: none; padding: 24px; text-align: center; color: #64748b;">No assigned courses match your filter criteria.</p>
             </div>
             <p class="wk-footnote"><i class="fa-regular fa-circle-question"></i> All regular course assignments and accepted cover duties count toward your semester workload total.</p>
         </div>
@@ -387,7 +464,14 @@ $coverRequests = [
                 <button type="button" class="seg-btn" data-value="year">Year</button>
             </div>
 
-            <!-- Course Filter Dropdown (No Lecturer filter) -->
+            <!-- Calendar Stepper Navigator (Matching Image 4 tt-week-nav) -->
+            <div class="tt-week-nav" id="wkHistoryPeriodNav" style="display: none;">
+                <button type="button" class="tt-week-nav-btn" id="wkHistoryPrevBtn" aria-label="Previous period"><i class="fa-solid fa-chevron-left"></i></button>
+                <span class="tt-week-label" id="wkHistoryPeriodLabel" style="min-width: 170px;">16 – 20 Mar 2026 (Week 5)</span>
+                <button type="button" class="tt-week-nav-btn" id="wkHistoryNextBtn" aria-label="Next period"><i class="fa-solid fa-chevron-right"></i></button>
+            </div>
+
+            <!-- Course Filter Dropdown -->
             <div class="session-dropdown-wrapper">
                 <label for="wkHistoryCourseFilter" class="session-filter-label">
                     <i class="fa-solid fa-book-bookmark"></i> Course:
@@ -395,15 +479,13 @@ $coverRequests = [
                 <div class="session-select-box">
                     <select id="wkHistoryCourseFilter" class="session-dropdown">
                         <option value="">All Courses</option>
-                        <?php
-                        $uniqueCourses = [];
-                        foreach (($evaluationHistory ?? []) as $eh) {
-                            $uniqueCourses[$eh['course_code']] = $eh['course_name'];
-                        }
-                        ?>
-                        <?php foreach ($uniqueCourses as $cCode => $cName): ?>
-                            <option value="<?= htmlspecialchars($cCode) ?>"><?= htmlspecialchars($cCode) ?> — <?= htmlspecialchars($cName) ?></option>
-                        <?php endforeach; ?>
+                        <option value="CS1101">CS1101 — Introduction to Programming</option>
+                        <option value="CS2201">CS2201 — Data Structures &amp; Algorithms</option>
+                        <option value="CS3301">CS3301 — Software Engineering</option>
+                        <option value="CS3401">CS3401 — Fundamentals of Computing Lab</option>
+                        <option value="CS2203">CS2203 — Operating Systems</option>
+                        <option value="IS1103">IS1103 — Spreadsheet Applications</option>
+                        <option value="other">Other (Cover Duties &amp; Departmental Tasks)</option>
                     </select>
                     <i class="fa-solid fa-chevron-down select-chevron"></i>
                 </div>
@@ -419,18 +501,20 @@ $coverRequests = [
                 <table class="dir-table" id="instructorEvaluationHistoryTable">
                     <thead>
                         <tr>
-                            <th style="width: 140px;">Date &amp; Period</th>
-                            <th style="min-width: 200px;">Course Module</th>
-                            <th style="width: 140px;">Session Type</th>
-                            <th style="width: 140px;">Performance Rating</th>
-                            <th style="min-width: 280px;">Lecturer Observations &amp; Feedback</th>
-                            <th style="width: 110px; text-align: right;">Status</th>
+                            <th style="width: 150px;">Date &amp; Period</th>
+                            <th style="width: 130px;">Course Code</th>
+                            <th style="min-width: 230px;">Course Name</th>
+                            <th style="width: 150px;">Session Type</th>
+                            <th style="width: 170px;">Performance Rating</th>
+                            <th style="width: 140px; text-align: right;">Status</th>
                         </tr>
                     </thead>
                     <tbody id="wkHistoryTbody">
                         <?php foreach (($evaluationHistory ?? []) as $h): ?>
                             <?php
-                            $histSearch = strtolower($h['course_code'] . ' ' . $h['course_name'] . ' ' . $h['session_type'] . ' ' . $h['comment'] . ' ' . $h['week'] . ' ' . $h['month'] . ' ' . $h['semester'] . ' ' . $h['year']);
+                            $isEval = ($h['status'] ?? '') === 'Evaluated';
+                            $isOther = !empty($h['is_other']);
+                            $histSearch = strtolower($h['course_code'] . ' ' . $h['course_name'] . ' ' . $h['session_type'] . ' ' . $h['week'] . ' ' . $h['month'] . ' ' . $h['semester'] . ' ' . $h['year'] . ' ' . ($isEval ? 'evaluated' : 'not evaluated') . ($isOther ? ' other cover' : ''));
                             ?>
                             <tr class="wk-history-row"
                                 data-week="<?= htmlspecialchars($h['week']) ?>"
@@ -438,33 +522,44 @@ $coverRequests = [
                                 data-sem="<?= htmlspecialchars($h['semester']) ?>"
                                 data-year="<?= htmlspecialchars($h['year']) ?>"
                                 data-course="<?= htmlspecialchars($h['course_code']) ?>"
+                                data-is-other="<?= $isOther ? '1' : '0' ?>"
                                 data-search="<?= htmlspecialchars($histSearch) ?>">
                                 <td>
                                     <div style="font-weight: 600; color: #0f1c2e;"><?= htmlspecialchars($h['date']) ?></div>
                                     <div style="font-size: 11px; color: #64748b;"><?= htmlspecialchars($h['week']) ?> &middot; <?= htmlspecialchars($h['semester']) ?></div>
                                 </td>
                                 <td>
-                                    <strong><?= htmlspecialchars($h['course_code']) ?></strong>
-                                    <div style="font-size: 11.5px; color: #64748b;"><?= htmlspecialchars($h['course_name']) ?></div>
+                                    <span class="pill pill-muted" style="font-weight: 700;"><?= htmlspecialchars($h['course_code']) ?></span>
                                 </td>
                                 <td>
-                                    <span class="pill pill-muted"><?= htmlspecialchars($h['session_type']) ?></span>
+                                    <div style="font-weight: 600; color: #0f1c2e;"><?= htmlspecialchars($h['course_name']) ?></div>
                                 </td>
                                 <td>
-                                    <span class="rating-badge rating-badge-active">
-                                        <i class="fa-solid fa-star"></i> <?= number_format((float)$h['rating'], 1) ?> / 5.0
-                                    </span>
+                                    <?php if ($isOther): ?>
+                                        <span class="pill pill-muted"><i class="fa-solid fa-user-clock" style="margin-right: 3px;"></i> <?= htmlspecialchars($h['session_type']) ?></span>
+                                    <?php else: ?>
+                                        <span class="pill pill-muted"><?= htmlspecialchars($h['session_type']) ?></span>
+                                    <?php endif; ?>
                                 </td>
-                                <td style="font-size: 12.5px; color: #334155; line-height: 1.45;">
-                                    <?= htmlspecialchars($h['comment']) ?>
-                                    <div style="font-size: 11px; color: #64748b; margin-top: 3px;">
-                                        Evaluated by <strong><?= htmlspecialchars($h['evaluator_name'] ?? 'Course Lecturer') ?></strong>
-                                    </div>
+                                <td>
+                                    <?php if ($isEval && !empty($h['rating'])): ?>
+                                        <span class="rating-badge rating-badge-active">
+                                            <i class="fa-solid fa-star"></i> <?= number_format((float)$h['rating'], 1) ?> / 5.0
+                                        </span>
+                                    <?php else: ?>
+                                        <span style="color: #94a3b8; font-weight: 500;">—</span>
+                                    <?php endif; ?>
                                 </td>
                                 <td style="text-align: right;">
-                                    <span class="pill pill-active" style="background: #e6f9ed; color: #166534; font-size: 11px;">
-                                        <i class="fa-solid fa-check"></i> <?= htmlspecialchars($h['status'] ?? 'Evaluated') ?>
-                                    </span>
+                                    <?php if ($isEval): ?>
+                                        <span class="pill pill-active" style="background: #e6f9ed; color: #166534; font-size: 11px;">
+                                            <i class="fa-solid fa-check"></i> Evaluated
+                                        </span>
+                                    <?php else: ?>
+                                        <span class="pill pill-pending" style="background: #fef3c7; color: #92400e; font-size: 11px;">
+                                            <i class="fa-regular fa-clock"></i> Not Evaluated
+                                        </span>
+                                    <?php endif; ?>
                                 </td>
                             </tr>
                         <?php endforeach; ?>

@@ -25,6 +25,7 @@ if (!$isInstructor) {
         ['href' => '/courses',       'icon' => 'fa-solid fa-book-open',     'label' => 'Course Details', 'key' => 'courses'],
         ['href' => '/staff',         'icon' => 'fa-solid fa-users',         'label' => 'Staff Details',  'key' => 'lecturers'],
         ['href' => '/lecture-halls', 'icon' => 'fa-solid fa-building',      'label' => 'Lecture Halls',  'key' => 'lecture-halls'],
+        ['href' => '/messages',      'icon' => 'fa-regular fa-message',     'label' => 'Messages',       'key' => 'messages'],
     ];
 } else {
     // Academic Staff: Lecturers (senior) see My Courses; Instructors (junior) see My Workload

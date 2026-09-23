@@ -49,6 +49,11 @@
     white-space: nowrap;
 }
 
+/* .legend-chip is display:flex, which beats the UA [hidden] rule */
+.legend-chip[hidden] {
+    display: none;
+}
+
 .legend-chip-dot {
     width: 8px;
     height: 8px;
@@ -70,6 +75,11 @@
 
 .chip-assignment {
     background: #f97316;
+}
+
+/* "Your courses" — shown in the toolbar legend in Student Timetable mode only */
+.chip-mine {
+    background: #f0b100;
 }
 
 /* Week navigator (replaces Sem1/Sem2 toggle in My Timetable mode) */
@@ -221,10 +231,6 @@
     background: #f97316;
 }
 
-.dot-mine {
-    background: #f0b100;
-}
-
 /* ==============================
    Right-side panel (Session Details / Request forms / My Requests)
    ============================== */
@@ -249,6 +255,33 @@
     justify-content: space-between;
     padding: 16px 18px;
     border-bottom: 1px solid #eef1f6;
+}
+
+.tsp-header-left {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.tsp-btn-back {
+    display: none;
+    align-items: center;
+    justify-content: center;
+    background: transparent;
+    border: none;
+    color: #64748b;
+    font-size: 16px;
+    cursor: pointer;
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    transition: all 0.15s ease;
+    flex-shrink: 0;
+}
+
+.tsp-btn-back:hover {
+    background: #f1f5f9;
+    color: #0f1c2e;
 }
 
 .tsp-header h2 {
@@ -545,18 +578,86 @@
 /* ==============================
    Responsive (768px tablet breakpoint per tokens.css)
    ============================== */
-@media (max-width: 768px) {
+@media (max-width: 960px) {
+    .tt-grid-card {
+        border-radius: 12px;
+        overflow-x: hidden;
+    }
 
-    /* .tt-body is flex-direction:column here (see timetable.css) — the
-       fixed 300px side panel would otherwise force page-level horizontal
-       overflow next to the grid section. */
-    .tt-side-panel {
+    .tt-grid {
+        min-width: 0 !important;
+        width: 100% !important;
+    }
+
+    .tt-grid-corner,
+    .tt-grid-day-head {
+        top: 56px;
+        z-index: 4;
+    }
+}
+
+@media (max-width: 768px) {
+    /* Show mobile back button */
+    .tsp-btn-back {
+        display: flex;
+    }
+
+    /* Fixed full panel overlay matching Messages and Leave */
+    .tt-side-panel:not([hidden]) {
+        display: flex !important;
+        position: fixed;
+        inset: 0;
         width: 100%;
-        max-height: none;
+        height: 100%;
+        max-height: 100vh;
+        z-index: 1500;
+        background: #ffffff;
+        border-radius: 0;
+        border: none;
+        box-shadow: none;
+        overflow-y: auto;
+        animation: ttSlideUp 0.22s ease-out;
+    }
+
+    body.tt-panel-open {
+        overflow: hidden;
+    }
+
+    .tsp-header {
+        position: sticky;
+        top: 0;
+        z-index: 10;
+        background: #ffffff;
+        padding: 14px 18px;
+        border-bottom: 1px solid #eef1f6;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+    }
+
+    .tsp-body {
+        padding: 18px;
+        flex: 1;
+    }
+
+    .tsp-footer {
+        position: sticky;
+        bottom: 0;
+        z-index: 10;
+        background: #ffffff;
+        border-top: 1px solid #eef1f6;
+        padding: 14px 18px;
+        box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.05);
+    }
+
+    .tt-body {
+        flex-direction: column;
+        align-items: stretch;
+        width: 100%;
     }
 
     .tt-grid-row {
         flex-direction: column;
+        align-items: stretch;
+        width: 100%;
     }
 
     .tt-toolbar-left {
@@ -571,6 +672,12 @@
     .tt-legend-inline {
         margin-left: 0;
         width: 100%;
+    }
+
+    /* The "CS Y1 schedule · ★ = your courses …" caption has no room to sit
+       beside anything on a phone — it wraps into a tall narrow column. */
+    #studentTimetableSection .tt-legend {
+        display: none;
     }
 
     .st-free-bar {

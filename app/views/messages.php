@@ -1,60 +1,16 @@
 <?php
 
-// Instructor Messages View — conversation switching, search, composer, and the
-// Group Info panel are all driven client-side (js/instructor/messages.js) from
-// the $conversationsData dataset below. DOM-only demo — nothing persists.
+// Messages View (academic staff + timetable officer) — conversation switching,
+// search, composer, and the Group Info panel are all driven client-side
+// (js/messages.js) from the $conversationsData dataset, which MessagesController
+// picks by role. DOM-only demo — nothing persists.
+//
+// $allowGroups is false for the timetable officer, whose conversations are all
+// direct messages; the Members button and Group Info panel are then not
+// rendered at all, and js/messages.js skips wiring them.
 $title = "Messages";
 
-$conversationsData = [
-    [
-        'id' => 1, 'name' => 'CS3401 Lab Group', 'subtitle' => 'CS3401 – Fundamentals of Computing Lab',
-        'avatar' => 'CS', 'color' => '#4d179a', 'time' => '9:41 AM', 'preview' => 'Lab report template has been updated — please use the new version.',
-        'unread' => 3, 'isGroup' => true, 'members' => ['Ms. T. Fernando (You)', 'Dr. N. Perera', 'Mr. K. Bandara'],
-        'messages' => [
-            ['text' => 'Good morning everyone. Today we\'ll cover memory allocation in C.', 'time' => '8:02 AM', 'mine' => false],
-            ['text' => 'Dr. Perera, the lab report template has been updated — please check the shared drive.', 'time' => '8:45 AM', 'mine' => false],
-            ['text' => 'Got it, thanks. I\'ll distribute it at the start of class.', 'time' => '9:10 AM', 'mine' => true],
-            ['text' => 'Also, can someone confirm the projector in Lab A-201 is working?', 'time' => '9:35 AM', 'mine' => true],
-            ['text' => 'Lab report template has been updated — please use the new version.', 'time' => '9:41 AM', 'mine' => false],
-        ],
-    ],
-    [
-        'id' => 2, 'name' => 'IT2301 Practical Group', 'subtitle' => 'IT2301 – Web Technologies Practical',
-        'avatar' => 'IT', 'color' => '#0f766e', 'time' => '9:12 AM', 'preview' => "Don't forget the network config lab.",
-        'unread' => 1, 'isGroup' => true, 'members' => ['Ms. T. Fernando (You)', 'Prof. A. Silva'],
-        'messages' => [
-            ['text' => 'Reminder: bring your laptops fully charged for today\'s practical.', 'time' => '8:50 AM', 'mine' => true],
-            ['text' => "Don't forget the network config lab.", 'time' => '9:12 AM', 'mine' => false],
-        ],
-    ],
-    [
-        'id' => 3, 'name' => 'Dr. Nimal Perera', 'subtitle' => 'Dr. Nimal Perera',
-        'avatar' => 'NP', 'color' => '#1a3a6b', 'time' => 'Yesterday', 'preview' => 'Please send the attendance sheet for las…',
-        'unread' => 0, 'isGroup' => false, 'members' => ['Ms. T. Fernando (You)', 'Dr. N. Perera'],
-        'messages' => [
-            ['text' => 'Please send the attendance sheet for last week\'s lab.', 'time' => 'Yesterday · 4:12 PM', 'mine' => false],
-            ['text' => 'Sure, sending it over now.', 'time' => 'Yesterday · 4:20 PM', 'mine' => true],
-        ],
-    ],
-    [
-        'id' => 4, 'name' => 'Prof. Anoma Silva', 'subtitle' => 'Prof. Anoma Silva',
-        'avatar' => 'AS', 'color' => '#9a3412', 'time' => 'Monday', 'preview' => 'Thank you for the update.',
-        'unread' => 0, 'isGroup' => false, 'members' => ['Ms. T. Fernando (You)', 'Prof. A. Silva'],
-        'messages' => [
-            ['text' => 'Could you cover my practical session next Tuesday?', 'time' => 'Monday · 11:00 AM', 'mine' => false],
-            ['text' => 'Yes, happy to help — I\'ll confirm the room.', 'time' => 'Monday · 11:20 AM', 'mine' => true],
-            ['text' => 'Thank you for the update.', 'time' => 'Monday · 11:25 AM', 'mine' => false],
-        ],
-    ],
-    [
-        'id' => 5, 'name' => 'Dept. Instructors Channel', 'subtitle' => 'Department of Computer Science',
-        'avatar' => 'DI', 'color' => '#4338ca', 'time' => 'Monday', 'preview' => 'Reminder: staff meeting at 3 PM tomorrow.',
-        'unread' => 2, 'isGroup' => true, 'members' => ['Ms. T. Fernando (You)', 'Dr. N. Perera', 'Prof. A. Silva', 'Mr. K. Bandara'],
-        'messages' => [
-            ['text' => 'Reminder: staff meeting at 3 PM tomorrow in the conference room.', 'time' => 'Monday · 2:00 PM', 'mine' => false],
-        ],
-    ],
-];
+$allowGroups = $allowGroups ?? true;
 
 $activeConv = $conversationsData[0];
 $conversations = $conversationsData; 
@@ -108,9 +64,11 @@ $messages = $activeConv['messages'];
                     <p class="msg-thread-sub" id="msgThreadSub"><?= $activeConv['isGroup'] ? 'Group &middot; ' . count($activeConv['members']) . ' members' : 'Direct message' ?></p>
                 </div>
             </div>
-            <button class="msg-btn-members" id="msgMembersBtn">
-                <i class="fa-solid fa-users"></i> Members <i class="fa-solid fa-chevron-down"></i>
-            </button>
+            <?php if ($allowGroups): ?>
+                <button class="msg-btn-members" id="msgMembersBtn">
+                    <i class="fa-solid fa-users"></i> Members <i class="fa-solid fa-chevron-down"></i>
+                </button>
+            <?php endif; ?>
         </div>
 
         <div class="msg-thread-body" id="msgThreadBody">
@@ -133,7 +91,8 @@ $messages = $activeConv['messages'];
         </div>
     </div>
 
-    <!-- Group Info panel -->
+    <!-- Group Info panel — group chats only, so never for the timetable officer -->
+    <?php if ($allowGroups): ?>
     <aside class="msg-group-info" id="msgGroupInfo" hidden>
         <div class="msg-group-info-header">
             <h2>Group Info</h2>
@@ -147,6 +106,7 @@ $messages = $activeConv['messages'];
             <div class="msg-group-members-list" id="msgGroupMembersList"></div>
         </div>
     </aside>
+    <?php endif; ?>
 
     <i id="toggleBtnARROW" class="fa-solid fa-arrow-right" style=
        "
@@ -233,4 +193,4 @@ document.addEventListener('DOMContentLoaded', () => {
 </script>
 
 <script type="application/json" id="conversationsData"><?= json_encode($conversationsData) ?></script>
-<script src="/js/instructor/messages.js"></script>
+<script src="/js/messages.js"></script>

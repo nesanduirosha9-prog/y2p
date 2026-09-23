@@ -15,14 +15,6 @@ $totalHistory = count($evaluationHistory ?? []);
 
 <div class="courses-hub-container">
 
-    <!-- Top Page Head -->
-    <div class="page-head">
-        <div>
-            <h2><?= htmlspecialchars($pageTitle ?? 'My Courses') ?></h2>
-            <p class="page-head-sub"><?= htmlspecialchars($pageSubtitle ?? 'Manage assigned course modules, evaluate supportive instructors, and review evaluation history') ?></p>
-        </div>
-    </div>
-
     <!-- 3-Tab Bar for Lecturers -->
     <div class="courses-tabs" id="coursesTabs" role="tablist">
         <button type="button" class="course-tab active" data-tab="courses" role="tab" aria-selected="true" id="tab-courses">
@@ -137,16 +129,17 @@ $totalHistory = count($evaluationHistory ?? []);
                                                     </span>
                                                 <?php endforeach; ?>
                                             </div>
-                                            <?php if (!empty($c['lecturer_names'])): ?>
-                                                <div style="font-size: 11px; color: #64748b; margin-top: 3px; font-weight: 500;">
-                                                    <?= htmlspecialchars(implode(', ', array_values($c['lecturer_names']))) ?>
-                                                </div>
-                                            <?php endif; ?>
                                         </td>
                                         <td>
                                             <div class="tag-row">
+                                                <?php 
+                                                $instNameMap = [];
+                                                foreach (($c['instructor_details'] ?? []) as $iDet) {
+                                                    $instNameMap[$iDet['code']] = $iDet['name'];
+                                                }
+                                                ?>
                                                 <?php foreach ($c['instructors'] as $iCode): ?>
-                                                    <span class="tag tag-instructor"><?= htmlspecialchars($iCode) ?></span>
+                                                    <span class="tag tag-instructor" title="<?= htmlspecialchars($instNameMap[$iCode] ?? $iCode) ?>"><?= htmlspecialchars($iCode) ?></span>
                                                 <?php endforeach; ?>
                                             </div>
                                         </td>
@@ -232,7 +225,6 @@ $totalHistory = count($evaluationHistory ?? []);
                                         <span class="lec-avatar"><?= htmlspecialchars(ViewHelpers::staffInitials($inst['name'])) ?></span>
                                         <span>
                                             <span class="lec-name"><?= htmlspecialchars($inst['name']) ?></span>
-                                            <span class="lec-dept"><?= htmlspecialchars($inst['department'] ?? 'Computer Science') ?> &middot; <?= htmlspecialchars($inst['role']) ?></span>
                                         </span>
                                     </div>
                                 </td>
@@ -246,20 +238,34 @@ $totalHistory = count($evaluationHistory ?? []);
                                     </div>
                                 </td>
                                 <td>
-                                    <span class="pill pill-pending status-pill" id="instStatus_<?= htmlspecialchars($inst['code']) ?>">
-                                        <?= htmlspecialchars($inst['status']) ?>
-                                    </span>
+                                    <?php $isEval = !empty($inst['evaluated_this_week']) || ($inst['status'] ?? '') === 'Evaluated'; ?>
+                                    <?php if ($isEval): ?>
+                                        <span class="pill pill-active status-pill" id="instStatus_<?= htmlspecialchars($inst['code']) ?>">
+                                            <i class="fa-solid fa-check"></i> Evaluated (<?= number_format((float)($inst['rating'] ?? 4.0), 1) ?>)
+                                        </span>
+                                    <?php else: ?>
+                                        <span class="pill pill-pending status-pill" id="instStatus_<?= htmlspecialchars($inst['code']) ?>">
+                                            Pending Evaluation
+                                        </span>
+                                    <?php endif; ?>
                                 </td>
                                 <td style="text-align: right;">
-                                    <button type="button" class="btn-evaluate-instructor"
-                                            data-code="<?= htmlspecialchars($inst['code']) ?>"
-                                            data-name="<?= htmlspecialchars($inst['name']) ?>"
-                                            data-email="<?= htmlspecialchars($inst['email']) ?>"
-                                            data-phone="<?= htmlspecialchars($inst['phone']) ?>"
-                                            data-dept="<?= htmlspecialchars($inst['department'] ?? 'Computer Science') ?>"
-                                            data-courses='<?= htmlspecialchars(json_encode($inst['courses'] ?? []), ENT_QUOTES) ?>'>
-                                        <i class="fa-solid fa-star-half-stroke"></i> Evaluate
-                                    </button>
+                                    <?php if ($isEval): ?>
+                                        <button type="button" class="btn-evaluate-instructor btn-evaluated" id="btnEval_<?= htmlspecialchars($inst['code']) ?>" disabled
+                                                data-code="<?= htmlspecialchars($inst['code']) ?>">
+                                            <i class="fa-solid fa-check"></i> Evaluated
+                                        </button>
+                                    <?php else: ?>
+                                        <button type="button" class="btn-evaluate-instructor" id="btnEval_<?= htmlspecialchars($inst['code']) ?>"
+                                                data-code="<?= htmlspecialchars($inst['code']) ?>"
+                                                data-name="<?= htmlspecialchars($inst['name']) ?>"
+                                                data-email="<?= htmlspecialchars($inst['email']) ?>"
+                                                data-phone="<?= htmlspecialchars($inst['phone']) ?>"
+                                                data-dept="<?= htmlspecialchars($inst['department'] ?? 'Computer Science') ?>"
+                                                data-courses='<?= htmlspecialchars(json_encode($inst['courses'] ?? []), ENT_QUOTES) ?>'>
+                                            <i class="fa-solid fa-star-half-stroke"></i> Evaluate
+                                        </button>
+                                    <?php endif; ?>
                                 </td>
                             </tr>
                         <?php endforeach; ?>
@@ -406,7 +412,6 @@ $totalHistory = count($evaluationHistory ?? []);
                     <h4 id="drawerInstName">Instructor Name</h4>
                     <p style="font-size: 12px; margin-top: 2px;">
                         <span class="pill pill-muted" id="drawerInstCode">--</span>
-                        <span id="drawerInstDept" style="color: #64748b;">Computer Science</span>
                     </p>
                     <p style="font-size: 11.5px; color: #64748b; margin-top: 3px;">
                         <i class="fa-regular fa-envelope"></i> <span id="drawerInstEmail">--</span>

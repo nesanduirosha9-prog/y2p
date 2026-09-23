@@ -116,10 +116,22 @@ $lecturers = array_values(array_unique(array_filter(array_map(fn($c) => $c['lect
 
         <div class="tt-grid-row">
             <div class="tt-grid-card">
+                <div class="tt-day-nav" id="ttDayNav">
+                    <button type="button" class="tt-day-nav-btn" id="dayPrevBtn" aria-label="Previous day" title="Previous day">
+                        <i class="fa-solid fa-chevron-left"></i>
+                    </button>
+                    <div class="tt-day-nav-info">
+                        <span class="tt-day-nav-title" id="dayNavTitle">Monday</span>
+                        <span class="tt-day-nav-date" id="dayNavDate">Mon</span>
+                    </div>
+                    <button type="button" class="tt-day-nav-btn" id="dayNextBtn" aria-label="Next day" title="Next day">
+                        <i class="fa-solid fa-chevron-right"></i>
+                    </button>
+                </div>
                 <div class="tt-grid" id="ttGrid">
                     <div class="tt-grid-corner"></div>
-                    <?php foreach ($days as $label): ?>
-                        <div class="tt-grid-day-head"><?= $label ?></div>
+                    <?php foreach ($days as $dayKey => $label): ?>
+                        <div class="tt-grid-day-head" data-day-key="<?= $dayKey ?>"><?= $label ?></div>
                     <?php endforeach; ?>
 
                     <?php foreach ($hours as $rowIndex => $h): ?>
@@ -166,9 +178,12 @@ $lecturers = array_values(array_unique(array_filter(array_map(fn($c) => $c['lect
             <!-- Slide-out Side Panel for Session Details (View / Edit / Delete / Schedule) -->
             <aside class="tt-side-panel" id="ttSidePanel" hidden>
                 <div class="tsp-header">
-                    <div>
-                        <h2 id="tspTitle">&mdash;</h2>
-                        <p id="tspSubtitle"></p>
+                    <div class="tsp-header-left">
+                        <button type="button" class="tsp-btn-back" id="tspBack" aria-label="Back"><i class="fa-solid fa-arrow-left"></i></button>
+                        <div>
+                            <h2 id="tspTitle">&mdash;</h2>
+                            <p id="tspSubtitle"></p>
+                        </div>
                     </div>
                     <button type="button" class="modal-close" id="tspClose"><i class="fa-solid fa-xmark"></i></button>
                 </div>

@@ -98,6 +98,7 @@ $weekStart = weekDateObj('mon')->format('Y-m-d');
         </div>
 
         <div class="tt-legend-inline" id="ttLegendInline">
+            <span class="legend-chip" id="chipMine" hidden><i class="legend-chip-dot chip-mine"></i>Your courses</span>
             <span class="legend-chip"><i class="legend-chip-dot chip-lab"></i>Lab</span>
             <span class="legend-chip"><i class="legend-chip-dot chip-practical"></i>Practical</span>
             <span class="legend-chip"><i class="legend-chip-dot chip-lecture"></i>Lecture</span>
@@ -109,6 +110,18 @@ $weekStart = weekDateObj('mon')->format('Y-m-d');
         <div id="myTimetableSection" class="tt-section">
           <div class="tt-grid-row">
             <div class="tt-grid-card">
+                <div class="tt-day-nav" id="ttDayNav">
+                    <button type="button" class="tt-day-nav-btn" id="dayPrevBtn" aria-label="Previous day" title="Previous day">
+                        <i class="fa-solid fa-chevron-left"></i>
+                    </button>
+                    <div class="tt-day-nav-info">
+                        <span class="tt-day-nav-title" id="dayNavTitle">Monday</span>
+                        <span class="tt-day-nav-date" id="dayNavDate"><?= htmlspecialchars(weekDateFor('mon')) ?></span>
+                    </div>
+                    <button type="button" class="tt-day-nav-btn" id="dayNextBtn" aria-label="Next day" title="Next day">
+                        <i class="fa-solid fa-chevron-right"></i>
+                    </button>
+                </div>
                 <div class="tt-grid">
                     <div class="tt-grid-corner"></div>
                     <?php foreach ($days as $dayKey => $label): ?>
@@ -119,7 +132,7 @@ $weekStart = weekDateObj('mon')->format('Y-m-d');
                     <?php endforeach; ?>
 
                     <?php foreach ($hours as $rowIndex => $h): ?>
-                        <div class="tt-grid-time"><?= ViewHelpers::hourLabel($h) ?></div>
+                        <div class="tt-grid-time" style="grid-column: 1; grid-row: <?= $rowIndex + 2 ?>;"><?= ViewHelpers::hourLabel($h) ?></div>
                         <?php foreach ($days as $dayKey => $dayLabel):
                             $cell = $occupied[$dayKey][$h] ?? null;
                             $isLunch = $h === 12;
@@ -133,6 +146,7 @@ $weekStart = weekDateObj('mon')->format('Y-m-d');
                                      data-location="<?= htmlspecialchars($cell['location']) ?>"
                                      data-type="<?= htmlspecialchars($cell['type']) ?>"
                                      data-day="<?= htmlspecialchars($dayLabel) ?>"
+                                     data-day-key="<?= $dayKey ?>"
                                      data-start="<?= ViewHelpers::hourLabel($h) ?>"
                                      data-duration="<?= $cell['duration'] ?>"
                                      data-batch="<?= htmlspecialchars($batchLabel) ?>"
@@ -166,23 +180,33 @@ $weekStart = weekDateObj('mon')->format('Y-m-d');
         <div id="studentTimetableSection" class="tt-section" hidden>
             <div class="st-free-bar" id="stFreeBar"></div>
             <div class="tt-grid-card">
+                <div class="tt-day-nav" id="stDayNav">
+                    <button type="button" class="tt-day-nav-btn" id="stDayPrevBtn" aria-label="Previous day" title="Previous day">
+                        <i class="fa-solid fa-chevron-left"></i>
+                    </button>
+                    <div class="tt-day-nav-info">
+                        <span class="tt-day-nav-title" id="stDayNavTitle">Monday</span>
+                        <span class="tt-day-nav-date" id="stDayNavDate"><?= htmlspecialchars(weekDateFor('mon')) ?></span>
+                    </div>
+                    <button type="button" class="tt-day-nav-btn" id="stDayNextBtn" aria-label="Next day" title="Next day">
+                        <i class="fa-solid fa-chevron-right"></i>
+                    </button>
+                </div>
                 <div class="tt-grid" id="stGrid"></div>
             </div>
-            <div class="tt-legend">
-                <span class="legend-item"><i class="legend-dot dot-mine"></i>Your courses</span>
-                <span class="legend-item"><i class="legend-dot dot-lab"></i>Lab</span>
-                <span class="legend-item"><i class="legend-dot dot-practical"></i>Practical</span>
-                <span class="legend-item"><i class="legend-dot dot-lecture"></i>Lecture</span>
-                <span class="legend-item"><i class="legend-dot dot-assignment"></i>Assignment</span>
+            <div class="tt-legend tt-legend-hint-only">
                 <span class="legend-hint" id="stCaption">CS Y1 schedule · ★ = your courses · empty cells = students are free</span>
             </div>
         </div>
 
         <aside class="tt-side-panel" id="ttSidePanel" hidden>
             <div class="tsp-header">
-                <div>
-                    <h2 id="tspTitle">&mdash;</h2>
-                    <p id="tspSubtitle"></p>
+                <div class="tsp-header-left">
+                    <button type="button" class="tsp-btn-back" id="tspBack" aria-label="Back"><i class="fa-solid fa-arrow-left"></i></button>
+                    <div>
+                        <h2 id="tspTitle">&mdash;</h2>
+                        <p id="tspSubtitle"></p>
+                    </div>
                 </div>
                 <button type="button" class="modal-close" id="tspClose"><i class="fa-solid fa-xmark"></i></button>
             </div>

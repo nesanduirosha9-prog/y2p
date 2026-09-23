@@ -261,7 +261,6 @@ class CoursesController extends Controller
                 }
             }
         }
-        $assignedInstructors = array_values($instructorMap);
 
         // Evaluation History dataset for this lecturer
         $evaluationHistory = [
@@ -336,6 +335,16 @@ class CoursesController extends Controller
                 'status' => 'Submitted',
             ],
         ];
+
+        // Check which instructors are already evaluated in the current week (Week 5)
+        foreach ($evaluationHistory as $eh) {
+            if ($eh['week'] === 'Week 5' && isset($instructorMap[$eh['instructor_code']])) {
+                $instructorMap[$eh['instructor_code']]['status'] = 'Evaluated';
+                $instructorMap[$eh['instructor_code']]['rating'] = $eh['rating'];
+                $instructorMap[$eh['instructor_code']]['evaluated_this_week'] = true;
+            }
+        }
+        $assignedInstructors = array_values($instructorMap);
 
         return $this->render('instructor/my_courses', [
             'title' => $pageTitle . ' — StaffSync',

@@ -670,3 +670,157 @@
 .assigned-course-row:hover {
     background: #f8fafc;
 }
+
+.course-sessions-hint {
+    font-size: 11.5px;
+    color: #64748b;
+    margin-top: 3px;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-weight: 500;
+}
+
+.course-sessions-hint i {
+    color: #94a3b8;
+    font-size: 10px;
+}
+
+.tag-lecturer,
+.tag-instructor {
+    background: #0f1c2e;
+    color: #ffffff;
+    cursor: default;
+}
+
+/* History Stepper Navigator (matching timetable tt-week-nav) */
+.tt-week-nav {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: #f4f6f9;
+    border: 1px solid #dde3ee;
+    border-radius: 12px;
+    padding: 7px 11px;
+}
+
+.tt-week-nav-btn {
+    width: 24px;
+    height: 24px;
+    border-radius: 8px;
+    border: none;
+    background: none;
+    color: #6b7c96;
+    font-size: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: background 0.15s, color 0.15s;
+}
+
+.tt-week-nav-btn:hover:not(:disabled) {
+    background: #e8edf5;
+    color: #0f1c2e;
+}
+
+.tt-week-nav-btn:disabled {
+    opacity: 0.35;
+    cursor: not-allowed;
+}
+
+.tt-week-label {
+    min-width: 170px;
+    font-size: 12px;
+    font-weight: 600;
+    color: #0f1c2e;
+    text-align: center;
+    white-space: nowrap;
+    user-select: none;
+}
+
+/* ---- Session / Course Filter Dropdown Styling ---- */
+.session-dropdown-wrapper {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: #f8fafc;
+    border: 1px solid #dde3ee;
+    border-radius: 12px;
+    padding: 3px 6px 3px 12px;
+    transition: all 0.15s ease;
+}
+
+.session-dropdown-wrapper:hover {
+    background: #f1f5f9;
+    border-color: #cbd5e1;
+}
+
+.session-filter-label {
+    font-size: 11.5px;
+    font-weight: 700;
+    color: #475569;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    white-space: nowrap;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    user-select: none;
+}
+
+.session-filter-label i {
+    color: #1a3a6b;
+    font-size: 12px;
+}
+
+.session-select-box {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+}
+
+.session-dropdown {
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    background: #ffffff;
+    border: 1px solid #cbd5e1;
+    border-radius: 8px;
+    padding: 6px 34px 6px 12px;
+    font-size: 12.5px;
+    font-weight: 600;
+    color: #0f1c2e;
+    cursor: pointer;
+    outline: none;
+    height: 32px;
+    box-shadow: 0 1px 2px rgba(15, 28, 46, 0.04);
+    transition: all 0.15s ease;
+}
+
+.session-dropdown:hover {
+    border-color: #94a3b8;
+}
+
+.session-dropdown:focus {
+    border-color: #1a3a6b;
+    box-shadow: 0 0 0 3px rgba(26, 58, 107, 0.12);
+}
+
+.session-select-box .select-chevron {
+    position: absolute;
+    right: 11px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 11px;
+    color: #64748b;
+    pointer-events: none;
+    transition: color 0.15s ease;
+}
+
+.session-dropdown:focus + .select-chevron,
+.session-dropdown:hover + .select-chevron {
+    color: #0f1c2e;
+}
+
+
