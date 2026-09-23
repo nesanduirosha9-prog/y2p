@@ -22,6 +22,7 @@ use app\core\Response;
 use app\controllers\HomeController;
 use app\controllers\AuthController;
 use app\controllers\SettingsController;
+use app\controllers\WorkloadController;
 
 // Several resources have one controller per role, so the class names collide
 // (there are two TimetableControllers, three EvaluationsControllers, ...).
@@ -43,10 +44,8 @@ use app\controllers\instructor\MessagesController;
 use app\controllers\instructor\RequestsController;
 
 use app\controllers\coordinator\StaffController;
-use app\controllers\coordinator\WorkloadController as CoordinatorWorkloadController;
 use app\controllers\coordinator\EvaluationsController as CoordinatorEvaluationsController;
 
-use app\controllers\in_charge\WorkloadController as InChargeWorkloadController;
 use app\controllers\in_charge\EvaluationsController as InChargeEvaluationsController;
 use app\controllers\in_charge\AccountsController;
 
@@ -187,17 +186,13 @@ $router->put('/lecture-halls/{code}', function (Request $request, Response $resp
 $router->get('/workload', function (Request $request, Response $response) {
     return (new StaffWorkloadController())->index($request);
 });
-// The Coordinator and the In-Charge both see a workload matrix, with different
-// headings and a different emphasis. Anyone else is 403'd by the coordinator
-// controller's position guard.
+// The Coordinator and the In-Charge both see the same matrix with different
+// wording; one controller now serves both and picks the copy by position.
 $router->get('/workload/distribution', function (Request $request, Response $response) {
-    if (($_SESSION['position'] ?? '') === 'in_charge') {
-        return (new InChargeWorkloadController())->distribution($request);
-    }
-    return (new CoordinatorWorkloadController())->distribution($request);
+    return (new WorkloadController())->distribution($request);
 });
 $router->get('/workload/scheduler', function (Request $request, Response $response) {
-    return (new CoordinatorWorkloadController())->scheduler($request);
+    return (new WorkloadController())->scheduler($request);
 });
 
 // --- Evaluations -----------------------------------------------------------

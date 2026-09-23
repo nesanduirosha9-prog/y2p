@@ -1,6 +1,6 @@
 <?php
 
-// coordinator/workload_scheduler.php — Modernized, User-Friendly Duty Scheduler & Requests Manager.
+// workload_scheduler.php — Modernized, User-Friendly Duty Scheduler & Requests Manager.
 // Translates the spreadsheet "Request", "Main", and script.js automation workflows.
 
 use app\core\Application;
