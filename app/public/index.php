@@ -23,6 +23,7 @@ use app\controllers\HomeController;
 use app\controllers\AuthController;
 use app\controllers\SettingsController;
 use app\controllers\WorkloadController;
+use app\controllers\EvaluationsController;
 
 // Several resources have one controller per role, so the class names collide
 // (there are two TimetableControllers, three EvaluationsControllers, ...).
@@ -38,15 +39,12 @@ use app\controllers\timetable_officer\LectureHallsController;
 use app\controllers\instructor\TimetableController as StaffTimetableController;
 use app\controllers\instructor\CoursesController as StaffCoursesController;
 use app\controllers\instructor\WorkloadController as StaffWorkloadController;
-use app\controllers\instructor\EvaluationsController as StaffEvaluationsController;
 use app\controllers\instructor\LeaveController;
 use app\controllers\instructor\MessagesController;
 use app\controllers\instructor\RequestsController;
 
 use app\controllers\coordinator\StaffController;
-use app\controllers\coordinator\EvaluationsController as CoordinatorEvaluationsController;
 
-use app\controllers\in_charge\EvaluationsController as InChargeEvaluationsController;
 use app\controllers\in_charge\AccountsController;
 
 // Create the application and router
@@ -196,18 +194,11 @@ $router->get('/workload/scheduler', function (Request $request, Response $respon
 });
 
 // --- Evaluations -----------------------------------------------------------
-// Three views of the same idea, chosen by position: the Coordinator reviews,
-// the In-Charge appraises, and everyone else (senior or junior academic staff)
-// evaluates per course — StaffEvaluationsController redirects them to /courses.
+// Three readings of the same idea, chosen inside the controller by position:
+// the Coordinator reviews, the In-Charge appraises, and everyone else (senior
+// or junior academic staff) evaluates per course and is sent to /courses.
 $router->get('/evaluations', function (Request $request, Response $response) {
-    $position = $_SESSION['position'] ?? '';
-    if ($position === 'coordinator') {
-        return (new CoordinatorEvaluationsController())->index($request);
-    }
-    if ($position === 'in_charge') {
-        return (new InChargeEvaluationsController())->index($request);
-    }
-    return (new StaffEvaluationsController())->index($request);
+    return (new EvaluationsController())->index($request);
 });
 
 // --- Academic staff screens with no officer equivalent ---------------------
