@@ -37,6 +37,6 @@ use app\core\ViewHelpers;
     </div>
 
     <div class="handover-actions-center">
-        <a class="btn-primary" href="/in-charge/accounts">Back to Role Assignment</a>
+        <a class="btn-primary" href="/settings/handover">Back to Role Assignment</a>
     </div>
 </div>

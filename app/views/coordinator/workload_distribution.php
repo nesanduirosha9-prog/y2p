@@ -16,7 +16,7 @@ $showSummaryCards = true;
             <p class="page-head-sub">Full overview of faculty courses, lecturer-in-charge assignments, and supportive member teams</p>
         </div>
         <div class="page-head-actions">
-            <a href="/coordinator/workload/scheduler" class="btn-primary">
+            <a href="/workload/scheduler" class="btn-primary">
                 <i class="fa-solid fa-calendar-check"></i> Open Workload Scheduler
             </a>
         </div>

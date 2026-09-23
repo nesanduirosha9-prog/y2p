@@ -45,7 +45,7 @@ class SettingsController extends Controller
             'profile' => $profile,
             'isInCharge' => $isInCharge,
             'roleHolders' => $roleHolders,
-            'formAction' => '/instructor/settings',
+            'formAction' => '/settings',
             'notificationCount' => (new NotificationModel())->unreadCount($_SESSION['staff_code']),
         ]);
     }

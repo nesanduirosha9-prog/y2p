@@ -16,7 +16,7 @@
         <p style="color: #64748b; font-size: 13px; max-width: 500px; margin: 0 auto 20px;">
             To provide feedback on demonstrators and instructors assigned to your modules, open your assigned course list and click the "Evaluate" button on any course.
         </p>
-        <a href="/instructor/my-courses" class="btn-primary" style="display: inline-flex; align-items: center; gap: 8px; text-decoration: none; padding: 10px 20px; border-radius: 8px; font-weight: 600;">
+        <a href="/courses" class="btn-primary" style="display: inline-flex; align-items: center; gap: 8px; text-decoration: none; padding: 10px 20px; border-radius: 8px; font-weight: 600;">
             <i class="fa-solid fa-arrow-right"></i> Go to My Courses
         </a>
     </div>

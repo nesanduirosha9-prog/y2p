@@ -162,7 +162,76 @@ Two incidental JSON message changes fall out of it:
 
 ## Phase 2 — canonical URLs
 
-*(written when Phase 2 lands)*
+### The URL map
+
+| Canonical | Method | Replaces | Who may reach it |
+|---|---|---|---|
+| `/timetable` | GET | `/timetable`, `/instructor/timetable` | any signed-in user (view differs by role) |
+| `/courses` | GET | `/course-details`, `/instructor/my-courses` | any signed-in user (view differs by role) |
+| `/staff` | GET | `/lecturers`, `/coordinator/staff` | timetable officer, coordinator, in-charge |
+| `/staff/{code}/approve` | POST | `/coordinator/staff/{code}/approve` | position ∈ (coordinator, in_charge) |
+| `/staff/{code}/reject` | POST | `/coordinator/staff/{code}/reject` | position ∈ (coordinator, in_charge) |
+| `/lecture-halls` | GET | same | role = timetable_officer |
+| `/lecture-halls/{code}` | PUT | same | role = timetable_officer |
+| `/workload` | GET | `/instructor/workload` | role = academic_staff |
+| `/workload/distribution` | GET | `/coordinator/workload/distribution`, `/in-charge/workload/distribution` | position ∈ (coordinator, in_charge) |
+| `/workload/scheduler` | GET | `/coordinator/workload/scheduler` | position = coordinator |
+| `/evaluations` | GET | `/instructor/evaluations`, `/coordinator/evaluations`, `/in-charge/evaluations` | role = academic_staff (view differs by position) |
+| `/leave` | GET | `/instructor/leave` | role = academic_staff |
+| `/messages` | GET | `/instructor/messages` | role = academic_staff |
+| `/requests` | GET | `/instructor/requests` | role = academic_staff |
+| `/settings` | GET, POST | `/settings`, `/instructor/settings` | any signed-in user |
+| `/settings/handover` | GET | `/in-charge/accounts` | — (302 to `/settings#handover`) |
+| `/settings/handover/change/{position}/{code}` | GET | `/in-charge/accounts/change/…` | position = in_charge |
+| `/settings/handover/select/{position}/{code}` | GET | `/in-charge/accounts/select/…` | position = in_charge |
+| `/settings/handover/select` | POST | `/in-charge/accounts/select` | position = in_charge |
+| `/settings/handover/verify` | GET, POST | `/in-charge/accounts/verify` | position = in_charge |
+| `/settings/handover/updated` | GET | `/in-charge/accounts/updated` | position = in_charge |
+
+Auth routes (`/login`, `/signup`, `/forgot-password*`, `/logout`, `/`, `/about`,
+`/dashboard`, `/oldabout`) were already role-free and are untouched.
+
+### Two design points worth explaining
+
+**Dispatch by session, deny by guard.** Where one URL serves several roles, the
+route closure picks the controller from `$_SESSION` and the *controller's own*
+guard decides access. The `else` branch of every dispatch is deliberately the
+controller with the stricter guard, so a user who fits neither branch is refused
+through the normal guard path. That is why no closure in `index.php` renders a 403
+itself — `Controller::forbidden()` is `protected` and a bare closure could not
+call it anyway.
+
+**POST shims are aliases, not redirects.** A 302 answer to a POST makes the client
+re-issue the request as a GET with no body. Five legacy POST/`fetch()` endpoints
+therefore call the same controller method as their canonical route instead of
+redirecting:
+
+```
+POST /coordinator/staff/{code}/approve   POST /in-charge/accounts/select
+POST /coordinator/staff/{code}/reject    POST /in-charge/accounts/verify
+POST /instructor/settings
+```
+
+The other 19 legacy paths are plain 302s from the `$legacyRedirects` map, plus two
+parameterised GET shims (`…/accounts/change|select/{position}/{code}`) that
+rebuild the target from their captured params.
+
+### `dashboardUrlForRole()`
+
+Both roles now land on `/timetable`, so the body collapses to `return '/timetable';`.
+The method is kept — six call sites use it, and it remains the one place to change
+if a role ever needs a different landing page again.
+
+### Verified
+
+- 62 routes registered; all 31 pre-refactor paths still resolve.
+- 36 canonical routes, none containing a role name.
+- All 19 legacy redirect targets resolve to a registered route.
+- Every `render()`/`renderPartial()` target exists on disk.
+- `php -l` clean on every modified file.
+- `app/public/js/settings.js` needed no edit (reads `data-action`);
+  `app/public/js/coordinator/staff.js` needed only its fallback literal
+  (the live value comes from `data-base-path`).
 
 ## Phase 3 — collapsed stacks
 
@@ -170,4 +239,15 @@ Two incidental JSON message changes fall out of it:
 
 ## Shim-removal checklist
 
-*(written when Phase 2 lands)*
+The `LEGACY ROUTE SHIMS` block at the bottom of `app/public/index.php` is the whole
+of it — deleting that block and the `$legacyRedirects` array removes every legacy
+path at once. Before doing so:
+
+- [ ] Every in-flight teammate branch has merged into `main`.
+- [ ] `grep -rn -oE "['\"\`]/(instructor|coordinator|in-charge)/" --include="*.php" --include="*.js" app/`
+      returns nothing outside the shim block.
+- [ ] Same grep across the *merged* branches' diffs, in case one reintroduced an
+      old `href`.
+- [ ] Anyone with a bookmarked role-prefixed URL has been told (they will get a
+      404, not a redirect, once the block goes).
+- [ ] Delete the block, the `$legacyRedirects` array, and this checklist.

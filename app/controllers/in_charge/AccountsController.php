@@ -50,7 +50,15 @@ class AccountsController extends Controller
         ];
     }
 
-    /** GET /in-charge/accounts */
+    /**
+     * Standalone "Role Assignment" list page.
+     *
+     * NOTE: currently unreachable. No route calls it — /settings/handover
+     * redirects to the handover tab inside Settings instead (as the old
+     * /in-charge/accounts route did before it). Kept because the handover flow's
+     * later steps still render views/in_charge/accounts*.php, and because it is
+     * the page this controller was written around. See docs/ROUTING_REFACTOR.md.
+     */
     public function index(Request $request)
     {
         // Guard lives on Controller now — see app/core/Controller.php.
@@ -67,7 +75,7 @@ class AccountsController extends Controller
         ]));
     }
 
-    /** GET /in-charge/accounts/change/{position}/{code} */
+    /** GET /settings/handover/change/{position}/{code} */
     public function change(Request $request, Response $response, array $params = [])
     {
         // Guard lives on Controller now — see app/core/Controller.php.
@@ -81,7 +89,7 @@ class AccountsController extends Controller
         $holder = (new StaffModel())->findByCode($code);
 
         if (!in_array($position, ['coordinator', 'in_charge', 'timetable_officer'], true) || !$holder) {
-            $this->redirect('/in-charge/accounts');
+            $this->redirect('/settings/handover');
             return;
         }
 
@@ -94,7 +102,7 @@ class AccountsController extends Controller
         ]));
     }
 
-    /** GET /in-charge/accounts/select/{position}/{code} */
+    /** GET /settings/handover/select/{position}/{code} */
     public function selectView(Request $request, Response $response, array $params = [])
     {
         // Guard lives on Controller now — see app/core/Controller.php.
@@ -108,7 +116,7 @@ class AccountsController extends Controller
         $holder = (new StaffModel())->findByCode($code);
 
         if (!in_array($position, ['coordinator', 'in_charge', 'timetable_officer'], true) || !$holder) {
-            $this->redirect('/in-charge/accounts');
+            $this->redirect('/settings/handover');
             return;
         }
 
@@ -133,7 +141,7 @@ class AccountsController extends Controller
         ]));
     }
 
-    /** POST /in-charge/accounts/select — starts the OTP challenge. */
+    /** POST /settings/handover/select — starts the OTP challenge. */
     public function selectSubmit(Request $request, Response $response)
     {
         // Guard lives on Controller now — see app/core/Controller.php.
@@ -180,10 +188,10 @@ class AccountsController extends Controller
             'expires_at' => time() + 300, // 5 minutes
         ];
 
-        $response->json(['success' => true, 'redirect' => '/in-charge/accounts/verify']);
+        $response->json(['success' => true, 'redirect' => '/settings/handover/verify']);
     }
 
-    /** GET /in-charge/accounts/verify */
+    /** GET /settings/handover/verify */
     public function verifyView(Request $request)
     {
         // Guard lives on Controller now — see app/core/Controller.php. The
@@ -194,7 +202,7 @@ class AccountsController extends Controller
             return $denied;
         }
         if (empty($_SESSION['handover'])) {
-            $this->redirect('/in-charge/accounts');
+            $this->redirect('/settings/handover');
             return;
         }
 
@@ -209,7 +217,7 @@ class AccountsController extends Controller
         ]));
     }
 
-    /** POST /in-charge/accounts/verify — confirms the OTP and performs the reassignment. */
+    /** POST /settings/handover/verify — confirms the OTP and performs the reassignment. */
     public function verifySubmit(Request $request, Response $response)
     {
         // Guard lives on Controller now — see app/core/Controller.php. A wrong
@@ -251,10 +259,10 @@ class AccountsController extends Controller
             return;
         }
 
-        $response->json(['success' => true, 'redirect' => '/in-charge/accounts/updated']);
+        $response->json(['success' => true, 'redirect' => '/settings/handover/updated']);
     }
 
-    /** GET /in-charge/accounts/updated */
+    /** GET /settings/handover/updated */
     public function updatedView(Request $request)
     {
         // Guard lives on Controller now — see app/core/Controller.php.

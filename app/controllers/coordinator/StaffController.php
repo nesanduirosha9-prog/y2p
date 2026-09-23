@@ -52,7 +52,7 @@ class StaffController extends Controller
         ]);
     }
 
-    /** POST /coordinator/staff/{code}/approve */
+    /** POST /staff/{code}/approve */
     public function approve(Request $request, Response $response, array $params = [])
     {
         // Guard lives on Controller now — see app/core/Controller.php.
@@ -78,7 +78,7 @@ class StaffController extends Controller
         $response->json(['success' => true]);
     }
 
-    /** POST /coordinator/staff/{code}/reject */
+    /** POST /staff/{code}/reject */
     public function reject(Request $request, Response $response, array $params = [])
     {
         // Guard lives on Controller now — see app/core/Controller.php.

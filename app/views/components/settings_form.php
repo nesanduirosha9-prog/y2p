@@ -4,7 +4,7 @@
 //
 // Expects in scope:
 //   $profile     — array, a row from StaffModel::findByCode() (real DB data)
-//   $formAction  — string, where the form POSTs to ('/settings' or '/instructor/settings')
+//   $formAction  — string, where the form POSTs to (always '/settings')
 //   $roleLabel   — string, optional badge text
 //   $isInCharge  — bool, optional flag for Department In-Charge role
 //   $roleHolders — array, optional list of role holders for In-Charge handover tab
@@ -189,7 +189,7 @@ if (!empty($profile['name'])) {
                                     <td><?= htmlspecialchars($h['name']) ?></td>
                                     <td><?= htmlspecialchars($h['email']) ?></td>
                                     <td>
-                                        <a class="btn-secondary" href="/in-charge/accounts/change/<?= urlencode($posKey) ?>/<?= urlencode($h['code']) ?>">
+                                        <a class="btn-secondary" href="/settings/handover/change/<?= urlencode($posKey) ?>/<?= urlencode($h['code']) ?>">
                                             Change
                                         </a>
                                     </td>

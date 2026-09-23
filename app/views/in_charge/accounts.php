@@ -36,7 +36,7 @@ function roleHolderPositionKey(array $h): string
                             <td><?= htmlspecialchars($h['name']) ?></td>
                             <td><?= htmlspecialchars($h['email']) ?></td>
                             <td>
-                                <a class="btn-secondary" href="/in-charge/accounts/change/<?= urlencode(roleHolderPositionKey($h)) ?>/<?= urlencode($h['code']) ?>">
+                                <a class="btn-secondary" href="/settings/handover/change/<?= urlencode(roleHolderPositionKey($h)) ?>/<?= urlencode($h['code']) ?>">
                                     Change
                                 </a>
                             </td>

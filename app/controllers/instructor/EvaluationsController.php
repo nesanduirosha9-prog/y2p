@@ -21,7 +21,7 @@ class EvaluationsController extends Controller
         }
 
         // Evaluations are integrated directly per course module in My Courses
-        $this->redirect('/instructor/my-courses');
+        $this->redirect('/courses');
         return '';
     }
 }

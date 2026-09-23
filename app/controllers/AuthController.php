@@ -256,12 +256,18 @@ class AuthController extends Controller
         $this->redirect('/login');
     }
 
-    // Where an already-authenticated user's dashboard lives, by role. Public
-    // (not private) because the `/` route in index.php calls this from a
-    // bare closure with no $this — see app/public/index.php.
+    // Where an already-authenticated user's dashboard lives. Public (not
+    // private) because the `/` and `/dashboard` routes in index.php call this
+    // from bare closures with no $this — see app/public/index.php.
+    //
+    // Every role now lands on the same URL: /timetable is canonical and renders
+    // a different view per role, so there is nothing left to branch on. The
+    // method survives its own body because six call sites use it, and because
+    // it stays the single place to change if a role ever needs a different
+    // landing page again — better that than six literals to hunt down.
     public function dashboardUrlForRole(string $role): string
     {
-        return $role === 'academic_staff' ? '/instructor/timetable' : '/timetable';
+        return '/timetable';
     }
 
     // Every action above funnels its JSON reply through here: set the

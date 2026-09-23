@@ -4,7 +4,7 @@ document.addEventListener('DOMContentLoaded', function () {
     const view = document.querySelector('.staff-view');
     if (!view) return;
 
-    const basePath = view.dataset.basePath || '/coordinator/staff';
+    const basePath = view.dataset.basePath || '/staff';
 
     // --- Tab Switching: Active Staff vs Pending Requests ---
     const tabContainer = document.getElementById('staffTabs');

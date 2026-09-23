@@ -4,27 +4,52 @@
 // 2. Loads bootstrap.php (autoloader + config.php).
 // 3. Creates the Application + Router.
 // 4. Registers every route, grouped by area below:
-//    Home -> Auth -> Dashboard -> Timetable Officer -> Instructor ->
-//    Coordinator -> In-Charge.
+//    Home -> Auth -> Dashboard -> Canonical resource routes -> Legacy shims.
 // 5. Hands control to $app->run(), which resolves the current request.
+//
+// Routes are canonical and role-free: no path contains the words `instructor`,
+// `coordinator` or `in-charge`. The role lives in $_SESSION, so it decides
+// authorization and which view renders — never which URL you visit. The old
+// role-prefixed paths are kept alive as shims at the bottom of this file.
 ini_set('display_errors', 1);
 error_reporting(E_ALL);
 require_once __DIR__ . '/../../bootstrap.php';
 
 use app\core\Application;
 use app\core\Router;
-use app\controllers\HomeController;
-use app\controllers\AuthController;
-use app\controllers\timetable_officer\TimetableController;
-use app\controllers\timetable_officer\CoursesController;
-use app\controllers\timetable_officer\LecturersController;
-use app\controllers\timetable_officer\LectureHallsController;
-
-use app\controllers\timetable_officer\SettingsController;
-use app\controllers\coordinator\StaffController;
-use app\controllers\in_charge\AccountsController;
 use app\core\Request;
 use app\core\Response;
+use app\controllers\HomeController;
+use app\controllers\AuthController;
+
+// Several resources have one controller per role, so the class names collide
+// (there are two TimetableControllers, three EvaluationsControllers, ...).
+// Alias every import by role: it keeps the dispatch closures below readable and
+// puts every fully-qualified class name in this one block, which matters because
+// the autoloader maps namespace straight to file path — moving a controller in
+// Phase 3 means editing its `namespace` line and these lines together.
+use app\controllers\timetable_officer\TimetableController as OfficerTimetableController;
+use app\controllers\timetable_officer\CoursesController as OfficerCoursesController;
+use app\controllers\timetable_officer\LecturersController;
+use app\controllers\timetable_officer\LectureHallsController;
+use app\controllers\timetable_officer\SettingsController as OfficerSettingsController;
+
+use app\controllers\instructor\TimetableController as StaffTimetableController;
+use app\controllers\instructor\CoursesController as StaffCoursesController;
+use app\controllers\instructor\WorkloadController as StaffWorkloadController;
+use app\controllers\instructor\EvaluationsController as StaffEvaluationsController;
+use app\controllers\instructor\LeaveController;
+use app\controllers\instructor\MessagesController;
+use app\controllers\instructor\RequestsController;
+use app\controllers\instructor\SettingsController as StaffSettingsController;
+
+use app\controllers\coordinator\StaffController;
+use app\controllers\coordinator\WorkloadController as CoordinatorWorkloadController;
+use app\controllers\coordinator\EvaluationsController as CoordinatorEvaluationsController;
+
+use app\controllers\in_charge\WorkloadController as InChargeWorkloadController;
+use app\controllers\in_charge\EvaluationsController as InChargeEvaluationsController;
+use app\controllers\in_charge\AccountsController;
 
 // Create the application and router
 $app = new Application(dirname(__DIR__));
@@ -85,20 +110,68 @@ $router->get('/dashboard', function (Request $request, Response $response) {
     $response->redirect('/login');
 });
 
-// Timetable Officer Routes
+// Example legacy redirect handler
+$router->get('/oldabout', function (Request $request, Response $response) {
+    (new HomeController())->oldAbout($response);
+});
+
+// ===========================================================================
+// CANONICAL RESOURCE ROUTES
+//
+// One URL per resource, no role name in any of them. Where a resource has a
+// different screen per role, the closure picks the controller out of $_SESSION
+// and the controller's own guard (Controller::requireRole / requirePosition)
+// decides whether to allow it.
+//
+// Read the `else` branch of each dispatch as the *stricter* of the two: a user
+// who fits neither branch lands on the controller whose guard rejects them, and
+// gets the normal 403 page from the normal guard path. That is deliberate —
+// Controller::forbidden() is protected, so a bare closure here could not render
+// a 403 itself even if it wanted to.
+// ===========================================================================
+
+// --- Timetable -------------------------------------------------------------
+// GET /timetable — one weekly grid. The officer's view can edit it; academic
+// staff get a read-only version. Different views, same URL.
 $router->get('/timetable', function (Request $request, Response $response) {
-    return (new TimetableController())->index($request);
-});
-$router->get('/course-details', function (Request $request, Response $response) {
-    if (isset($_SESSION['role']) && $_SESSION['role'] === 'academic_staff') {
-        $response->redirect('/instructor/my-courses');
-        return;
+    if (($_SESSION['role'] ?? '') === 'academic_staff') {
+        return (new StaffTimetableController())->index($request);
     }
-    return (new CoursesController())->index($request);
+    return (new OfficerTimetableController())->index($request);
 });
-$router->get('/lecturers', function (Request $request, Response $response) {
-    return (new LecturersController())->index($request);
+
+// --- Courses ---------------------------------------------------------------
+// GET /courses — "Course Details" (the whole catalogue) for an officer,
+// "My Courses" (just yours) for academic staff.
+$router->get('/courses', function (Request $request, Response $response) {
+    if (($_SESSION['role'] ?? '') === 'academic_staff') {
+        return (new StaffCoursesController())->index($request);
+    }
+    return (new OfficerCoursesController())->index($request);
 });
+
+// --- Staff -----------------------------------------------------------------
+// GET /staff — two genuinely different screens behind one URL: the officer's
+// read-only staff directory, and the Coordinator/In-Charge registration
+// approval queue. A junior academic staff member has neither, so they fall
+// through to StaffController and its position guard answers 403.
+$router->get('/staff', function (Request $request, Response $response) {
+    if (($_SESSION['role'] ?? '') === 'timetable_officer') {
+        return (new LecturersController())->index($request);
+    }
+    return (new StaffController())->index($request);
+});
+// These two are POST-only and /staff is GET-only, so they cannot collide with
+// it however the router orders its {param} loop.
+$router->post('/staff/{code}/approve', function (Request $request, Response $response, array $params) {
+    return (new StaffController())->approve($request, $response, $params);
+});
+$router->post('/staff/{code}/reject', function (Request $request, Response $response, array $params) {
+    return (new StaffController())->reject($request, $response, $params);
+});
+
+// --- Lecture halls ---------------------------------------------------------
+// Already role-free before this refactor; timetable officer only.
 $router->get('/lecture-halls', function (Request $request, Response $response) {
     return (new LectureHallsController())->index($request);
 });
@@ -106,95 +179,165 @@ $router->put('/lecture-halls/{code}', function (Request $request, Response $resp
     return (new LectureHallsController())->update($request, $response, $params);
 });
 
-$router->get('/settings', function (Request $request, Response $response) {
-    return (new SettingsController())->index($request);
+// --- Workload --------------------------------------------------------------
+// ORDERING: Router::resolve() tries an exact path match before it loops the
+// {param} routes, so these three literals can never be shadowed. If a
+// /workload/{something} route is ever added, register it BELOW these anyway —
+// the {param} loop runs in registration order, and once two {param} routes
+// compete that order is the only thing keeping them apart.
+$router->get('/workload', function (Request $request, Response $response) {
+    return (new StaffWorkloadController())->index($request);
 });
-$router->post('/settings', function (Request $request, Response $response) {
-    return (new SettingsController())->update($request, $response);
+// The Coordinator and the In-Charge both see a workload matrix, with different
+// headings and a different emphasis. Anyone else is 403'd by the coordinator
+// controller's position guard.
+$router->get('/workload/distribution', function (Request $request, Response $response) {
+    if (($_SESSION['position'] ?? '') === 'in_charge') {
+        return (new InChargeWorkloadController())->distribution($request);
+    }
+    return (new CoordinatorWorkloadController())->distribution($request);
 });
-
-// Example legacy redirect handler
-$router->get('/oldabout', function (Request $request, Response $response) {
-    (new HomeController())->oldAbout($response);
-});
-
-// Instructor & Lecturer-in-charge Routes
-$router->get('/instructor/timetable', function (Request $request, Response $response) {
-    return (new \app\controllers\instructor\TimetableController())->index($request);
-});
-$router->get('/instructor/workload', function (Request $request, Response $response) {
-    return (new \app\controllers\instructor\WorkloadController())->index($request);
-});
-$router->get('/instructor/my-courses', function (Request $request, Response $response) {
-    return (new \app\controllers\instructor\CoursesController())->index($request);
-});
-$router->get('/instructor/evaluations', function (Request $request, Response $response) {
-    return (new \app\controllers\instructor\EvaluationsController())->index($request);
-});
-$router->get('/instructor/requests', function (Request $request, Response $response) {
-    return (new \app\controllers\instructor\RequestsController())->index($request);
-});
-$router->get('/instructor/leave', function (Request $request, Response $response) {
-    return (new \app\controllers\instructor\LeaveController())->index($request);
-});
-$router->get('/instructor/messages', function (Request $request, Response $response) {
-    return (new \app\controllers\instructor\MessagesController())->index($request);
-});
-$router->get('/instructor/settings', function (Request $request, Response $response) {
-    return (new \app\controllers\instructor\SettingsController())->index($request);
-});
-$router->post('/instructor/settings', function (Request $request, Response $response) {
-    return (new \app\controllers\instructor\SettingsController())->update($request, $response);
+$router->get('/workload/scheduler', function (Request $request, Response $response) {
+    return (new CoordinatorWorkloadController())->scheduler($request);
 });
 
-// Coordinator Routes (also reachable by In-Charge, which carries every
-// coordinator ability plus its own Accounts screen below)
-$router->get('/coordinator/workload/distribution', function (Request $request, Response $response) {
-    return (new \app\controllers\coordinator\WorkloadController())->distribution($request);
+// --- Evaluations -----------------------------------------------------------
+// Three views of the same idea, chosen by position: the Coordinator reviews,
+// the In-Charge appraises, and everyone else (senior or junior academic staff)
+// evaluates per course — StaffEvaluationsController redirects them to /courses.
+$router->get('/evaluations', function (Request $request, Response $response) {
+    $position = $_SESSION['position'] ?? '';
+    if ($position === 'coordinator') {
+        return (new CoordinatorEvaluationsController())->index($request);
+    }
+    if ($position === 'in_charge') {
+        return (new InChargeEvaluationsController())->index($request);
+    }
+    return (new StaffEvaluationsController())->index($request);
 });
-$router->get('/coordinator/workload/scheduler', function (Request $request, Response $response) {
-    return (new \app\controllers\coordinator\WorkloadController())->scheduler($request);
+
+// --- Academic staff screens with no officer equivalent ---------------------
+$router->get('/leave', function (Request $request, Response $response) {
+    return (new LeaveController())->index($request);
 });
-$router->get('/coordinator/evaluations', function (Request $request, Response $response) {
-    return (new \app\controllers\coordinator\EvaluationsController())->index($request);
+$router->get('/messages', function (Request $request, Response $response) {
+    return (new MessagesController())->index($request);
 });
-$router->get('/coordinator/staff', function (Request $request, Response $response) {
-    return (new StaffController())->index($request);
+$router->get('/requests', function (Request $request, Response $response) {
+    return (new RequestsController())->index($request);
 });
+
+// --- Settings --------------------------------------------------------------
+// The only screen open to every signed-in role. The two SettingsControllers are
+// still byte-identical duplicates at this point; they merge in Phase 3a and
+// this dispatch disappears with them. Held in variables because the legacy
+// POST /instructor/settings shim has to reuse the update handler verbatim —
+// see the shim block for why it cannot simply redirect.
+$settingsIndex = function (Request $request, Response $response) {
+    if (($_SESSION['role'] ?? '') === 'academic_staff') {
+        return (new StaffSettingsController())->index($request);
+    }
+    return (new OfficerSettingsController())->index($request);
+};
+$settingsUpdate = function (Request $request, Response $response) {
+    if (($_SESSION['role'] ?? '') === 'academic_staff') {
+        return (new StaffSettingsController())->update($request, $response);
+    }
+    return (new OfficerSettingsController())->update($request, $response);
+};
+$router->get('/settings', $settingsIndex);
+$router->post('/settings', $settingsUpdate);
+
+// --- Settings > Handover ---------------------------------------------------
+// Reassigning a key role (Coordinator, In-Charge, Timetable Officer) to another
+// staff member. It lives under /settings because it is rendered as a tab of the
+// Settings screen, not as a page of its own.
+//
+// /settings/handover therefore has no page to show: it bounces to that tab,
+// exactly as the old /in-charge/accounts route did.
+$router->get('/settings/handover', function (Request $request, Response $response) {
+    $response->redirect('/settings#handover');
+});
+$router->get('/settings/handover/change/{position}/{code}', function (Request $request, Response $response, array $params) {
+    return (new AccountsController())->change($request, $response, $params);
+});
+$router->get('/settings/handover/select/{position}/{code}', function (Request $request, Response $response, array $params) {
+    return (new AccountsController())->selectView($request, $response, $params);
+});
+$router->post('/settings/handover/select', function (Request $request, Response $response) {
+    return (new AccountsController())->selectSubmit($request, $response);
+});
+$router->get('/settings/handover/verify', function (Request $request, Response $response) {
+    return (new AccountsController())->verifyView($request);
+});
+$router->post('/settings/handover/verify', function (Request $request, Response $response) {
+    return (new AccountsController())->verifySubmit($request, $response);
+});
+$router->get('/settings/handover/updated', function (Request $request, Response $response) {
+    return (new AccountsController())->updatedView($request);
+});
+
+// ===========================================================================
+// LEGACY ROUTE SHIMS — role-prefixed URLs kept alive so in-flight branches and
+// bookmarks keep working. Canonical routes are above. Delete this block once
+// every branch has merged (tracked in docs/ROUTING_REFACTOR.md).
+// ===========================================================================
+
+// Plain GET redirects: old path => canonical path.
+$legacyRedirects = [
+    '/instructor/timetable'              => '/timetable',
+    '/instructor/my-courses'             => '/courses',
+    '/course-details'                    => '/courses',
+    '/lecturers'                         => '/staff',
+    '/coordinator/staff'                 => '/staff',
+    '/instructor/workload'               => '/workload',
+    '/coordinator/workload/distribution' => '/workload/distribution',
+    '/in-charge/workload/distribution'   => '/workload/distribution',
+    '/coordinator/workload/scheduler'    => '/workload/scheduler',
+    '/instructor/evaluations'            => '/evaluations',
+    '/coordinator/evaluations'           => '/evaluations',
+    '/in-charge/evaluations'             => '/evaluations',
+    '/instructor/leave'                  => '/leave',
+    '/instructor/messages'               => '/messages',
+    '/instructor/requests'               => '/requests',
+    '/instructor/settings'               => '/settings',
+    '/in-charge/accounts'                => '/settings/handover',
+    '/in-charge/accounts/verify'         => '/settings/handover/verify',
+    '/in-charge/accounts/updated'        => '/settings/handover/updated',
+];
+foreach ($legacyRedirects as $old => $new) {
+    $router->get($old, function (Request $request, Response $response) use ($new) {
+        $response->redirect($new);
+    });
+}
+
+// Parameterised GET shims need their own closures, to rebuild the target path
+// from the captured params. urlencode() because a staff code or position comes
+// straight off the URL and goes straight back into one.
+$router->get('/in-charge/accounts/change/{position}/{code}', function (Request $request, Response $response, array $params) {
+    $response->redirect('/settings/handover/change/' . urlencode($params['position'] ?? '') . '/' . urlencode($params['code'] ?? ''));
+});
+$router->get('/in-charge/accounts/select/{position}/{code}', function (Request $request, Response $response, array $params) {
+    $response->redirect('/settings/handover/select/' . urlencode($params['position'] ?? '') . '/' . urlencode($params['code'] ?? ''));
+});
+
+// POST shims must NOT redirect. A 302 answer to a POST makes the browser (and
+// fetch()) re-issue the request as a GET with no body, so the form data would
+// be silently dropped and the endpoint would 404 or misbehave. Each of these
+// calls the same controller method as its canonical route instead — the old URL
+// keeps working as a genuine alias, not as a redirect.
 $router->post('/coordinator/staff/{code}/approve', function (Request $request, Response $response, array $params) {
     return (new StaffController())->approve($request, $response, $params);
 });
 $router->post('/coordinator/staff/{code}/reject', function (Request $request, Response $response, array $params) {
     return (new StaffController())->reject($request, $response, $params);
 });
-
-// In-Charge Routes
-$router->get('/in-charge/workload/distribution', function (Request $request, Response $response) {
-    return (new \app\controllers\in_charge\WorkloadController())->distribution($request);
-});
-$router->get('/in-charge/evaluations', function (Request $request, Response $response) {
-    return (new \app\controllers\in_charge\EvaluationsController())->index($request);
-});
-$router->get('/in-charge/accounts', function (Request $request, Response $response) {
-    $response->redirect('/instructor/settings#handover');
-});
-$router->get('/in-charge/accounts/change/{position}/{code}', function (Request $request, Response $response, array $params) {
-    return (new AccountsController())->change($request, $response, $params);
-});
-$router->get('/in-charge/accounts/select/{position}/{code}', function (Request $request, Response $response, array $params) {
-    return (new AccountsController())->selectView($request, $response, $params);
-});
+$router->post('/instructor/settings', $settingsUpdate);
 $router->post('/in-charge/accounts/select', function (Request $request, Response $response) {
     return (new AccountsController())->selectSubmit($request, $response);
 });
-$router->get('/in-charge/accounts/verify', function (Request $request, Response $response) {
-    return (new AccountsController())->verifyView($request);
-});
 $router->post('/in-charge/accounts/verify', function (Request $request, Response $response) {
     return (new AccountsController())->verifySubmit($request, $response);
-});
-$router->get('/in-charge/accounts/updated', function (Request $request, Response $response) {
-    return (new AccountsController())->updatedView($request);
 });
 
 $app->useRouter($router);

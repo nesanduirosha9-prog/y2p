@@ -28,7 +28,7 @@
         <p class="form-error" id="otpError" hidden></p>
 
         <div class="modal-foot handover-actions">
-            <a class="btn-cancel" href="/in-charge/accounts">Back</a>
+            <a class="btn-cancel" href="/settings/handover">Back</a>
             <button type="button" class="btn-block" id="btnVerifyOtp">OK</button>
         </div>
     </div>

@@ -26,8 +26,8 @@ $positionLabels = [
         </div>
 
         <div class="modal-foot handover-actions">
-            <a class="btn-cancel" href="/in-charge/accounts">Cancel</a>
-            <a class="btn-block" href="/in-charge/accounts/select/<?= urlencode($position) ?>/<?= urlencode($holder['code']) ?>">
+            <a class="btn-cancel" href="/settings/handover">Cancel</a>
+            <a class="btn-block" href="/settings/handover/select/<?= urlencode($position) ?>/<?= urlencode($holder['code']) ?>">
                 Continue
             </a>
         </div>

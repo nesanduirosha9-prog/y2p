@@ -44,7 +44,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 confirmBtn.disabled = true;
                 confirmBtn.textContent = 'Sending code...';
 
-                fetch('/in-charge/accounts/select', {
+                fetch('/settings/handover/select', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
@@ -57,7 +57,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     .then(function (r) { return r.json(); })
                     .then(function (data) {
                         if (data.success) {
-                            window.location.href = data.redirect || '/in-charge/accounts/verify';
+                            window.location.href = data.redirect || '/settings/handover/verify';
                         } else {
                             alert(data.message || 'Could not start the role change.');
                             confirmBtn.disabled = false;
@@ -92,7 +92,7 @@ document.addEventListener('DOMContentLoaded', function () {
             }
 
             btnVerifyOtp.disabled = true;
-            fetch('/in-charge/accounts/verify', {
+            fetch('/settings/handover/verify', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ otp: otp })
@@ -100,7 +100,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 .then(function (r) { return r.json(); })
                 .then(function (data) {
                     if (data.success) {
-                        window.location.href = data.redirect || '/in-charge/accounts/updated';
+                        window.location.href = data.redirect || '/settings/handover/updated';
                     } else {
                         otpError.textContent = data.message || 'Verification failed.';
                         otpError.hidden = false;

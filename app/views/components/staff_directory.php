@@ -6,7 +6,10 @@ use app\core\ViewHelpers;
 // Reusable across Coordinator and In-Charge views.
 // Expects: $pending, $activeStaff, and optional $basePath.
 
-$basePath = $basePath ?? (($_SESSION['position'] ?? '') === 'in_charge' ? '/in-charge/staff' : '/coordinator/staff');
+// One canonical path for both positions. The previous fallback branched on
+// position and produced an in-charge-prefixed path that was never a
+// registered route — a link straight to a 404.
+$basePath = $basePath ?? '/staff';
 $currentStaffCode = $_SESSION['staff_code'] ?? '';
 $currentUserPosition = $_SESSION['position'] ?? '';
 ?>

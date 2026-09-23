@@ -55,7 +55,7 @@ function candidateInitials(string $name): string
         <?php endif; ?>
 
         <div class="modal-foot handover-actions">
-            <a class="btn-cancel" href="/in-charge/accounts/change/<?= urlencode($position) ?>/<?= urlencode($holder['code']) ?>">Back</a>
+            <a class="btn-cancel" href="/settings/handover/change/<?= urlencode($position) ?>/<?= urlencode($holder['code']) ?>">Back</a>
             <button type="button" class="btn-block" id="btnConfirmCandidate" disabled>Confirm</button>
         </div>
     </div>

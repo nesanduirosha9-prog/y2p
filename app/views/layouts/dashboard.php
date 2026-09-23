@@ -18,48 +18,54 @@ $isInstructor = $role === 'academic_staff';
 $active = $active ?? 'timetable';
 $userEmail = $_SESSION['user_email'] ?? ($isInstructor ? 'tmf@ucsc.cmb.ac.lk' : 'tmo@ucsc.cmb.ac.lk');
 
-// Base nav items per role
+// Base nav items per role.
+// Note the hrefs are identical across roles wherever the resource is the same —
+// /timetable and /courses appear in both lists. Only the label differs, because
+// the role decides which view renders, not which URL you visit.
 $navItemsByRole = [
     'timetable_officer' => [
-        ['href' => '/timetable',      'icon' => 'fa-solid fa-calendar-days', 'label' => 'Timetable',      'key' => 'timetable'],
-        ['href' => '/course-details', 'icon' => 'fa-solid fa-book-open',     'label' => 'Course Details', 'key' => 'courses'],
-        ['href' => '/lecturers',      'icon' => 'fa-solid fa-users',         'label' => 'Staff Details',  'key' => 'lecturers'],
-        ['href' => '/lecture-halls',  'icon' => 'fa-solid fa-building',      'label' => 'Lecture Halls',  'key' => 'lecture-halls'],
+        ['href' => '/timetable',     'icon' => 'fa-solid fa-calendar-days', 'label' => 'Timetable',      'key' => 'timetable'],
+        ['href' => '/courses',       'icon' => 'fa-solid fa-book-open',     'label' => 'Course Details', 'key' => 'courses'],
+        ['href' => '/staff',         'icon' => 'fa-solid fa-users',         'label' => 'Staff Details',  'key' => 'lecturers'],
+        ['href' => '/lecture-halls', 'icon' => 'fa-solid fa-building',      'label' => 'Lecture Halls',  'key' => 'lecture-halls'],
     ],
     'academic_staff' => [
-        ['href' => '/instructor/timetable',  'icon' => 'fa-solid fa-calendar-days', 'label' => 'Timetable',   'key' => 'timetable'],
-        ['href' => '/instructor/workload',   'icon' => 'fa-solid fa-layer-group',   'label' => 'My Workload', 'key' => 'workload'],
-        ['href' => '/instructor/my-courses', 'icon' => 'fa-solid fa-book-open',     'label' => 'My Courses',  'key' => 'courses'],
+        ['href' => '/timetable', 'icon' => 'fa-solid fa-calendar-days', 'label' => 'Timetable',   'key' => 'timetable'],
+        ['href' => '/workload',  'icon' => 'fa-solid fa-layer-group',   'label' => 'My Workload', 'key' => 'workload'],
+        ['href' => '/courses',   'icon' => 'fa-solid fa-book-open',     'label' => 'My Courses',  'key' => 'courses'],
     ],
 ];
 $navItems = $navItemsByRole[$isInstructor ? 'academic_staff' : 'timetable_officer'];
 
 // Role-specific Workload & Evaluation extensions
 if ($isInstructor) {
+    // Every branch below points at the same canonical URLs — what changes per
+    // position is which items appear and what they are called. The In-Charge
+    // Staff item used to link into /coordinator/staff, a path named for someone
+    // else's role; that incoherence is what prompted the routing refactor.
     if ($position === 'coordinator') {
-        $navItems[] = ['href' => '/coordinator/workload/distribution', 'icon' => 'fa-solid fa-table-cells',     'label' => 'Workload Matrix', 'key' => 'workload-dist'];
-        $navItems[] = ['href' => '/coordinator/workload/scheduler',    'icon' => 'fa-solid fa-calendar-check',  'label' => 'Duty Scheduler',  'key' => 'workload-sched'];
-        $navItems[] = ['href' => '/coordinator/staff',                 'icon' => 'fa-solid fa-user-check',      'label' => 'Staff',           'key' => 'staff'];
-        $navItems[] = ['href' => '/coordinator/evaluations',           'icon' => 'fa-solid fa-clipboard-check', 'label' => 'Evaluations',     'key' => 'evaluations'];
+        $navItems[] = ['href' => '/workload/distribution', 'icon' => 'fa-solid fa-table-cells',     'label' => 'Workload Matrix', 'key' => 'workload-dist'];
+        $navItems[] = ['href' => '/workload/scheduler',    'icon' => 'fa-solid fa-calendar-check',  'label' => 'Duty Scheduler',  'key' => 'workload-sched'];
+        $navItems[] = ['href' => '/staff',                 'icon' => 'fa-solid fa-user-check',      'label' => 'Staff',           'key' => 'staff'];
+        $navItems[] = ['href' => '/evaluations',           'icon' => 'fa-solid fa-clipboard-check', 'label' => 'Evaluations',     'key' => 'evaluations'];
     } elseif ($position === 'in_charge') {
-        $navItems[] = ['href' => '/in-charge/workload/distribution',    'icon' => 'fa-solid fa-table-cells',     'label' => 'Workload Matrix', 'key' => 'workload-dist'];
-        $navItems[] = ['href' => '/coordinator/staff',                 'icon' => 'fa-solid fa-user-check',      'label' => 'Staff',           'key' => 'staff'];
-        $navItems[] = ['href' => '/in-charge/evaluations',             'icon' => 'fa-solid fa-award',           'label' => 'Appraisals',      'key' => 'evaluations'];
+        $navItems[] = ['href' => '/workload/distribution', 'icon' => 'fa-solid fa-table-cells',     'label' => 'Workload Matrix', 'key' => 'workload-dist'];
+        $navItems[] = ['href' => '/staff',                 'icon' => 'fa-solid fa-user-check',      'label' => 'Staff',           'key' => 'staff'];
+        $navItems[] = ['href' => '/evaluations',           'icon' => 'fa-solid fa-award',           'label' => 'Appraisals',      'key' => 'evaluations'];
     } elseif ($academicRank === 'senior') {
         // Lecturer-in-charge
-        $navItems[] = ['href' => '/instructor/evaluations',            'icon' => 'fa-solid fa-star-half-stroke', 'label' => 'Evaluations',     'key' => 'evaluations'];
+        $navItems[] = ['href' => '/evaluations',           'icon' => 'fa-solid fa-star-half-stroke', 'label' => 'Evaluations',    'key' => 'evaluations'];
     } else {
         // Junior Staff / Instructor
-        $navItems[] = ['href' => '/instructor/evaluations',            'icon' => 'fa-solid fa-star-half-stroke', 'label' => 'Evaluations',     'key' => 'evaluations'];
+        $navItems[] = ['href' => '/evaluations',           'icon' => 'fa-solid fa-star-half-stroke', 'label' => 'Evaluations',    'key' => 'evaluations'];
     }
 
-    $navItems[] = ['href' => '/instructor/leave',    'icon' => 'fa-regular fa-calendar-minus', 'label' => 'Leave',    'key' => 'leave'];
-    $navItems[] = ['href' => '/instructor/messages', 'icon' => 'fa-regular fa-message',        'label' => 'Messages', 'key' => 'messages'];
+    $navItems[] = ['href' => '/leave',    'icon' => 'fa-regular fa-calendar-minus', 'label' => 'Leave',    'key' => 'leave'];
+    $navItems[] = ['href' => '/messages', 'icon' => 'fa-regular fa-message',        'label' => 'Messages', 'key' => 'messages'];
 }
 
-$navItems[] = $isInstructor
-    ? ['href' => '/instructor/settings', 'icon' => 'fa-solid fa-gear', 'label' => 'Settings', 'key' => 'settings']
-    : ['href' => '/settings',            'icon' => 'fa-solid fa-gear', 'label' => 'Settings', 'key' => 'settings'];
+// Settings is one URL for everybody, so this no longer branches on role.
+$navItems[] = ['href' => '/settings', 'icon' => 'fa-solid fa-gear', 'label' => 'Settings', 'key' => 'settings'];
 
 $userChipLabel = $isInstructor ? ($position ? ucwords(str_replace('_', ' ', $position)) : ($academicRank === 'senior' ? 'Lecturer' : 'Instructor')) : 'Timetable Officer';
 $userAvatarInitials = $isInstructor ? 'IN' : 'TO';
