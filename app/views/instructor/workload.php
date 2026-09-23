@@ -25,24 +25,32 @@ $monthlyBreakdown = [
 ];
 
 $coverRequests = [
-    ['id' => 1, 'title' => 'Database Systems Lecture – CS2201', 'staff' => 'Dr. N. Perera', 'date' => '2025-07-21', 'duration' => '2 hrs'],
-    ['id' => 2, 'title' => 'Network Admin Practical – IT3201', 'staff' => 'Prof. A. Silva', 'date' => '2025-07-23', 'duration' => '3 hrs'],
-];
-
-$assignedWork = [
-    ['code' => 'CS3401', 'title' => 'Fundamentals of Computing Lab', 'sub' => 'Lab Supervisor · Y1 CS · Dr. Perera', 'hours' => 4, 'date' => '2 Jul 2025'],
-    ['code' => 'IT2301', 'title' => 'Web Technologies Practical', 'sub' => 'Practical Supervisor · Y2 IT · Prof. Silva', 'hours' => 3, 'date' => '2 Jul 2025'],
-    ['code' => 'CS2201', 'title' => 'Database Systems Lab', 'sub' => 'Lab Supervisor · Y3 CS · Dr. Perera', 'hours' => 4, 'date' => '8 Jul 2025'],
-    ['code' => 'IT3201', 'title' => 'Network Administration Practical', 'sub' => 'Practical Supervisor · Y3 IT · Prof. Silva', 'hours' => 2, 'date' => '9 Jul 2025'],
-];
-
-$workHistory = [
-    ['date' => '2026-03-10', 'task' => 'Database Lab', 'course' => 'CS2201', 'type' => 'Lab Supervision', 'hours' => 3],
-    ['date' => '2026-03-07', 'task' => 'Lecture Session', 'course' => 'CS3401', 'type' => 'Lecture', 'hours' => 2],
-    ['date' => '2026-03-02', 'task' => 'Project Review', 'course' => 'CS3402', 'type' => 'Review', 'hours' => 4],
-    ['date' => '2026-02-28', 'task' => 'Lab Supervision', 'course' => 'IT2301', 'type' => 'Lab Supervision', 'hours' => 3],
-    ['date' => '2026-02-21', 'task' => 'Practical Session', 'course' => 'IT3201', 'type' => 'Practical', 'hours' => 2],
-    ['date' => '2026-01-15', 'task' => 'Data Structures Lab', 'course' => 'CS3402', 'type' => 'Lab Supervision', 'hours' => 4],
+    [
+        'id' => 1,
+        'code' => 'CS2203',
+        'title' => 'Operating Systems Lab Session',
+        'staff' => 'Dr. Elena Petrov',
+        'date' => 'Wed, 14:00 - 16:00',
+        'duration' => '2 hrs/wk',
+        'credits' => 3,
+        'year' => 2,
+        'program' => 'CS',
+        'role' => 'Lab Assistant',
+        'hours' => 2,
+    ],
+    [
+        'id' => 2,
+        'code' => 'IS1103',
+        'title' => 'Spreadsheet Applications Practical',
+        'staff' => 'Dr. Linda Osei',
+        'date' => 'Thu, 09:00 - 12:00',
+        'duration' => '3 hrs/wk',
+        'credits' => 3,
+        'year' => 1,
+        'program' => 'IS',
+        'role' => 'Practical Support',
+        'hours' => 3,
+    ],
 ];
 ?>
 
@@ -271,6 +279,7 @@ $workHistory = [
     </div>
 
     <div class="wk-body" id="wk-panel-assigned" hidden>
+        <!-- Cover Staff Requests Card -->
         <div class="wk-cover-card">
             <div class="wk-cover-header">
                 <div>
@@ -282,11 +291,20 @@ $workHistory = [
             </div>
             <div class="wk-cover-list" id="wkCoverList">
                 <?php foreach ($coverRequests as $cr): ?>
-                    <div class="wk-cover-item" data-id="<?= $cr['id'] ?>">
+                    <div class="wk-cover-item" data-id="<?= $cr['id'] ?>"
+                         data-code="<?= htmlspecialchars($cr['code']) ?>"
+                         data-name="<?= htmlspecialchars($cr['title']) ?>"
+                         data-staff="<?= htmlspecialchars($cr['staff']) ?>"
+                         data-schedule="<?= htmlspecialchars($cr['date']) ?>"
+                         data-credits="<?= (int)$cr['credits'] ?>"
+                         data-year="<?= (int)$cr['year'] ?>"
+                         data-program="<?= htmlspecialchars($cr['program']) ?>"
+                         data-role="<?= htmlspecialchars($cr['role']) ?>"
+                         data-hours="<?= (int)$cr['hours'] ?>">
                         <div class="wk-cover-icon"><i class="fa-solid fa-user-clock"></i></div>
                         <div class="wk-cover-info">
-                            <p class="wk-cover-title"><?= htmlspecialchars($cr['title']) ?></p>
-                            <p class="wk-cover-meta">Staff on leave: <strong><?= htmlspecialchars($cr['staff']) ?></strong> · Date: <?= htmlspecialchars($cr['date']) ?> · Duration: <?= htmlspecialchars($cr['duration']) ?></p>
+                            <p class="wk-cover-title"><span class="pill pill-muted" style="margin-right: 6px;"><?= htmlspecialchars($cr['code']) ?></span> <?= htmlspecialchars($cr['title']) ?></p>
+                            <p class="wk-cover-meta">Staff on leave: <strong><?= htmlspecialchars($cr['staff']) ?></strong> · Schedule: <?= htmlspecialchars($cr['date']) ?> · Duration: <?= htmlspecialchars($cr['duration']) ?></p>
                         </div>
                         <div class="wk-cover-actions">
                             <button type="button" class="wk-btn-accept" data-accept="<?= $cr['id'] ?>"><i class="fa-solid fa-check"></i> Accept</button>
@@ -297,57 +315,162 @@ $workHistory = [
             </div>
         </div>
 
+        <!-- Assigned Courses Table -->
         <div class="wk-table-card">
             <div class="wk-table-header">
                 <div>
-                    <p><i class="fa-regular fa-square-check" style="color:#1a3a6b;margin-right:6px;"></i>Assigned Work</p>
-                    <span class="wk-table-header-hint">All auto-accepted · included in workload total</span>
+                    <p><i class="fa-solid fa-book-open" style="color:#1a3a6b;margin-right:6px;"></i>My Assigned Courses</p>
+                    <span class="wk-table-header-hint">Active course modules and accepted cover duties</span>
                 </div>
-                <span class="wk-table-header-hint">This week: <strong>13 hrs</strong></span>
+                <span class="wk-table-header-hint" id="wkAssignedCoursesCount"><?= count($assignedCourses ?? []) ?> assigned courses</span>
             </div>
-            <div class="wk-assigned-list">
-                <?php foreach ($assignedWork as $w): ?>
-                    <div class="wk-assigned-item">
-                        <div class="wk-assigned-icon"><i class="fa-regular fa-file-lines"></i></div>
-                        <div class="wk-assigned-info">
-                            <p class="wk-assigned-title"><span class="wk-code-pill"><?= htmlspecialchars($w['code']) ?></span> <span class="wk-assigned-badge">ASSIGNED</span></p>
-                            <p class="wk-assigned-sub"><?= htmlspecialchars($w['title']) ?></p>
-                            <p class="wk-assigned-meta"><?= htmlspecialchars($w['sub']) ?></p>
-                        </div>
-                        <div class="wk-assigned-hours">
-                            <p><?= $w['hours'] ?><span>h/wk</span></p>
-                            <p class="wk-assigned-date"><?= htmlspecialchars($w['date']) ?></p>
-                        </div>
-                    </div>
-                <?php endforeach; ?>
+            <div class="dir-scroll">
+                <table class="dir-table" id="instructorAssignedCoursesTable">
+                    <thead>
+                        <tr>
+                            <th style="width: 120px;">Course Code</th>
+                            <th style="min-width: 220px;">Course Name</th>
+                            <th style="width: 80px;">Credits</th>
+                            <th style="width: 90px;">Year</th>
+                            <th style="width: 90px;">Program</th>
+                            <th style="min-width: 160px;">Lecturer</th>
+                            <th style="min-width: 180px;">Assigned Role &amp; Sessions</th>
+                            <th style="width: 110px; text-align: right;">Weekly Hours</th>
+                        </tr>
+                    </thead>
+                    <tbody id="assignedCoursesTbody">
+                        <?php foreach (($assignedCourses ?? []) as $ac): ?>
+                            <tr class="assigned-course-row">
+                                <td><span class="pill pill-muted"><?= htmlspecialchars($ac['code']) ?></span></td>
+                                <td>
+                                    <strong><?= htmlspecialchars($ac['name']) ?></strong>
+                                    <div style="font-size: 11.5px; color: #64748b; margin-top: 2px;">
+                                        <i class="fa-regular fa-clock"></i> <?= htmlspecialchars($ac['schedule'] ?? 'Allocated') ?>
+                                    </div>
+                                </td>
+                                <td><?= (int)$ac['credits'] ?></td>
+                                <td><span class="pill pill-year-<?= (int)$ac['year'] ?>">Year <?= (int)$ac['year'] ?></span></td>
+                                <td><span class="pill pill-muted"><?= htmlspecialchars($ac['program']) ?></span></td>
+                                <td>
+                                    <span class="tag tag-lecturer"><?= htmlspecialchars($ac['lecturer']) ?></span>
+                                </td>
+                                <td>
+                                    <strong><?= htmlspecialchars($ac['role']) ?></strong>
+                                    <div style="font-size: 11.5px; color: #64748b;"><?= htmlspecialchars($ac['sessions']) ?></div>
+                                </td>
+                                <td style="text-align: right; font-weight: 700; color: #1a3a6b;">
+                                    <?= (int)$ac['hours'] ?> hrs/wk
+                                </td>
+                            </tr>
+                        <?php endforeach; ?>
+                    </tbody>
+                </table>
             </div>
-            <p class="wk-footnote"><i class="fa-regular fa-circle-question"></i> All regular assignments are automatically accepted and count toward your semester workload total.</p>
+            <p class="wk-footnote"><i class="fa-regular fa-circle-question"></i> All regular course assignments and accepted cover duties count toward your semester workload total.</p>
         </div>
     </div>
 
     <div class="wk-body" id="wk-panel-history" hidden>
+        <!-- Filter Controls for Instructor Evaluation History -->
+        <div class="dir-controls" style="margin-bottom: 16px;">
+            <div class="search-box">
+                <i class="fa-solid fa-magnifying-glass"></i>
+                <input type="text" id="wkHistorySearch" placeholder="Search course, feedback remarks, session..." autocomplete="off">
+            </div>
+
+            <!-- Time Filter (Week, Month, Sem, Year) -->
+            <div class="seg" id="wkHistoryTimeFilter" role="group" aria-label="Filter by time">
+                <button type="button" class="seg-btn active" data-value="">All Time</button>
+                <button type="button" class="seg-btn" data-value="week">Week</button>
+                <button type="button" class="seg-btn" data-value="month">Month</button>
+                <button type="button" class="seg-btn" data-value="sem">Semester</button>
+                <button type="button" class="seg-btn" data-value="year">Year</button>
+            </div>
+
+            <!-- Course Filter Dropdown (No Lecturer filter) -->
+            <div class="session-dropdown-wrapper">
+                <label for="wkHistoryCourseFilter" class="session-filter-label">
+                    <i class="fa-solid fa-book-bookmark"></i> Course:
+                </label>
+                <div class="session-select-box">
+                    <select id="wkHistoryCourseFilter" class="session-dropdown">
+                        <option value="">All Courses</option>
+                        <?php
+                        $uniqueCourses = [];
+                        foreach (($evaluationHistory ?? []) as $eh) {
+                            $uniqueCourses[$eh['course_code']] = $eh['course_name'];
+                        }
+                        ?>
+                        <?php foreach ($uniqueCourses as $cCode => $cName): ?>
+                            <option value="<?= htmlspecialchars($cCode) ?>"><?= htmlspecialchars($cCode) ?> — <?= htmlspecialchars($cName) ?></option>
+                        <?php endforeach; ?>
+                    </select>
+                    <i class="fa-solid fa-chevron-down select-chevron"></i>
+                </div>
+            </div>
+        </div>
+
         <div class="wk-table-card">
             <div class="wk-table-header">
-                <p><i class="fa-solid fa-list-check" style="color:#1a3a6b;margin-right:6px;"></i>Work History</p>
+                <p><i class="fa-solid fa-clipboard-check" style="color:#1a3a6b;margin-right:6px;"></i>Course Evaluation &amp; Performance History</p>
+                <span class="wk-table-header-hint" id="wkHistoryCountDisplay"><?= count($evaluationHistory ?? []) ?> evaluation records</span>
             </div>
-            <div class="wk-table-scroll">
-            <table class="wk-table">
-                <thead>
-                    <tr><th>DATE</th><th>TASK</th><th>COURSE</th><th>TYPE</th><th>HOURS</th><th>STATUS</th></tr>
-                </thead>
-                <tbody>
-                    <?php foreach ($workHistory as $h): ?>
+            <div class="dir-scroll">
+                <table class="dir-table" id="instructorEvaluationHistoryTable">
+                    <thead>
                         <tr>
-                            <td><?= htmlspecialchars($h['date']) ?></td>
-                            <td class="wk-td-label"><?= htmlspecialchars($h['task']) ?></td>
-                            <td><span class="wk-code-pill"><?= htmlspecialchars($h['course']) ?></span></td>
-                            <td><?= htmlspecialchars($h['type']) ?></td>
-                            <td><?= $h['hours'] ?> hrs</td>
-                            <td><span class="wk-history-status">Completed</span></td>
+                            <th style="width: 140px;">Date &amp; Period</th>
+                            <th style="min-width: 200px;">Course Module</th>
+                            <th style="width: 140px;">Session Type</th>
+                            <th style="width: 140px;">Performance Rating</th>
+                            <th style="min-width: 280px;">Lecturer Observations &amp; Feedback</th>
+                            <th style="width: 110px; text-align: right;">Status</th>
                         </tr>
-                    <?php endforeach; ?>
-                </tbody>
-            </table>
+                    </thead>
+                    <tbody id="wkHistoryTbody">
+                        <?php foreach (($evaluationHistory ?? []) as $h): ?>
+                            <?php
+                            $histSearch = strtolower($h['course_code'] . ' ' . $h['course_name'] . ' ' . $h['session_type'] . ' ' . $h['comment'] . ' ' . $h['week'] . ' ' . $h['month'] . ' ' . $h['semester'] . ' ' . $h['year']);
+                            ?>
+                            <tr class="wk-history-row"
+                                data-week="<?= htmlspecialchars($h['week']) ?>"
+                                data-month="<?= htmlspecialchars($h['month']) ?>"
+                                data-sem="<?= htmlspecialchars($h['semester']) ?>"
+                                data-year="<?= htmlspecialchars($h['year']) ?>"
+                                data-course="<?= htmlspecialchars($h['course_code']) ?>"
+                                data-search="<?= htmlspecialchars($histSearch) ?>">
+                                <td>
+                                    <div style="font-weight: 600; color: #0f1c2e;"><?= htmlspecialchars($h['date']) ?></div>
+                                    <div style="font-size: 11px; color: #64748b;"><?= htmlspecialchars($h['week']) ?> &middot; <?= htmlspecialchars($h['semester']) ?></div>
+                                </td>
+                                <td>
+                                    <strong><?= htmlspecialchars($h['course_code']) ?></strong>
+                                    <div style="font-size: 11.5px; color: #64748b;"><?= htmlspecialchars($h['course_name']) ?></div>
+                                </td>
+                                <td>
+                                    <span class="pill pill-muted"><?= htmlspecialchars($h['session_type']) ?></span>
+                                </td>
+                                <td>
+                                    <span class="rating-badge rating-badge-active">
+                                        <i class="fa-solid fa-star"></i> <?= number_format((float)$h['rating'], 1) ?> / 5.0
+                                    </span>
+                                </td>
+                                <td style="font-size: 12.5px; color: #334155; line-height: 1.45;">
+                                    <?= htmlspecialchars($h['comment']) ?>
+                                    <div style="font-size: 11px; color: #64748b; margin-top: 3px;">
+                                        Evaluated by <strong><?= htmlspecialchars($h['evaluator_name'] ?? 'Course Lecturer') ?></strong>
+                                    </div>
+                                </td>
+                                <td style="text-align: right;">
+                                    <span class="pill pill-active" style="background: #e6f9ed; color: #166534; font-size: 11px;">
+                                        <i class="fa-solid fa-check"></i> <?= htmlspecialchars($h['status'] ?? 'Evaluated') ?>
+                                    </span>
+                                </td>
+                            </tr>
+                        <?php endforeach; ?>
+                    </tbody>
+                </table>
+                <p class="dir-empty" id="wkHistoryEmptyMsg" style="display: none;">No evaluation records match your filter criteria.</p>
             </div>
         </div>
     </div>

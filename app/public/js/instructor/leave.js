@@ -299,12 +299,25 @@ document.addEventListener('DOMContentLoaded', () => {
         updateTimePreview();
         validateForm();
         panel.hidden = false;
+        document.body.classList.add('lv-panel-open');
     }
-    function closePanel() { panel.hidden = true; }
+    function closePanel() {
+        panel.hidden = true;
+        document.body.classList.remove('lv-panel-open');
+    }
+
+    const backBtn = document.getElementById('lvBackBtn');
 
     openBtn.addEventListener('click', openPanel);
     closeBtn.addEventListener('click', closePanel);
     cancelBtn.addEventListener('click', closePanel);
+    backBtn?.addEventListener('click', closePanel);
+
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && panel && !panel.hidden) {
+            closePanel();
+        }
+    });
 
     document.getElementById('submitLeaveRequest').addEventListener('click', () => {
         const type = document.getElementById('lvType').value;

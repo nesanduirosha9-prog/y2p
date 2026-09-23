@@ -19,30 +19,25 @@ $active = $active ?? 'timetable';
 $userEmail = $_SESSION['user_email'] ?? ($isInstructor ? 'tmf@ucsc.cmb.ac.lk' : 'tmo@ucsc.cmb.ac.lk');
 
 // Base nav items per role.
-// Note the hrefs are identical across roles wherever the resource is the same —
-// /timetable and /courses appear in both lists. Only the label differs, because
-// the role decides which view renders, not which URL you visit.
-$navItemsByRole = [
-    'timetable_officer' => [
+if (!$isInstructor) {
+    $navItems = [
         ['href' => '/timetable',     'icon' => 'fa-solid fa-calendar-days', 'label' => 'Timetable',      'key' => 'timetable'],
         ['href' => '/courses',       'icon' => 'fa-solid fa-book-open',     'label' => 'Course Details', 'key' => 'courses'],
         ['href' => '/staff',         'icon' => 'fa-solid fa-users',         'label' => 'Staff Details',  'key' => 'lecturers'],
         ['href' => '/lecture-halls', 'icon' => 'fa-solid fa-building',      'label' => 'Lecture Halls',  'key' => 'lecture-halls'],
-    ],
-    'academic_staff' => [
-        ['href' => '/timetable', 'icon' => 'fa-solid fa-calendar-days', 'label' => 'Timetable',   'key' => 'timetable'],
-        ['href' => '/workload',  'icon' => 'fa-solid fa-layer-group',   'label' => 'My Workload', 'key' => 'workload'],
-        ['href' => '/courses',   'icon' => 'fa-solid fa-book-open',     'label' => 'My Courses',  'key' => 'courses'],
-    ],
-];
-$navItems = $navItemsByRole[$isInstructor ? 'academic_staff' : 'timetable_officer'];
+    ];
+} else {
+    // Academic Staff: Lecturers (senior) see My Courses; Instructors (junior) see My Workload
+    $navItems = [
+        ['href' => '/timetable', 'icon' => 'fa-solid fa-calendar-days', 'label' => 'Timetable', 'key' => 'timetable'],
+    ];
+    if ($academicRank === 'senior' || $position === 'in_charge') {
+        $navItems[] = ['href' => '/courses', 'icon' => 'fa-solid fa-book-open', 'label' => 'My Courses', 'key' => 'courses'];
+    } else {
+        $navItems[] = ['href' => '/workload', 'icon' => 'fa-solid fa-layer-group', 'label' => 'My Workload', 'key' => 'workload'];
+    }
 
-// Role-specific Workload & Evaluation extensions
-if ($isInstructor) {
-    // Every branch below points at the same canonical URLs — what changes per
-    // position is which items appear and what they are called. The In-Charge
-    // Staff item used to link into /coordinator/staff, a path named for someone
-    // else's role; that incoherence is what prompted the routing refactor.
+    // Role-specific Workload & Evaluation extensions
     if ($position === 'coordinator') {
         $navItems[] = ['href' => '/workload/distribution', 'icon' => 'fa-solid fa-table-cells',     'label' => 'Workload Matrix', 'key' => 'workload-dist'];
         $navItems[] = ['href' => '/workload/scheduler',    'icon' => 'fa-solid fa-calendar-check',  'label' => 'Duty Scheduler',  'key' => 'workload-sched'];
@@ -52,12 +47,6 @@ if ($isInstructor) {
         $navItems[] = ['href' => '/workload/distribution', 'icon' => 'fa-solid fa-table-cells',     'label' => 'Workload Matrix', 'key' => 'workload-dist'];
         $navItems[] = ['href' => '/staff',                 'icon' => 'fa-solid fa-user-check',      'label' => 'Staff',           'key' => 'staff'];
         $navItems[] = ['href' => '/evaluations',           'icon' => 'fa-solid fa-award',           'label' => 'Appraisals',      'key' => 'evaluations'];
-    } elseif ($academicRank === 'senior') {
-        // Lecturer-in-charge
-        $navItems[] = ['href' => '/evaluations',           'icon' => 'fa-solid fa-star-half-stroke', 'label' => 'Evaluations',    'key' => 'evaluations'];
-    } else {
-        // Junior Staff / Instructor
-        $navItems[] = ['href' => '/evaluations',           'icon' => 'fa-solid fa-star-half-stroke', 'label' => 'Evaluations',    'key' => 'evaluations'];
     }
 
     $navItems[] = ['href' => '/leave',    'icon' => 'fa-regular fa-calendar-minus', 'label' => 'Leave',    'key' => 'leave'];

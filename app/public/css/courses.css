@@ -756,3 +756,119 @@
     }
 }
 
+/* ---- Course Hub Tabs & Roster Styling ---- */
+.courses-tabs {
+    background: #fff;
+    border: 1px solid #eef1f6;
+    border-bottom: 1px solid #dde3ee;
+    padding: 0 16px;
+    display: flex;
+    gap: 4px;
+    margin-bottom: 20px;
+    border-radius: 12px 12px 0 0;
+}
+
+.course-tab {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 14px 18px;
+    font-size: 13px;
+    font-weight: 700;
+    color: #9ca3af;
+    text-decoration: none;
+    border: none;
+    background: none;
+    border-bottom: 2px solid transparent;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    margin-bottom: -1px;
+}
+
+.course-tab:hover {
+    color: #6b7c96;
+    border-bottom-color: #dde3ee;
+}
+
+.course-tab.active {
+    color: #1a3a6b;
+    border-bottom-color: #1a3a6b;
+}
+
+.course-tab-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2px 8px;
+    font-size: 11px;
+    font-weight: 700;
+    border-radius: 10px;
+    background: #f3f4f6;
+    color: #6b7280;
+    line-height: 1.2;
+}
+
+.course-tab.active .course-tab-badge {
+    background: #eef2ff;
+    color: #1a3a6b;
+}
+
+.courses-panel[hidden] {
+    display: none !important;
+}
+
+/* Drawer Instructor Card */
+.drawer-inst-card {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    padding: 14px 16px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 18px;
+}
+
+.drawer-inst-avatar {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background: #eff6ff;
+    color: #1a3a6b;
+    font-weight: 700;
+    font-size: 15px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 2px solid #bfdbfe;
+    flex-shrink: 0;
+}
+
+.drawer-inst-info h4 {
+    font-size: 15px;
+    font-weight: 700;
+    color: #0f1c2e;
+    margin: 0;
+}
+
+.btn-evaluate-instructor {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    font-size: 12px;
+    font-weight: 600;
+    border-radius: 6px;
+    background: #f8fafc;
+    border: 1px solid #dde3ee;
+    color: #1a3a6b;
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.btn-evaluate-instructor:hover {
+    background: #1a3a6b;
+    border-color: #1a3a6b;
+    color: #fff;
+}
+

@@ -645,3 +645,28 @@
         margin-left: 48px;
     }
 }
+
+/* Rating Badge & Table Enhancements */
+.rating-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 11.5px;
+    font-weight: 700;
+}
+
+.rating-badge-active {
+    background: #fef3c7;
+    color: #92400e;
+    border: 1px solid #fde68a;
+}
+
+.assigned-course-row {
+    transition: background 0.2s ease;
+}
+
+.assigned-course-row:hover {
+    background: #f8fafc;
+}

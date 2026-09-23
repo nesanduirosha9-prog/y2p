@@ -121,19 +121,19 @@ $leaveRecords = [
             </div>
         </div>
 
-        <!-- Request Leave panel — docked beside the page content, same
-             pattern as the Timetable page's Session Details / Request
-             panel (.tt-side-panel), instead of a dimmed modal overlay. -->
+        <!-- Request Leave panel -->
         <aside class="lv-side-panel" id="lvRequestPanel" hidden>
             <div class="lv-panel-header">
                 <div class="lv-panel-header-left">
-                    <div class="lv-panel-icon"><i class="fa-solid fa-calendar-plus"></i></div>
+                    <button type="button" class="lv-btn-back" id="lvBackBtn" aria-label="Back to leave overview" title="Back">
+                        <i class="fa-solid fa-arrow-left"></i>
+                    </button>
                     <div>
                         <h2>Request Leave</h2>
-                        <p>Select dates & submit for approval</p>
+                        <p>Select dates &amp; submit for approval</p>
                     </div>
                 </div>
-                <button type="button" class="modal-close" id="closeLeaveModal" title="Close"><i class="fa-solid fa-xmark"></i></button>
+                <button type="button" class="modal-close" id="closeLeaveModal" title="Close" aria-label="Close"><i class="fa-solid fa-xmark"></i></button>
             </div>
             <div class="lv-panel-body">
                 <div class="form-group full-width">
