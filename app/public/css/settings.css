@@ -1,6 +1,6 @@
 /* settings.css — shared "Account Settings" page (components/settings_form.php),
-   used by every role via timetable_officer/settings.php and
-   instructor/settings.php. Requires tokens.css to be loaded first (dashboard
+   used by every role via the single views/settings.php.
+   Requires tokens.css to be loaded first (dashboard
    layout already does this) — --color-*/--radius-*/--font-* below all reuse
    those tokens rather than redefining them.
 

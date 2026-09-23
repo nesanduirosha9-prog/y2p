@@ -1,6 +1,6 @@
 <?php
 // components/settings_form.php — shared "Account Settings" form, required by
-// both instructor/settings.php and timetable_officer/settings.php.
+// views/settings.php, the one Settings view every role renders.
 //
 // Expects in scope:
 //   $profile     — array, a row from StaffModel::findByCode() (real DB data)

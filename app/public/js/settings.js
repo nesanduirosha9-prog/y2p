@@ -1,5 +1,5 @@
 /* settings.js — shared "Account Settings" page behaviour, used by every
-   role via timetable_officer/settings.php and instructor/settings.php.
+   role via the single views/settings.php.
 
    Only the Save button actually persists anything (POSTs name/phone/office/
    extension/bio to the form's data-action URL). Avatar upload, theme pills,

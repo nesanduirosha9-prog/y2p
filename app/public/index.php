@@ -21,6 +21,7 @@ use app\core\Request;
 use app\core\Response;
 use app\controllers\HomeController;
 use app\controllers\AuthController;
+use app\controllers\SettingsController;
 
 // Several resources have one controller per role, so the class names collide
 // (there are two TimetableControllers, three EvaluationsControllers, ...).
@@ -32,7 +33,6 @@ use app\controllers\timetable_officer\TimetableController as OfficerTimetableCon
 use app\controllers\timetable_officer\CoursesController as OfficerCoursesController;
 use app\controllers\timetable_officer\LecturersController;
 use app\controllers\timetable_officer\LectureHallsController;
-use app\controllers\timetable_officer\SettingsController as OfficerSettingsController;
 
 use app\controllers\instructor\TimetableController as StaffTimetableController;
 use app\controllers\instructor\CoursesController as StaffCoursesController;
@@ -41,7 +41,6 @@ use app\controllers\instructor\EvaluationsController as StaffEvaluationsControll
 use app\controllers\instructor\LeaveController;
 use app\controllers\instructor\MessagesController;
 use app\controllers\instructor\RequestsController;
-use app\controllers\instructor\SettingsController as StaffSettingsController;
 
 use app\controllers\coordinator\StaffController;
 use app\controllers\coordinator\WorkloadController as CoordinatorWorkloadController;
@@ -228,24 +227,16 @@ $router->get('/requests', function (Request $request, Response $response) {
 });
 
 // --- Settings --------------------------------------------------------------
-// The only screen open to every signed-in role. The two SettingsControllers are
-// still byte-identical duplicates at this point; they merge in Phase 3a and
-// this dispatch disappears with them. Held in variables because the legacy
-// POST /instructor/settings shim has to reuse the update handler verbatim —
-// see the shim block for why it cannot simply redirect.
-$settingsIndex = function (Request $request, Response $response) {
-    if (($_SESSION['role'] ?? '') === 'academic_staff') {
-        return (new StaffSettingsController())->index($request);
-    }
-    return (new OfficerSettingsController())->index($request);
-};
+// The only screen open to every signed-in role, and now served by a single
+// controller — there is nothing to dispatch on. The update handler is held in
+// a variable because the legacy POST /instructor/settings shim reuses it
+// verbatim; see the shim block for why it cannot simply redirect.
 $settingsUpdate = function (Request $request, Response $response) {
-    if (($_SESSION['role'] ?? '') === 'academic_staff') {
-        return (new StaffSettingsController())->update($request, $response);
-    }
-    return (new OfficerSettingsController())->update($request, $response);
+    return (new SettingsController())->update($request, $response);
 };
-$router->get('/settings', $settingsIndex);
+$router->get('/settings', function (Request $request, Response $response) {
+    return (new SettingsController())->index($request);
+});
 $router->post('/settings', $settingsUpdate);
 
 // --- Settings > Handover ---------------------------------------------------
