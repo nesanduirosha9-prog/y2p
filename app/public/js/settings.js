@@ -7,10 +7,43 @@
    backing column for any of them on `staff` yet. */
 
 document.addEventListener('DOMContentLoaded', () => {
+    initSettingsTabs();
     initAvatarUpload();
     initThemeSelection();
     initSaveButton();
 });
+
+function initSettingsTabs() {
+    const tabsContainer = document.getElementById('settingsTabs');
+    if (!tabsContainer) return;
+
+    const panels = {
+        profile: document.getElementById('settings-panel-profile'),
+        handover: document.getElementById('settings-panel-handover')
+    };
+
+    function switchTab(tabKey) {
+        if (!panels[tabKey]) return;
+        tabsContainer.querySelectorAll('.settings-tab').forEach(t => {
+            const isActive = t.dataset.tab === tabKey;
+            t.classList.toggle('active', isActive);
+            t.setAttribute('aria-selected', isActive ? 'true' : 'false');
+        });
+        Object.entries(panels).forEach(([k, p]) => {
+            if (p) p.hidden = (k !== tabKey);
+        });
+    }
+
+    tabsContainer.addEventListener('click', (e) => {
+        const btn = e.target.closest('[data-tab]');
+        if (!btn) return;
+        switchTab(btn.dataset.tab);
+    });
+
+    if (window.location.hash === '#handover') {
+        switchTab('handover');
+    }
+}
 
 function initAvatarUpload() {
     const avatarInput = document.getElementById('avatarFileInput');

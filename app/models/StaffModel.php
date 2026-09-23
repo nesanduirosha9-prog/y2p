@@ -115,26 +115,34 @@ class StaffModel
         )->fetchAll(PDO::FETCH_ASSOC);
     }
 
-    /** Every active staff member, optionally filtered by role/rank/position label. */
+    /** Every registered staff member (with assigned role), optionally filtered by role/rank/position label. */
     public function activeStaff(?string $roleFilter = null): array
     {
         $pdo = Database::getConnection();
-        $sql = "SELECT code, name, email, phone, role, academic_rank, position, availability_status
-                FROM staff WHERE status = 'active'";
+        $sql = "SELECT s.code, s.name, s.email, s.phone, s.role, s.academic_rank, s.position,
+                       s.department, s.designation, s.availability_status, s.status,
+                       GROUP_CONCAT(DISTINCT cs.course_code ORDER BY cs.course_code SEPARATOR ',') AS assigned_courses
+                FROM staff s
+                LEFT JOIN course_staff cs ON cs.staff_code = s.code
+                WHERE s.role IS NOT NULL";
         $params = [];
 
         if ($roleFilter === 'timetable_officer') {
-            $sql .= " AND role = 'timetable_officer'";
+            $sql .= " AND s.role = 'timetable_officer'";
         } elseif ($roleFilter === 'junior') {
-            $sql .= " AND role = 'academic_staff' AND academic_rank = 'junior'";
+            $sql .= " AND s.role = 'academic_staff' AND s.academic_rank = 'junior'";
         } elseif ($roleFilter === 'senior') {
-            $sql .= " AND role = 'academic_staff' AND academic_rank = 'senior'";
+            $sql .= " AND s.role = 'academic_staff' AND s.academic_rank = 'senior'";
         }
 
-        $sql .= " ORDER BY name";
+        $sql .= " GROUP BY s.code ORDER BY s.name";
         $stmt = $pdo->prepare($sql);
         $stmt->execute($params);
-        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+        $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        foreach ($rows as &$row) {
+            $row['courses'] = !empty($row['assigned_courses']) ? explode(',', $row['assigned_courses']) : [];
+        }
+        return $rows;
     }
 
     /**

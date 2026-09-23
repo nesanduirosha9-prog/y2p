@@ -9,39 +9,53 @@
    layouts/dashboard.php) — deferred on purpose, tracked separately. */
 
 .sys-container {
-    max-width: 820px;
+    max-width: 680px;
     display: flex;
     flex-direction: column;
-    gap: 20px;
+    gap: 0;
 }
 
-.sys-header {
-    background: var(--color-surface);
+/* Tab Bar for In-Charge Settings (matching .wk-tabs / .staff-tabs) */
+.settings-tabs {
+    background: #fff;
     border: 1px solid var(--color-border);
-    border-radius: var(--radius-lg);
-    padding: 20px 24px;
+    border-bottom: 1px solid #dde3ee;
+    padding: 0 16px;
+    display: flex;
+    gap: 4px;
+    margin-bottom: 20px;
+    border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+}
+
+.settings-tab {
     display: flex;
     align-items: center;
-    justify-content: space-between;
-    flex-wrap: wrap;
-    gap: 12px;
-}
-
-.sys-sub {
+    gap: 8px;
+    padding: 14px 18px;
     font-size: 13px;
-    color: var(--color-text-muted);
-    margin-top: 2px;
+    font-weight: 700;
+    color: #9ca3af;
+    text-decoration: none;
+    border: none;
+    background: none;
+    border-bottom: 2px solid transparent;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    margin-bottom: -1px;
 }
 
-.sys-role-badge {
-    background: rgba(37, 99, 235, 0.08);
-    color: var(--color-primary);
-    border: 1px solid rgba(37, 99, 235, 0.2);
-    padding: 4px 12px;
-    border-radius: 99px;
-    font-size: 12px;
-    font-weight: 600;
-    white-space: nowrap;
+.settings-tab:hover {
+    color: #6b7c96;
+    border-bottom-color: #dde3ee;
+}
+
+.settings-tab.active {
+    color: #1a3a6b;
+    border-bottom-color: #1a3a6b;
+}
+
+.settings-panel[hidden] {
+    display: none !important;
 }
 
 .sys-card {

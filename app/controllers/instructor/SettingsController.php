@@ -27,13 +27,23 @@ class SettingsController extends Controller
         }
 
         $profile = (new StaffModel())->findByCode($_SESSION['staff_code']);
+        $isInCharge = (($_SESSION['position'] ?? '') === 'in_charge');
+        $roleHolders = $isInCharge ? (new StaffModel())->roleHolders() : [];
+
+        $cssFiles = ['/css/settings.css'];
+        if ($isInCharge) {
+            $cssFiles[] = '/css/directory.css';
+            $cssFiles[] = '/css/in_charge/accounts.css';
+        }
 
         return $this->render('instructor/settings', [
             'title' => 'Settings',
-            'css_file' => ['/css/settings.css'],
+            'css_file' => $cssFiles,
             'active' => 'settings',
             'pageTitle' => 'Settings',
             'profile' => $profile,
+            'isInCharge' => $isInCharge,
+            'roleHolders' => $roleHolders,
             'formAction' => '/instructor/settings',
             'notificationCount' => (new NotificationModel())->unreadCount($_SESSION['staff_code']),
         ]);

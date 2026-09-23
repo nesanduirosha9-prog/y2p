@@ -176,7 +176,7 @@ $router->get('/in-charge/evaluations', function (Request $request, Response $res
     return (new \app\controllers\in_charge\EvaluationsController())->index($request);
 });
 $router->get('/in-charge/accounts', function (Request $request, Response $response) {
-    return (new AccountsController())->index($request);
+    $response->redirect('/instructor/settings#handover');
 });
 $router->get('/in-charge/accounts/change/{position}/{code}', function (Request $request, Response $response, array $params) {
     return (new AccountsController())->change($request, $response, $params);

@@ -30,5 +30,22 @@ class ViewHelpers
         }
         return ($h['position'] ?? '') === 'in_charge' ? 'In-Charge' : 'Coordinator';
     }
+
+    // Role and rank label for staff cards/tables (e.g. Senior Lecturer · Coordinator)
+    public static function staffRoleLabel(array $s): string
+    {
+        if (($s['role'] ?? '') === 'timetable_officer') {
+            return 'Timetable Officer';
+        }
+        $rank = ($s['academic_rank'] ?? '') === 'senior' ? 'Senior Lecturer' : 'Junior Staff Member';
+        if (($s['position'] ?? '') === 'coordinator') {
+            return $rank . ' · Coordinator';
+        }
+        if (($s['position'] ?? '') === 'in_charge') {
+            return $rank . ' · In-Charge';
+        }
+        return $rank;
+    }
 }
+
 

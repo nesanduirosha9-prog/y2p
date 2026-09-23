@@ -44,7 +44,6 @@ if ($isInstructor) {
     } elseif ($position === 'in_charge') {
         $navItems[] = ['href' => '/in-charge/workload/distribution',    'icon' => 'fa-solid fa-table-cells',     'label' => 'Workload Matrix', 'key' => 'workload-dist'];
         $navItems[] = ['href' => '/coordinator/staff',                 'icon' => 'fa-solid fa-user-check',      'label' => 'Staff',           'key' => 'staff'];
-        $navItems[] = ['href' => '/in-charge/accounts',                'icon' => 'fa-solid fa-people-arrows',   'label' => 'Accounts',        'key' => 'accounts'];
         $navItems[] = ['href' => '/in-charge/evaluations',             'icon' => 'fa-solid fa-award',           'label' => 'Appraisals',      'key' => 'evaluations'];
     } elseif ($academicRank === 'senior') {
         // Lecturer-in-charge
