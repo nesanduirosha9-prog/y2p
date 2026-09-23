@@ -1,7 +1,8 @@
 # Routing refactor — role names out of URLs
 
 **Branch:** `refactor/resource-routes`
-**Status:** Phases 0–3c complete. Phase 3d assessed and not done (see below).
+**Status:** Phases 0–3 complete. The Courses half of 3d was assessed and deliberately
+not done (see below).
 
 ## Why
 
@@ -283,20 +284,34 @@ evaluations are done per course module — which is what the instructor controll
 already did, and which is why `views/instructor/evaluations.php` was unreachable.
 It was deleted along with the controller that would have rendered it.
 
-### 3d. Timetable and Courses — NOT done
+### 3d. Timetable — done. Courses — deliberately not.
 
-Deferred by decision, and on inspection only half of it is worth doing:
+This phase was assessed after 3a–3c rather than taken as a whole, because only
+half of it improved the code.
 
-- **Timetable — mergeable.** The two controllers (56 + 62 lines) share the
-  filter-parsing block and both model calls verbatim. They differ in the guard,
-  the title, the CSS, and one extra `RoomModel` call on the officer side. A merge
-  would save roughly 50 lines. The two views (209 and 322 lines) are genuinely
-  different markup and would stay separate.
-- **Courses — not worth merging.** `instructor/CoursesController` is 244 lines,
-  of which ~210 is a hardcoded course catalogue plus per-course assignment and
-  evaluation logic. `timetable_officer/CoursesController` is 42 lines that call
-  three models. They share nothing but the class name; merging them would produce
-  one class holding two unrelated methods and would make the code worse.
+**Timetable: merged.** `instructor/TimetableController` and
+`timetable_officer/TimetableController` (56 + 62 lines) parsed the same three
+filters with the same defaults and whitelists and called the same two models.
+They differed in the role they guarded, four strings of page copy, and one extra
+`RoomModel` query on the officer's side. Now one
+`app/controllers/TimetableController.php` with the same `COPY`-keyed-by-role
+approach as 3b and 3c — keyed by `role` here rather than `position`.
+
+The two views stay separate and are genuinely different: the officer's grid is
+editable, the academic staff one is read-only (209 vs 322 lines of markup). Only
+the controller merged, so `views/instructor/timetable.php` and
+`views/timetable_officer/timetable.php` keep their paths.
+
+The officer-only `RoomModel` query stays officer-only — academic staff do not pay
+for a query their view never reads.
+
+**Courses: not merged, on purpose.** `instructor/CoursesController` is 244 lines,
+of which ~210 is a hardcoded course catalogue plus per-course assignment and
+evaluation logic. `timetable_officer/CoursesController` is 42 lines that call
+three models. They share nothing but the class name. Merging them would produce
+one class holding two unrelated methods — a worse arrangement than two small
+focused controllers, and dedup for its own sake. `/courses` keeps its two-way
+dispatch in `index.php`.
 
 ### Files deleted
 
@@ -316,8 +331,10 @@ Deferred by decision, and on inspection only half of it is worth doing:
 | `app/controllers/in_charge/EvaluationsController.php` | 3c |
 | `app/views/in_charge/evaluations.php` | 3c |
 | `app/views/instructor/evaluations.php` | 3c — was unreachable |
+| `app/controllers/instructor/TimetableController.php` | 3d |
+| `app/controllers/timetable_officer/TimetableController.php` | 3d |
 
-Net: **8 controllers and 7 views removed, 3 controllers and 3 views added.**
+Net: **10 controllers and 7 views removed, 4 controllers and 3 views added.**
 
 ### Still unreachable, deliberately left alone
 
@@ -342,7 +359,8 @@ Everything below was run against this branch.
 
 ### End-to-end (php -S against the seeded MySQL, all four account types)
 
-**94 checks, 0 failures, 0 PHP errors in the server log.**
+**94 checks, 0 failures, 0 PHP errors in the server log.** Re-run unchanged after
+the Phase 3d Timetable merge.
 
 - **70 navigation checks** — every sidebar item for the timetable officer, junior
   academic staff, coordinator and in-charge; every legacy GET shim; the signed-out
@@ -356,6 +374,12 @@ Everything below was run against this branch.
 - Profile saves confirmed persisted in the database, including through the legacy
   `POST /instructor/settings` alias. The four staff rows touched by the test were
   restored to their `database/seeds/001_staff.sql` values afterwards.
+- **Phase 3d regression check:** `/timetable` was rendered for both roles across
+  three filter combinations, before and after the merge, and diffed. All six
+  pages came back **byte-for-byte identical** (46–55 KB each). Invalid filter
+  values (`?dept=BOGUS&sem=99&year=0`) still fall back to the defaults without
+  error, and the officer's room dropdown is still populated while the read-only
+  staff grid never runs that query.
 
 ### Not covered by the automated run
 

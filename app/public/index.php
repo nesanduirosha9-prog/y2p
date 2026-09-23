@@ -24,6 +24,7 @@ use app\controllers\AuthController;
 use app\controllers\SettingsController;
 use app\controllers\WorkloadController;
 use app\controllers\EvaluationsController;
+use app\controllers\TimetableController;
 
 // Several resources have one controller per role, so the class names collide
 // (there are two TimetableControllers, three EvaluationsControllers, ...).
@@ -31,12 +32,10 @@ use app\controllers\EvaluationsController;
 // puts every fully-qualified class name in this one block, which matters because
 // the autoloader maps namespace straight to file path — moving a controller in
 // Phase 3 means editing its `namespace` line and these lines together.
-use app\controllers\timetable_officer\TimetableController as OfficerTimetableController;
 use app\controllers\timetable_officer\CoursesController as OfficerCoursesController;
 use app\controllers\timetable_officer\LecturersController;
 use app\controllers\timetable_officer\LectureHallsController;
 
-use app\controllers\instructor\TimetableController as StaffTimetableController;
 use app\controllers\instructor\CoursesController as StaffCoursesController;
 use app\controllers\instructor\WorkloadController as StaffWorkloadController;
 use app\controllers\instructor\LeaveController;
@@ -128,12 +127,9 @@ $router->get('/oldabout', function (Request $request, Response $response) {
 
 // --- Timetable -------------------------------------------------------------
 // GET /timetable — one weekly grid. The officer's view can edit it; academic
-// staff get a read-only version. Different views, same URL.
+// staff get a read-only version. One controller picks the view by role.
 $router->get('/timetable', function (Request $request, Response $response) {
-    if (($_SESSION['role'] ?? '') === 'academic_staff') {
-        return (new StaffTimetableController())->index($request);
-    }
-    return (new OfficerTimetableController())->index($request);
+    return (new TimetableController())->index($request);
 });
 
 // --- Courses ---------------------------------------------------------------
