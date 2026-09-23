@@ -24,9 +24,10 @@ class TimetableController extends Controller
     public function index(Request $request)
     {
         // 1. Route guard — only a signed-in timetable officer may view this.
-        if (!isset($_SESSION['staff_code']) || ($_SESSION['role'] ?? '') !== 'timetable_officer') {
-            $this->redirect('/login');
-            return;
+        // Guard lives on Controller now — see app/core/Controller.php.
+        $denied = $this->requireRole('timetable_officer');
+        if ($denied !== null) {
+            return $denied;
         }
 
         // 2. Read + validate the dept/semester/year filters from ?query.

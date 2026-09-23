@@ -12,7 +12,8 @@ use app\models\StaffModel;
 // browse the active staff directory. Available to anyone holding the
 // additive `coordinator` position — and to `in_charge`, which carries every
 // coordinator ability plus its own Accounts/handover screen.
-// 1. guard()   — shared auth check reused by every action below.
+// 1. Every action is guarded to position coordinator OR in_charge — this is
+//    the one screen the two share, so the guard is deliberately not strict.
 // 2. index()   — GET, lists pending registrations + the active directory.
 // 3. approve() — POST, assigns a role/rank and flips status to 'active'.
 // 4. reject()  — POST, deletes a pending row outright (no soft-delete).
@@ -29,17 +30,12 @@ class StaffController extends Controller
         $this->setLayout('dashboard');
     }
 
-    private function guard(): bool
-    {
-        return isset($_SESSION['staff_code'])
-            && in_array($_SESSION['position'] ?? '', ['coordinator', 'in_charge'], true);
-    }
-
     public function index(Request $request)
     {
-        if (!$this->guard()) {
-            $this->redirect('/login');
-            return;
+        // Guard lives on Controller now — see app/core/Controller.php.
+        $denied = $this->requirePosition('coordinator', 'in_charge');
+        if ($denied !== null) {
+            return $denied;
         }
 
         $staffModel = new StaffModel();
@@ -59,8 +55,8 @@ class StaffController extends Controller
     /** POST /coordinator/staff/{code}/approve */
     public function approve(Request $request, Response $response, array $params = [])
     {
-        if (!$this->guard()) {
-            $response->json(['success' => false, 'message' => 'Unauthorized'], 401);
+        // Guard lives on Controller now — see app/core/Controller.php.
+        if (!$this->guardJson($response, 'position', 'coordinator', 'in_charge')) {
             return;
         }
 
@@ -85,8 +81,8 @@ class StaffController extends Controller
     /** POST /coordinator/staff/{code}/reject */
     public function reject(Request $request, Response $response, array $params = [])
     {
-        if (!$this->guard()) {
-            $response->json(['success' => false, 'message' => 'Unauthorized'], 401);
+        // Guard lives on Controller now — see app/core/Controller.php.
+        if (!$this->guardJson($response, 'position', 'coordinator', 'in_charge')) {
             return;
         }
 

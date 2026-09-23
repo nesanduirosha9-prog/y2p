@@ -21,9 +21,10 @@ class SettingsController extends Controller
 
     public function index(Request $request)
     {
-        if (!isset($_SESSION['staff_code']) || ($_SESSION['role'] ?? '') !== 'academic_staff') {
-            $this->redirect('/login');
-            return;
+        // Guard lives on Controller now — see app/core/Controller.php.
+        $denied = $this->requireRole('academic_staff');
+        if ($denied !== null) {
+            return $denied;
         }
 
         $profile = (new StaffModel())->findByCode($_SESSION['staff_code']);
@@ -51,8 +52,8 @@ class SettingsController extends Controller
 
     public function update(Request $request, Response $response)
     {
-        if (!isset($_SESSION['staff_code']) || ($_SESSION['role'] ?? '') !== 'academic_staff') {
-            $response->json(['success' => false, 'message' => 'Not authenticated'], 401);
+        // Guard lives on Controller now — see app/core/Controller.php.
+        if (!$this->guardJson($response, 'role', 'academic_staff')) {
             return;
         }
 

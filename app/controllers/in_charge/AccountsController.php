@@ -22,7 +22,8 @@ use app\services\EmailService;
 // pattern rather than introducing a new persistence mechanism for a
 // short-lived, single-user flow.
 //
-// 1. guard() / commonViewData() — shared checks/view-data every action uses.
+// 1. commonViewData() — shared view-data every action uses. The auth check is
+//    Controller::requirePosition('in_charge') / guardJson().
 // 2. index()        — GET, lists the current seat holders.
 // 3. change()        — GET, step 1: pick which seat to reassign.
 // 4. selectView()     — GET, step 2: search a same-rank replacement.
@@ -40,11 +41,6 @@ class AccountsController extends Controller
         $this->setLayout('dashboard');
     }
 
-    private function guard(): bool
-    {
-        return isset($_SESSION['staff_code']) && ($_SESSION['position'] ?? '') === 'in_charge';
-    }
-
     private function commonViewData(): array
     {
         return [
@@ -57,9 +53,10 @@ class AccountsController extends Controller
     /** GET /in-charge/accounts */
     public function index(Request $request)
     {
-        if (!$this->guard()) {
-            $this->redirect('/login');
-            return;
+        // Guard lives on Controller now — see app/core/Controller.php.
+        $denied = $this->requirePosition('in_charge');
+        if ($denied !== null) {
+            return $denied;
         }
 
         return $this->render('in_charge/accounts', array_merge($this->commonViewData(), [
@@ -73,9 +70,10 @@ class AccountsController extends Controller
     /** GET /in-charge/accounts/change/{position}/{code} */
     public function change(Request $request, Response $response, array $params = [])
     {
-        if (!$this->guard()) {
-            $this->redirect('/login');
-            return;
+        // Guard lives on Controller now — see app/core/Controller.php.
+        $denied = $this->requirePosition('in_charge');
+        if ($denied !== null) {
+            return $denied;
         }
 
         $position = $params['position'] ?? '';
@@ -99,9 +97,10 @@ class AccountsController extends Controller
     /** GET /in-charge/accounts/select/{position}/{code} */
     public function selectView(Request $request, Response $response, array $params = [])
     {
-        if (!$this->guard()) {
-            $this->redirect('/login');
-            return;
+        // Guard lives on Controller now — see app/core/Controller.php.
+        $denied = $this->requirePosition('in_charge');
+        if ($denied !== null) {
+            return $denied;
         }
 
         $position = $params['position'] ?? '';
@@ -137,8 +136,8 @@ class AccountsController extends Controller
     /** POST /in-charge/accounts/select — starts the OTP challenge. */
     public function selectSubmit(Request $request, Response $response)
     {
-        if (!$this->guard()) {
-            $response->json(['success' => false, 'message' => 'Unauthorized'], 401);
+        // Guard lives on Controller now — see app/core/Controller.php.
+        if (!$this->guardJson($response, 'position', 'in_charge')) {
             return;
         }
 
@@ -187,7 +186,14 @@ class AccountsController extends Controller
     /** GET /in-charge/accounts/verify */
     public function verifyView(Request $request)
     {
-        if (!$this->guard() || empty($_SESSION['handover'])) {
+        // Guard lives on Controller now — see app/core/Controller.php. The
+        // handover check is separate: a valid In-Charge who has not started a
+        // role change has nothing to verify, so send them back to the list.
+        $denied = $this->requirePosition('in_charge');
+        if ($denied !== null) {
+            return $denied;
+        }
+        if (empty($_SESSION['handover'])) {
             $this->redirect('/in-charge/accounts');
             return;
         }
@@ -206,7 +212,13 @@ class AccountsController extends Controller
     /** POST /in-charge/accounts/verify — confirms the OTP and performs the reassignment. */
     public function verifySubmit(Request $request, Response $response)
     {
-        if (!$this->guard() || empty($_SESSION['handover'])) {
+        // Guard lives on Controller now — see app/core/Controller.php. A wrong
+        // position is now a 401, not the 400 it used to share with "no pending
+        // change"; the two failures are genuinely different.
+        if (!$this->guardJson($response, 'position', 'in_charge')) {
+            return;
+        }
+        if (empty($_SESSION['handover'])) {
             $response->json(['success' => false, 'message' => 'No pending role change found.'], 400);
             return;
         }
@@ -245,9 +257,10 @@ class AccountsController extends Controller
     /** GET /in-charge/accounts/updated */
     public function updatedView(Request $request)
     {
-        if (!$this->guard()) {
-            $this->redirect('/login');
-            return;
+        // Guard lives on Controller now — see app/core/Controller.php.
+        $denied = $this->requirePosition('in_charge');
+        if ($denied !== null) {
+            return $denied;
         }
 
         return $this->render('in_charge/accounts_updated', array_merge($this->commonViewData(), [

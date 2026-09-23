@@ -12,21 +12,10 @@ class WorkloadController extends Controller
         $this->setLayout('dashboard');
     }
 
-    private function checkAccess(): ?string
-    {
-        if (!isset($_SESSION['staff_code'])) {
-            $this->redirect('/login');
-            return '';
-        }
-        if (($_SESSION['position'] ?? '') !== 'in_charge') {
-            return $this->forbidden();
-        }
-        return null;
-    }
-
     public function distribution(Request $request)
     {
-        $denied = $this->checkAccess();
+        // Guard lives on Controller now — see app/core/Controller.php.
+        $denied = $this->requirePosition('in_charge');
         if ($denied !== null) {
             return $denied;
         }

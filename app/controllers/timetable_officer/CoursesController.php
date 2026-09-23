@@ -22,9 +22,10 @@ class CoursesController extends Controller
 
     public function index(Request $request)
     {
-        if (!isset($_SESSION['staff_code']) || ($_SESSION['role'] ?? '') !== 'timetable_officer') {
-            $this->redirect('/login');
-            return;
+        // Guard lives on Controller now — see app/core/Controller.php.
+        $denied = $this->requireRole('timetable_officer');
+        if ($denied !== null) {
+            return $denied;
         }
 
         return $this->render('timetable_officer/course_details', [

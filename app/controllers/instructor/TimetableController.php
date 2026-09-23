@@ -23,9 +23,10 @@ class TimetableController extends Controller
 
     public function index(Request $request)
     {
-        if (!isset($_SESSION['staff_code']) || ($_SESSION['role'] ?? '') !== 'academic_staff') {
-            $this->redirect('/login');
-            return;
+        // Guard lives on Controller now — see app/core/Controller.php.
+        $denied = $this->requireRole('academic_staff');
+        if ($denied !== null) {
+            return $denied;
         }
 
         $dept = $request->getQueryParams()['dept'] ?? 'cs';

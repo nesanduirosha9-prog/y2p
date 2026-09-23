@@ -12,21 +12,10 @@ class EvaluationsController extends Controller
         $this->setLayout('dashboard');
     }
 
-    private function checkAccess(): ?string
-    {
-        if (!isset($_SESSION['staff_code'])) {
-            $this->redirect('/login');
-            return '';
-        }
-        if (($_SESSION['role'] ?? '') !== 'academic_staff') {
-            return $this->forbidden();
-        }
-        return null;
-    }
-
     public function index(Request $request)
     {
-        $denied = $this->checkAccess();
+        // Guard lives on Controller now — see app/core/Controller.php.
+        $denied = $this->requireRole('academic_staff');
         if ($denied !== null) {
             return $denied;
         }
