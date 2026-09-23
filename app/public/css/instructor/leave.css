@@ -6,20 +6,18 @@
     height: 100%;
 }
 
+/* Holds the Request Leave button alone. It used to carry a "Track your leave
+   balance…" subtitle as well; that line said nothing the page below doesn't
+   already show, and it was the one thing left holding the row open. flex-end
+   keeps the button on the right now that it has no sibling to sit opposite. */
 .lv-header {
     background: transparent;
     border-bottom: none;
     padding: 0 24px 16px 24px;
     display: flex;
     align-items: center;
-    justify-content: space-between;
+    justify-content: flex-end;
     flex-shrink: 0;
-}
-
-.lv-sub {
-    font-size: 12px;
-    color: #9ca3af;
-    margin-top: 2px;
 }
 
 .lv-new-btn {
@@ -27,6 +25,12 @@
     align-items: center;
     gap: 6px;
 }
+
+/* Nothing here hides on open any more. Collapsing the header when the panel
+   appeared reclaimed a little height but shifted the whole page up as it went,
+   which read worse than the scroll it was trying to save. The panel now sizes
+   itself to the room actually available instead — see sizePanel() in
+   js/instructor/leave.js. */
 
 .lv-body {
     padding: 24px;
@@ -422,8 +426,12 @@
     border-radius: 16px;
     display: flex;
     flex-direction: column;
-    height: calc(100vh - 105px);
-    max-height: calc(100vh - 105px);
+    /* First-paint fallback only — sizePanel() in js/instructor/leave.js
+       overwrites both with a measured value the moment the panel opens.
+       105px was too small an allowance (it ignored .lv-body's 24px padding and
+       .dash-main's 22px), which is why the footer sat below the fold. */
+    height: calc(100dvh - 152px);
+    max-height: calc(100dvh - 152px);
     box-shadow: 0 10px 25px -5px rgba(15, 28, 46, 0.06), 0 8px 10px -6px rgba(15, 28, 46, 0.04);
     transition: all 0.25s ease;
 }
@@ -1194,8 +1202,21 @@
         grid-template-columns: repeat(2, 1fr);
     }
 
+    /* `align-items: flex-start` on the base rule is the vertical axis while
+       .lv-body is a row, but the moment it turns into a column that becomes the
+       HORIZONTAL axis and both children size to fit-content instead of filling.
+       .lv-main-col contains .lv-table (min-width: 520px), so its fit-content is
+       ~560px — wider than a phone — and everything inside it, including the
+       stats grid, was laid out at that width and ran off the right of the
+       screen. stretch is what a column flex container needs here. */
     .lv-body {
         flex-direction: column;
+        align-items: stretch;
+    }
+
+    .lv-main-col {
+        width: 100%;
+        min-width: 0;
     }
 
     .lv-side-panel {
@@ -1266,6 +1287,76 @@
     .lv-btn-cancel {
         margin-left: auto;
     }
+
+    /* "You can cancel before the leave date" is pushed to the right by
+       margin-left:auto on wide screens; there is no room for it beside the
+       title on a phone, so drop it onto its own line rather than truncate it. */
+    .lv-header-amber {
+        flex-wrap: wrap;
+    }
+
+    .lv-head-note {
+        margin-left: 0;
+        flex-basis: 100%;
+    }
+
+    /* Stat cards go from a tall stack (icon, then label, then value — ~150px
+       each, four of them filling the screen before any real content) to a
+       compact two-line tile: icon on the left, label over value on the right.
+       Grid rather than flex because the three elements are siblings in the
+       markup, with no wrapper around the text to flex against. */
+    .lv-stats-grid {
+        gap: 10px;
+    }
+
+    .lv-stat-card {
+        display: grid;
+        grid-template-columns: auto minmax(0, 1fr);
+        grid-template-areas:
+            "icon label"
+            "icon value";
+        align-content: center;
+        column-gap: 10px;
+        padding: 12px 14px;
+        border-radius: 12px;
+    }
+
+    .lv-icon-box {
+        grid-area: icon;
+        align-self: center;
+        width: 30px;
+        height: 30px;
+        font-size: 13px;
+        margin-bottom: 0;
+    }
+
+    .lv-stat-label {
+        grid-area: label;
+        align-self: end;
+        font-size: 9.5px;
+        letter-spacing: 0.3px;
+        margin-bottom: 1px;
+        line-height: 1.25;
+    }
+
+    .lv-stat-value {
+        grid-area: value;
+        align-self: start;
+        font-size: 18px;
+        line-height: 1.15;
+    }
+
+    .lv-stat-unit {
+        font-size: 10px;
+    }
+
+    /* The lift is a pointer affordance; on touch it only ever fires as a
+       sticky :hover left behind after a tap. */
+    .lv-stat-card:hover {
+        transform: none;
+        border-color: #e2e8f0;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
+    }
 }
 
 @media (max-width: 480px) {
@@ -1284,8 +1375,16 @@
         padding: 16px;
     }
 
+    /* Stays two-up rather than dropping to one: the tile from the 768px block
+       is short enough that four of them are two tidy rows instead of four
+       full-width bars. The label wraps if the column gets tight. */
     .lv-stats-grid {
-        grid-template-columns: 1fr;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 8px;
+    }
+
+    .lv-stat-card {
+        padding: 10px 12px;
     }
 
     .lv-panel-footer .btn-row {

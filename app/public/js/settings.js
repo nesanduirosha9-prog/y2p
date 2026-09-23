@@ -1,10 +1,11 @@
 /* settings.js — shared "Account Settings" page behaviour, used by every
    role via the single views/settings.php.
 
-   Only the Save button actually persists anything (POSTs name/phone/office/
-   extension/bio to the form's data-action URL). Avatar upload, theme pills,
-   and notification toggles below are preview/decorative only — there's no
-   backing column for any of them on `staff` yet. */
+   Only the Save button persists to the server (POSTs name/phone/office/
+   extension/bio to the form's data-action URL). The avatar picker keeps the
+   chosen photo in this browser via window.StaffSyncAvatar (js/dashboard.js) and
+   repaints the header chip with it — `staff` has no avatar column yet. Theme
+   pills and notification toggles below are decorative for the same reason. */
 
 document.addEventListener('DOMContentLoaded', () => {
     initSettingsTabs();
@@ -51,30 +52,75 @@ function initAvatarUpload() {
     const avatarInitials = document.getElementById('avatarInitials');
     const removeBtn = document.getElementById('removeAvatarBtn');
 
+    // Show the picked file immediately (FileReader), then upload it. If the
+    // upload is rejected the preview is rolled back to what the server has, so
+    // the page never claims a photo that isn't saved.
+    function showImage(src) {
+        avatarImg.src = src;
+        avatarImg.style.display = 'block';
+        if (avatarInitials) avatarInitials.style.display = 'none';
+        if (removeBtn) removeBtn.style.display = 'inline-flex';
+    }
+
+    function showInitials() {
+        avatarImg.src = '';
+        avatarImg.style.display = 'none';
+        if (avatarInitials) avatarInitials.style.display = 'block';
+        if (removeBtn) removeBtn.style.display = 'none';
+        if (avatarInput) avatarInput.value = '';
+    }
+
+    // The member's 3-letter badge code — the key the photo is stored under, and
+    // what shows when there is none.
+    const code = avatarInitials ? avatarInitials.dataset.avatarCode : null;
+    const store = window.StaffSyncAvatar;
+
+    // Restore whatever this browser already has for them.
+    if (code && store) {
+        const saved = store.get(code);
+        if (saved) showImage(saved);
+    }
+
     if (avatarInput) {
         avatarInput.addEventListener('change', (e) => {
             const file = e.target.files[0];
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = (event) => {
-                    avatarImg.src = event.target.result;
-                    avatarImg.style.display = 'block';
-                    if (avatarInitials) avatarInitials.style.display = 'none';
-                    if (removeBtn) removeBtn.style.display = 'inline-flex';
-                    showToast('Preview updated (not saved yet)');
-                };
-                reader.readAsDataURL(file);
+            if (!file) return;
+
+            if (file.size > 2 * 1024 * 1024) {
+                showToast('Image must be 2 MB or smaller', true);
+                avatarInput.value = '';
+                return;
             }
+
+            const reader = new FileReader();
+            reader.onload = (event) => {
+                const dataUrl = event.target.result;
+                showImage(dataUrl);
+
+                if (!code || !store) return;
+                if (store.set(code, dataUrl)) {
+                    store.apply();            // repaint the header chip too
+                    showToast('Profile photo updated');
+                } else {
+                    // Storage full or blocked — don't leave the page showing a
+                    // photo that won't survive the next navigation.
+                    showInitials();
+                    store.apply();
+                    showToast('Could not save that image in this browser', true);
+                }
+            };
+            reader.readAsDataURL(file);
         });
     }
 
     if (removeBtn) {
         removeBtn.addEventListener('click', () => {
-            avatarImg.src = '';
-            avatarImg.style.display = 'none';
-            if (avatarInitials) avatarInitials.style.display = 'block';
-            removeBtn.style.display = 'none';
-            if (avatarInput) avatarInput.value = '';
+            showInitials();
+            if (code && store) {
+                store.clear(code);
+                store.apply();
+            }
+            showToast('Profile photo removed');
         });
     }
 }

@@ -89,6 +89,13 @@ class SettingsController extends Controller
             'bio'       => trim($body['bio'] ?? ''),
         ]);
 
+        // The header chip reads the name out of the session, so refresh it here
+        // or renaming yourself would keep showing the old one until you sign in
+        // again. See ViewHelpers::currentUserName().
+        if ($ok) {
+            $_SESSION['name'] = $name;
+        }
+
         $response->json(['success' => $ok]);
     }
 }

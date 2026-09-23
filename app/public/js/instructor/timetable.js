@@ -7,7 +7,11 @@ document.addEventListener('DOMContentLoaded', () => {
     const ttView = document.querySelector('.tt-view');
     const days = { mon: 'Monday', tue: 'Tuesday', wed: 'Wednesday', thu: 'Thursday', fri: 'Friday' };
     const dayKeys = Object.keys(days);
-    const hours = [8, 9, 10, 11, 12, 13, 14, 15, 16, 17];
+    // Keep in step with $hours in views/instructor/timetable.php and
+    // views/timetable_officer/timetable.php — see the note there. This array
+    // builds the Student Timetable grid, so a mismatch would make the two
+    // tabs different heights.
+    const hours = [8, 9, 10, 11, 12, 13, 14, 15, 16];
     const workingHours = hours.filter(h => h !== 12);
     const myCourseCodes = window.__ttMyCourseCodes || [];
 
@@ -772,7 +776,10 @@ document.addEventListener('DOMContentLoaded', () => {
         dayKeys.forEach(k => { html += `<div class="tt-grid-day-head" data-day-key="${k}">${days[k]}</div>`; });
 
         hours.forEach((h, rowIndex) => {
-            html += `<div class="tt-grid-time">${hourLabel(h)}</div>`;
+            // Pinned like the two PHP grids: every cell/block below is placed
+            // explicitly, so an unplaced time label drifts into a slot freed by
+            // a display:none day column in the 1/2/3-day mobile views.
+            html += `<div class="tt-grid-time" style="grid-column:1; grid-row:${rowIndex + 2};">${hourLabel(h)}</div>`;
             dayKeys.forEach((dayKey, colIndex) => {
                 const cell = (occupied[dayKey] || {})[h];
                 const isLunch = h === 12;

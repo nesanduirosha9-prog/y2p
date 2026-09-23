@@ -101,6 +101,10 @@ class AuthController extends Controller
         $_SESSION['role'] = $user['role'];
         $_SESSION['academic_rank'] = $user['academic_rank'];
         $_SESSION['position'] = $user['position'];
+        // Cached for the header profile chip, which shows the member's own name
+        // rather than their role title. ViewHelpers::currentUserName() back-fills
+        // sessions older than this key, so nobody has to sign in again for it.
+        $_SESSION['name'] = $user['name'] ?? null;
 
         // 6. Tell the client where to go next (JS does the redirect).
         return $this->jsonResponse($response, ['success' => true, 'message' => 'Login successful', 'redirect' => $this->dashboardUrlForRole($user['role'])]);

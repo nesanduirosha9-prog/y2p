@@ -13,12 +13,10 @@ use app\core\ViewHelpers;
 
 $isInCharge = $isInCharge ?? (($_SESSION['position'] ?? '') === 'in_charge');
 
-$initials = '??';
-if (!empty($profile['name'])) {
-    $clean = preg_replace('/^(Dr\.|Mr\.|Mrs\.|Ms\.|Miss|Prof\.|Rev\.|Eng\.)\s*/i', '', $profile['name']);
-    $parts = preg_split('/\s+/', trim($clean));
-    $initials = strtoupper(($parts[0][0] ?? '') . ($parts[1][0] ?? $parts[0][1] ?? ''));
-}
+// The 3-letter badge code, the same fallback the header chip uses, so the two
+// avatars on screen never disagree. (This used to derive two letters from the
+// name, which gave "TF" here and a hardcoded "IN" in the header.)
+$initials = ViewHelpers::currentAvatarCode();
 ?>
 <div class="sys-container">
 
@@ -44,23 +42,25 @@ if (!empty($profile['name'])) {
             </div>
 
             <div class="sys-card-body">
-                <!-- Avatar: preview-only, not persisted -->
+                <!-- Avatar: kept in this browser only (no column on `staff` yet).
+                     js/settings.js writes it through window.StaffSyncAvatar, which
+                     also repaints the header chip. -->
                 <div class="sys-avatar-row">
                     <div class="sys-avatar-box">
                         <img src="" id="avatarImage" alt="Avatar" style="display: none;">
-                        <span id="avatarInitials"><?= htmlspecialchars($initials) ?></span>
+                        <span id="avatarInitials" data-avatar-code="<?= htmlspecialchars($initials) ?>"><?= htmlspecialchars($initials) ?></span>
                     </div>
                     <div class="sys-avatar-actions">
                         <div class="sys-avatar-btns">
                             <label for="avatarFileInput" class="sys-btn sys-btn-secondary sys-btn-sm">
                                 <i class="fa-solid fa-upload"></i> Upload Photo
                             </label>
-                            <input type="file" id="avatarFileInput" accept="image/*" style="display: none;">
+                            <input type="file" id="avatarFileInput" accept="image/jpeg,image/png,image/gif,image/webp" style="display: none;">
                             <button type="button" class="sys-btn sys-btn-danger-text" id="removeAvatarBtn" style="display: none;">
                                 Remove Photo
                             </button>
                         </div>
-                        <span class="sys-avatar-hint">Preview only &mdash; photos aren't saved yet.</span>
+                        <span class="sys-avatar-hint">Saved in this browser only &mdash; up to 2&nbsp;MB.</span>
                     </div>
                 </div>
 

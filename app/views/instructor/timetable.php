@@ -7,7 +7,13 @@ use app\core\ViewHelpers;
 // (Request Support Staff / Request Time Change / My Requests) are DOM-only demo
 // flows — nothing persists server-side.
 $days = ['mon' => 'Monday', 'tue' => 'Tuesday', 'wed' => 'Wednesday', 'thu' => 'Thursday', 'fri' => 'Friday'];
-$hours = [8, 9, 10, 11, 12, 13, 14, 15, 16, 17];
+// 8 AM – 4 PM, i.e. the last row is the 16:00–17:00 block. Must stay the same
+// range as timetable_officer/timetable.php: the officer is the only person who
+// can place a session, so nothing can ever start later than the last slot that
+// screen offers. This used to run to 17, which added a permanently empty row —
+// 72px of dead grid that pushed the card past its height cap and gave the page
+// a scrollbar the officer's identical grid never had.
+$hours = [8, 9, 10, 11, 12, 13, 14, 15, 16];
 
 function weekDateObj(string $dayKey): DateTime
 {

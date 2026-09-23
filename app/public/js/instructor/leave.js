@@ -563,6 +563,42 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('lvType')?.addEventListener('input', validateForm);
     document.getElementById('lvReason')?.addEventListener('input', validateForm);
 
+    // The docked panel's height was a fixed calc() guess in CSS, and the guess
+    // was short by the page's own padding — so its footer, the one holding
+    // Submit, sat below the fold and the whole page had to be scrolled to reach
+    // it. Measure instead: once the panel is on screen its own top edge says
+    // exactly how much room is left, whatever the header is doing.
+    //
+    // Skipped in the two layouts where a height would be wrong: the fixed
+    // full-screen overlay at <=768px (inset:0 already fills the viewport) and
+    // the stacked column at <=1024px, where the panel sits below the main
+    // column and is meant to grow with its content.
+    const lvBody = document.querySelector('.lv-body');
+    const PANEL_BOTTOM_GUTTER = 46; // .lv-body's 24px bottom padding + .dash-main's 22px
+
+    function sizePanel() {
+        if (!panel || panel.hidden) return;
+
+        const isOverlay = getComputedStyle(panel).position === 'fixed';
+        const isStacked = !lvBody || getComputedStyle(lvBody).flexDirection !== 'row';
+        if (isOverlay || isStacked) {
+            panel.style.height = '';
+            panel.style.maxHeight = '';
+            return;
+        }
+
+        const top = panel.getBoundingClientRect().top;
+        const available = Math.max(360, window.innerHeight - top - PANEL_BOTTOM_GUTTER);
+        panel.style.height = available + 'px';
+        panel.style.maxHeight = available + 'px';
+    }
+
+    let panelResizeTimer = null;
+    window.addEventListener('resize', () => {
+        clearTimeout(panelResizeTimer);
+        panelResizeTimer = setTimeout(sizePanel, 100);
+    });
+
     function openPanel() {
         selectedDates = [];
         isPartialDay = false;
@@ -587,11 +623,16 @@ document.addEventListener('DOMContentLoaded', () => {
         updateTimePreview();
         validateForm();
         panel.hidden = false;
+        // Hides .lv-header (see leave.css), so the class goes on before
+        // sizePanel() measures — otherwise it measures the old position.
         document.body.classList.add('lv-panel-open');
+        sizePanel();
     }
     function closePanel() {
         panel.hidden = true;
         document.body.classList.remove('lv-panel-open');
+        panel.style.height = '';
+        panel.style.maxHeight = '';
     }
 
     const backBtn = document.getElementById('lvBackBtn');

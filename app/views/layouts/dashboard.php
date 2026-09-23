@@ -57,9 +57,9 @@ if (!$isInstructor) {
 // Settings is one URL for everybody, so this no longer branches on role.
 $navItems[] = ['href' => '/settings', 'icon' => 'fa-solid fa-gear', 'label' => 'Settings', 'key' => 'settings'];
 
-$userChipLabel = $isInstructor ? ($position ? ucwords(str_replace('_', ' ', $position)) : ($academicRank === 'senior' ? 'Lecturer' : 'Instructor')) : 'Timetable Officer';
-$userAvatarInitials = $isInstructor ? 'IN' : 'TO';
-$userAvatarStyle = $isInstructor ? 'style="background: #4d179a;"' : '';
+// The profile chip builds itself from ViewHelpers (the signed-in member's name
+// and 3-letter code) — see components/user_chip.php. It used to show a role
+// title computed here; only $userEmail is still passed down.
 $titleSuffix = $isInstructor ? 'StaffSync - Instructor' : 'StaffSync';
 ?>
 <!DOCTYPE html>
@@ -135,14 +135,7 @@ $titleSuffix = $isInstructor ? 'StaffSync - Instructor' : 'StaffSync';
 
                     <?php require_once \app\core\Application::$ROOT_DIR . '/views/components/notifications.php'; ?>
 
-                    <div class="user-chip">
-                        <div class="user-avatar" <?= $userAvatarStyle ?>><?= $userAvatarInitials ?></div>
-                        <div class="user-meta">
-                            <p class="user-name"><?= htmlspecialchars($userChipLabel) ?></p>
-                            <p class="user-email"><?= htmlspecialchars($userEmail) ?></p>
-                        </div>
-                        <i class="fa-solid fa-chevron-down"></i>
-                    </div>
+                    <?php require \app\core\Application::$ROOT_DIR . '/views/components/user_chip.php'; ?>
                 </div>
             </header>
 

@@ -46,6 +46,45 @@ class ViewHelpers
         }
         return $rank;
     }
+
+    // --- The signed-in user's own avatar ------------------------------------
+    // staffInitials() above is for *other* people in directory tables, where a
+    // name is all we have. For the signed-in user the badge code is better: it
+    // is already the 3 letters printed on their staff card (TMF, TMO, MKA), it
+    // is unique, and it never collides the way two people's initials can.
+
+    // A photo, when one has been chosen, is held client-side only: there is no
+    // avatar column on `staff` yet, so js/dashboard.js swaps the code out for
+    // the stored image. Everything server-rendered shows the code.
+    /** The signed-in user's 3-letter badge code, e.g. 'TMF'. '??' when logged out. */
+    public static function currentAvatarCode(): string
+    {
+        $code = trim((string)($_SESSION['staff_code'] ?? ''));
+        return $code === '' ? '??' : strtoupper($code);
+    }
+
+    /**
+     * The signed-in user's own name, for the header profile chip.
+     *
+     * Read from the session, which AuthController::login() fills. Sessions
+     * created before that key existed — and a row whose name is still blank,
+     * which a self-registered account has until it saves Settings — fall back
+     * to one lookup, cached straight back into the session so this stays a
+     * single query per session rather than one per page render. The badge code
+     * is the last resort, so the chip is never empty.
+     */
+    public static function currentUserName(): string
+    {
+        if (!isset($_SESSION['staff_code'])) {
+            return self::currentAvatarCode();
+        }
+        if (!array_key_exists('name', $_SESSION)) {
+            $row = (new \app\models\StaffModel())->findByCode($_SESSION['staff_code']);
+            $_SESSION['name'] = $row['name'] ?? null;
+        }
+        $name = trim((string)($_SESSION['name'] ?? ''));
+        return $name === '' ? self::currentAvatarCode() : $name;
+    }
 }
 
 
