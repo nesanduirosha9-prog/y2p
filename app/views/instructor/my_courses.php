@@ -247,7 +247,7 @@ $missedHistory = count(array_filter($evaluationHistory ?? [], fn($h) => ($h['sta
                                     <?php $isEval = !empty($inst['evaluated_this_week']) || ($inst['status'] ?? '') === 'Evaluated'; ?>
                                     <?php if ($isEval): ?>
                                         <span class="pill pill-active status-pill" id="instStatus_<?= htmlspecialchars($inst['code']) ?>">
-                                            <i class="fa-solid fa-check"></i> Evaluated (<?= (int)round((float)($inst['rating'] ?? 4)) ?>)
+                                            Evaluated (<?= (int)round((float)($inst['rating'] ?? 4)) ?>)
                                         </span>
                                     <?php else: ?>
                                         <span class="pill pill-pending status-pill" id="instStatus_<?= htmlspecialchars($inst['code']) ?>">
@@ -259,7 +259,7 @@ $missedHistory = count(array_filter($evaluationHistory ?? [], fn($h) => ($h['sta
                                     <?php if ($isEval): ?>
                                         <button type="button" class="btn-evaluate-instructor btn-evaluated" id="btnEval_<?= htmlspecialchars($inst['code']) ?>" disabled
                                                 data-code="<?= htmlspecialchars($inst['code']) ?>">
-                                            <i class="fa-solid fa-check"></i> Evaluated
+                                            Evaluated
                                         </button>
                                     <?php else: ?>
                                         <button type="button" class="btn-evaluate-instructor" id="btnEval_<?= htmlspecialchars($inst['code']) ?>"
@@ -395,10 +395,10 @@ $missedHistory = count(array_filter($evaluationHistory ?? [], fn($h) => ($h['sta
                                 </td>
                                 <td style="text-align: right; white-space: nowrap;">
                                     <?php if ($missed): ?>
-                                        <span class="pill history-pill-missing"><i class="fa-regular fa-clock"></i> Not evaluated</span>
+                                        <span class="pill history-pill-missing">Not evaluated</span>
                                     <?php else: ?>
                                         <span class="pill pill-active" style="background: #e6f9ed; color: #166534; font-size: 11px;">
-                                            <i class="fa-solid fa-check"></i> Evaluated
+                                            Evaluated
                                         </span>
                                     <?php endif; ?>
                                 </td>

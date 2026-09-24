@@ -136,168 +136,6 @@
 .dot-yellow { background: #f59e0b; }
 .dot-red { background: #ef4444; }
 
-/* ---- Duty Cards Grid ---- */
-.duty-cards-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-    gap: 16px;
-}
-
-.duty-session-card {
-    background: #ffffff;
-    border: 1px solid #e2e8f0;
-    border-radius: 12px;
-    padding: 16px;
-    display: flex;
-    flex-direction: column;
-    gap: 14px;
-    transition: transform 0.15s ease, box-shadow 0.15s ease;
-    position: relative;
-}
-
-.duty-session-card:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
-}
-
-.duty-session-card.is-fulfilled {
-    border-left: 4px solid #10b981;
-}
-
-.duty-session-card.is-pending {
-    border-left: 4px solid #f59e0b;
-    background: #fffdfa;
-}
-
-.duty-session-card.is-conflict {
-    border-left: 4px solid #ef4444;
-    background: #fffafa;
-}
-
-/* Card Top Bar */
-.session-card-top {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: 8px;
-}
-
-.session-day-badge {
-    display: flex;
-    align-items: baseline;
-    gap: 6px;
-}
-
-.session-day {
-    font-size: 13px;
-    font-weight: 800;
-    color: #0f1c2e;
-}
-
-.session-date {
-    font-size: 11px;
-    color: #64748b;
-}
-
-.session-time-pill {
-    font-size: 11px;
-    font-weight: 700;
-    font-family: var(--font-mono, monospace);
-    background: #f1f5f9;
-    color: #334155;
-    padding: 3px 8px;
-    border-radius: 6px;
-    display: inline-flex;
-    align-items: center;
-    gap: 5px;
-}
-
-/* Card Middle Info */
-.session-title {
-    font-size: 14px;
-    font-weight: 700;
-    color: #0f1c2e;
-    margin: 6px 0 2px 0;
-    line-height: 1.35;
-}
-
-.session-course-sub {
-    font-size: 12px;
-    color: #64748b;
-    margin: 0;
-}
-
-/* Conflict Alert Banner */
-.session-conflict-alert {
-    background: #fef2f2;
-    border: 1px solid #fecaca;
-    color: #b91c1c;
-    padding: 8px 10px;
-    border-radius: 6px;
-    font-size: 11px;
-    font-weight: 700;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-}
-
-/* Card Bottom Info */
-.session-card-bottom {
-    margin-top: auto;
-    padding-top: 12px;
-    border-top: 1px solid #f1f5f9;
-}
-
-.session-assignees-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 8px;
-}
-
-.assignees-title {
-    font-size: 11px;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.04em;
-    color: #64748b;
-}
-
-.status-chip {
-    font-size: 11px;
-    font-weight: 700;
-    padding: 2px 8px;
-    border-radius: 12px;
-    display: inline-flex;
-    align-items: center;
-    gap: 4px;
-}
-
-.chip-success {
-    background: #dcfce7;
-    color: #15803d;
-}
-
-.chip-warning {
-    background: #fef3c7;
-    color: #b45309;
-}
-
-.session-staff-pills {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 6px;
-    min-height: 26px;
-    align-items: center;
-}
-
-.unassigned-notice {
-    font-size: 11px;
-    color: #94a3b8;
-    font-style: italic;
-    margin: 0;
-}
-
 /* ---- Requests Queue Batch Bar ---- */
 .sched-batch-actions {
     display: flex;
@@ -465,9 +303,6 @@
         overflow-x: auto;
         flex-wrap: nowrap;
     }
-    .duty-cards-grid {
-        grid-template-columns: 1fr;
-    }
     .sched-panel-header {
         flex-direction: column;
         align-items: flex-start;
@@ -479,43 +314,93 @@
 }
 
 /* ==============================================================
-   Duty Scheduler — rebuilt screen (js/scheduler.js)
-   Adds the three-step layout (week / requests / who's free), the
-   allocation explanation, the manual swap picker and the invite
-   preview. Card styling reuses .duty-session-card above.
+   Workload page — duty tabs (js/scheduler.js, js/workload_hub.js)
+   The tab bar, the This-week agenda, the allocation explanation,
+   the manual picker, the invite preview and the Who's free grid.
    ============================================================== */
 
+.wm-hub,
 .sched-page { display: flex; flex-direction: column; gap: 16px; }
 
+/* Panels and the KPI grid set their own display, which would beat the
+   hidden attribute the hub toggles. */
+[data-hub-panel][hidden],
 .sched-view-panel[hidden] { display: none; }
 
-/* ---- Cards: the middle block and per-card actions ---- */
-.session-card-middle {
-    padding: 12px 16px 4px;
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-}
-.session-card-middle .session-title {
-    font-size: 13.5px;
+.sched-card > .sched-legend { margin: -8px 0 14px; }
+
+/* On phones the tab bar scrolls sideways; keep each tab on one line. */
+.hub-tabs .sched-nav-tab { flex-shrink: 0; white-space: nowrap; }
+
+/* ---- This week: one row per duty, grouped by day ---- */
+.duty-day + .duty-day { margin-top: 18px; }
+.duty-day-head {
+    margin: 0 0 8px;
+    font-size: 13px;
     font-weight: 700;
-    color: #0f1c2e;
-    line-height: 1.35;
+    color: var(--color-text-dark, #1e293b);
 }
-.session-card-middle .session-course-sub {
-    font-size: 11.5px;
-    color: #6b7c96;
+.duty-day-head span {
+    margin-left: 8px;
+    font-weight: 500;
+    color: var(--color-text-muted, #64748b);
 }
 
-.session-card-actions {
-    display: flex;
-    gap: 8px;
-    margin-top: 12px;
-    padding-top: 11px;
-    border-top: 1px solid #eef1f6;
+.duty-row {
+    display: grid;
+    grid-template-columns: 150px minmax(0, 1fr) auto auto;
+    align-items: center;
+    gap: 8px 14px;
+    padding: 10px 12px;
+    background: var(--color-surface, #ffffff);
+    border: 1px solid var(--color-border, #e2e8f0);
+    border-left: 3px solid var(--color-warning, #f59e0b);
+    border-radius: var(--radius-md, 8px);
 }
-.session-card-actions > * { flex: 1; justify-content: center; }
-.session-card-actions button:disabled { opacity: 0.45; cursor: not-allowed; }
+.duty-row + .duty-row { margin-top: 6px; }
+.duty-row.is-filled { border-left-color: var(--color-success, #00bc7d); }
+.duty-row.is-clash  { border-left-color: var(--color-danger, #fb2c36); }
+
+.duty-row-time {
+    white-space: nowrap;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    color: var(--color-text-muted, #64748b);
+}
+.duty-row-main { display: flex; align-items: center; gap: 8px; min-width: 0; }
+.duty-row-title {
+    font-size: 13.5px;
+    font-weight: 600;
+    color: var(--color-text, #0f1c2e);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.duty-row-staff { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+.duty-row-count {
+    min-width: 28px;
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--color-text-muted, #64748b);
+}
+.duty-row.is-short .duty-row-count,
+.duty-row.is-clash .duty-row-count { color: #b45309; }
+.duty-row-actions { display: flex; align-items: center; gap: 6px; }
+.duty-row-actions button:disabled { opacity: 0.45; cursor: not-allowed; }
+
+.duty-row-issue {
+    grid-column: 1 / -1;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 10px;
+    font-size: 12px;
+    font-weight: 600;
+    color: #b91c1c;
+    background: #fef2f2;
+    border-radius: 6px;
+}
+.duty-row-issue button { margin-left: auto; }
 
 /* ---- Request rows ---- */
 .duty-item-slots { display: flex; flex-wrap: wrap; gap: 4px; }
@@ -559,11 +444,74 @@
     margin: 0 auto;
     border-radius: 5px;
 }
-.avail-cell.is-free::after   { background: #d0fae5; box-shadow: inset 0 0 0 1px #a7f3d0; }
-.avail-cell.is-busy::after   { background: #f1f5f9; }
-.avail-cell.is-booked::after { background: #bfdbfe; box-shadow: inset 0 0 0 1px #93c5fd; }
-.avail-blocked { opacity: 0.5; }
-.avail-blocked .avail-cell.is-free::after { background: #f1f5f9; box-shadow: none; }
+/* Two states only: free is an empty outline, anything else — unavailable,
+   on leave, already on a duty — is solid black. The gaps are what the eye
+   finds; the tooltip says why a slot is taken. */
+.avail-cell.is-free::after,
+.avail-swatch.is-free   { background: transparent; box-shadow: inset 0 0 0 1px #cbd5e1; }
+.avail-cell.is-busy::after,
+.avail-cell.is-booked::after,
+.avail-swatch.is-busy   { background: #0f1c2e; }
+.avail-blocked td:first-child { opacity: 0.6; }
+.avail-swatch { display: inline-block; width: 12px; height: 12px; border-radius: 3px; }
+
+/* .seg sets display:flex, which beats the hidden attribute. */
+.sched-avail-controls .seg[hidden] { display: none; }
+
+/* ---- Staff picker (searchable dropdown) ---- */
+.sched-combo { position: relative; }
+.sched-combo-trigger {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    min-width: 240px;
+    height: 36px;
+    padding: 0 12px;
+    background: var(--color-surface, #ffffff);
+    border: 1px solid var(--color-border, #e2e8f0);
+    border-radius: var(--radius-md, 8px);
+    font: inherit;
+    font-size: 13px;
+    color: var(--color-text, #0f1c2e);
+    cursor: pointer;
+}
+.sched-combo-trigger:hover { border-color: #cbd5e1; }
+.sched-combo-caret {
+    margin-left: auto;
+    font-size: 11px;
+    color: var(--color-text-muted, #64748b);
+}
+.sched-combo-pop {
+    position: absolute;
+    top: calc(100% + 6px);
+    left: 0;
+    z-index: 30;
+    width: 300px;
+    padding: 8px;
+    background: var(--color-surface, #ffffff);
+    border: 1px solid var(--color-border, #e2e8f0);
+    border-radius: 10px;
+    box-shadow: 0 12px 32px rgba(15, 28, 46, 0.14);
+}
+.sched-combo-list { max-height: 280px; margin-top: 6px; overflow-y: auto; }
+.sched-combo-opt {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    width: 100%;
+    padding: 7px 8px;
+    border: 0;
+    border-radius: 6px;
+    background: none;
+    font: inherit;
+    font-size: 13px;
+    color: var(--color-text, #0f1c2e);
+    text-align: left;
+    cursor: pointer;
+}
+.sched-combo-opt:hover,
+.sched-combo-opt.is-selected { background: #eff6ff; }
+.sched-combo-list .dir-empty { margin: 8px; }
 
 /* ---- Modals ---- */
 .sched-modal { max-width: 560px; width: 100%; }
@@ -704,10 +652,17 @@
 /* ---- Responsive ---- */
 @media (max-width: 768px) {
     .sched-panel-header { flex-direction: column; align-items: flex-start; gap: 10px; }
-    .sched-avail-controls { width: 100%; }
+    .sched-avail-controls { width: 100%; flex-direction: column; align-items: stretch; }
     .sched-avail-controls .seg { width: 100%; }
     .sched-avail-controls .seg-btn { flex: 1; justify-content: center; }
-    .session-card-actions { flex-direction: column; }
+    .duty-row { grid-template-columns: minmax(0, 1fr) auto; }
+    .duty-row-actions { grid-row: 1; grid-column: 2; }
+    .duty-row-main,
+    .duty-row-staff { grid-column: 1 / -1; }
+    .duty-row-title { white-space: normal; }
+    .sched-combo,
+    .sched-combo-trigger,
+    .sched-combo-pop { width: 100%; }
     .alloc-result-when { margin-left: 0; width: 100%; }
     .alloc-why-reason { min-width: 0; display: block; }
     .sched-invite-foot { flex-direction: column-reverse; align-items: stretch; }

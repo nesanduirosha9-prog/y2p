@@ -42,12 +42,9 @@ if (!$isInstructor) {
 
     $admin = [];
     if ($position === 'coordinator' || $position === 'in_charge') {
-        // Same screens, same names for both positions — only the Coordinator
-        // runs the Duty Scheduler.
-        $admin[] = $nav('/workload/distribution', 'fa-solid fa-table-cells', 'Workload Matrix', 'workload-dist');
-        if ($position === 'coordinator') {
-            $admin[] = $nav('/workload/scheduler', 'fa-solid fa-calendar-check', 'Duty Scheduler', 'workload-sched');
-        }
+        // Same screen for both positions; the Coordinator also gets the duty
+        // tabs (This week / Requests / Who's free) on it.
+        $admin[] = $nav('/workload/distribution', 'fa-solid fa-table-cells', 'Workload', 'workload-dist');
         $admin[] = $nav('/evaluations', 'fa-solid fa-clipboard-check', 'Evaluations',   'evaluations');
         $admin[] = $nav('/staff',       'fa-solid fa-user-check',      'Staff Details', 'staff');
         // The department-wide log is rarely needed, so it closes the admin

@@ -355,13 +355,13 @@ document.addEventListener('DOMContentLoaded', function () {
                 const statusPill = document.getElementById('instStatus_' + code);
                 if (statusPill) {
                     statusPill.className = 'pill pill-active status-pill';
-                    statusPill.innerHTML = '<i class="fa-solid fa-check"></i> Evaluated (' + Math.round(rating) + ')';
+                    statusPill.innerHTML = 'Evaluated (' + Math.round(rating) + ')';
                 }
                 const evalBtn = document.getElementById('btnEval_' + code);
                 if (evalBtn) {
                     evalBtn.className = 'btn-evaluate-instructor btn-evaluated';
                     evalBtn.disabled = true;
-                    evalBtn.innerHTML = '<i class="fa-solid fa-check"></i> Evaluated';
+                    evalBtn.innerHTML = 'Evaluated';
                 }
 
                 // Store in sessionStorage for Week 5
@@ -407,7 +407,7 @@ document.addEventListener('DOMContentLoaded', function () {
                         '</td>' +
                         '<td style="text-align: right;">' +
                             '<span class="pill pill-active" style="background: #e6f9ed; color: #166534; font-size: 11px;">' +
-                                '<i class="fa-solid fa-check"></i> Evaluated' +
+                                'Evaluated' +
                             '</span>' +
                         '</td>';
 
@@ -422,7 +422,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     const cBtn = courseRow.querySelector('.btn-evaluate-course');
                     if (cBtn) {
                         cBtn.className = 'btn-evaluate-course btn-evaluated';
-                        cBtn.innerHTML = '<i class="fa-solid fa-check"></i> Evaluated';
+                        cBtn.innerHTML = 'Evaluated';
                     }
                 }
             }
@@ -626,7 +626,7 @@ document.addEventListener('DOMContentLoaded', function () {
             const statusPill = document.getElementById('instStatus_' + instCode);
             if (statusPill) {
                 statusPill.className = 'pill pill-active status-pill';
-                statusPill.innerHTML = '<i class="fa-solid fa-check"></i> Evaluated (' + Math.round(rating) + ')';
+                statusPill.innerHTML = 'Evaluated (' + Math.round(rating) + ')';
             }
 
             // Update evaluate button to evaluated on instructor row
@@ -634,7 +634,7 @@ document.addEventListener('DOMContentLoaded', function () {
             if (evalBtn) {
                 evalBtn.className = 'btn-evaluate-instructor btn-evaluated';
                 evalBtn.disabled = true;
-                evalBtn.innerHTML = '<i class="fa-solid fa-check"></i> Evaluated';
+                evalBtn.innerHTML = 'Evaluated';
             }
 
             // Persist evaluation state for current week (Week 5)
@@ -683,7 +683,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     '</td>' +
                     '<td style="text-align: right;">' +
                         '<span class="pill pill-active" style="background: #e6f9ed; color: #166534; font-size: 11px;">' +
-                            '<i class="fa-solid fa-check"></i> Evaluated' +
+                            'Evaluated' +
                         '</span>' +
                     '</td>';
 
@@ -770,11 +770,11 @@ document.addEventListener('DOMContentLoaded', function () {
             if (btn) {
                 btn.className = 'btn-evaluate-instructor btn-evaluated';
                 btn.disabled = true;
-                btn.innerHTML = '<i class="fa-solid fa-check"></i> Evaluated';
+                btn.innerHTML = 'Evaluated';
             }
             if (pill) {
                 pill.className = 'pill pill-active status-pill';
-                pill.innerHTML = '<i class="fa-solid fa-check"></i> Evaluated (' + Math.round(Number(data.rating)) + ')';
+                pill.innerHTML = 'Evaluated (' + Math.round(Number(data.rating)) + ')';
             }
         });
     } catch (e) {}

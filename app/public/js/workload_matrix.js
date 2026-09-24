@@ -238,16 +238,13 @@
                 const s = staffByCode[code];
                 const l = load[code];
                 const note = c.notes && c.notes[code] ? c.notes[code] : '';
-                // Red is an integrity error, not a warning: assign() refuses
-                // these, so it only appears if the data got here another way
-                // (someone deactivated after allocation, a bad import).
-                const flagged = !s || !s.active || s.paused;
+                // One colour for every staff code. Notes and problems live in
+                // the tooltip, and a problem also turns the row's status to
+                // "Check" (issuesFor), so the chip itself stays plain.
+                const why = !s ? 'not on the roster' : !s.active ? 'inactive' : s.paused ? 'temporarily paused' : '';
                 return codeBadge(code, 'staff', {
-                    title: (s ? s.name : code) + (l ? ' — ' + l.hours + 'h/week' : '') + (note ? ' · ' + note : ''),
-                    classes: [flagged ? 'is-flagged' : '', note ? 'has-note' : ''],
-                    inner: (note ? '<i class="fa-solid fa-circle-info"></i>' : '')
-                        + (flagged ? '<i class="fa-solid fa-triangle-exclamation"></i>' : '')
-                        + (canEdit ? `<button type="button" class="wm-chip-x" data-remove="${esc(c._id)}|${esc(code)}" title="Remove ${esc(code)}" aria-label="Remove ${esc(code)}">&times;</button>` : ''),
+                    title: (s ? s.name : code) + (l ? ' — ' + l.hours + 'h/week' : '') + (note ? ' · ' + note : '') + (why ? ' · ' + why : ''),
+                    inner: (canEdit ? `<button type="button" class="wm-chip-x" data-remove="${esc(c._id)}|${esc(code)}" title="Remove ${esc(code)}" aria-label="Remove ${esc(code)}">&times;</button>` : ''),
                 });
             }).join('');
 
@@ -390,16 +387,36 @@
             return;
         }
         c.instructors.push(code);
+        announce(c, code, 'added');
         render();
         toast(code + ' assigned to ' + c.code);
     }
 
     function unassign(courseId, code) {
         const c = courses.find(x => x._id === courseId);
-        if (!c) return;
+        if (!c || !c.instructors.includes(code)) return;
         c.instructors = c.instructors.filter(x => x !== code);
+        announce(c, code, 'removed');
         render();
         toast(code + ' removed from ' + c.code);
+    }
+
+    /** Tells the History tab (js/workload_history.js) about a course change. */
+    function announce(c, code, how) {
+        document.dispatchEvent(new CustomEvent('wm:changed', { detail: {
+            kind: 'course',
+            date: DATA.today,
+            week: DATA.today,
+            staff: code,
+            course: c.code,
+            course_name: c.name,
+            lecturer: c.lecturer,
+            lecturer_name: c.lecturer_name,
+            title: engagementLabel(c.engagement),
+            slots: [],
+            how,
+            note: 'this session',
+        } }));
     }
 
     function toast(msg) {

@@ -5,7 +5,7 @@
 //
 //   const nav = PeriodNav.create(containerEl, {
 //       calendar,                                   // { current, semesters: [...] }
-//       units: ['week', 'month', 'semester', 'year'],
+//       units: ['week', 'month', 'semester', 'year'],   // optionally + 'all'
 //       onChange(period) { ... },                   // also called once on create
 //   });
 //
@@ -19,8 +19,8 @@
     const MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July',
         'August', 'September', 'October', 'November', 'December'];
     const SHORT = MONTHS.map(m => m.slice(0, 3));
-    const UNIT_LABEL = { week: 'Week', month: 'Month', semester: 'Semester', year: 'Year' };
-    const UNIT_NOUN = { week: 'week', month: 'month', semester: 'semester', year: 'year' };
+    const UNIT_LABEL = { week: 'Week', month: 'Month', semester: 'Semester', year: 'Year', all: 'All' };
+    const UNIT_NOUN = { week: 'week', month: 'month', semester: 'semester', year: 'year', all: 'period' };
 
     // Dates are handled in UTC so a timezone can never shift a Monday.
     const parse = iso => { const [y, m, d] = iso.split('-').map(Number); return new Date(Date.UTC(y, m - 1, d)); };
@@ -52,6 +52,7 @@
         if (unit === 'week') return w.start;
         if (unit === 'month') return w.start.slice(0, 7);
         if (unit === 'semester') return w.semId;
+        if (unit === 'all') return 'all';           // one period: every week
         return w.year;
     }
 
@@ -78,6 +79,9 @@
                 label: first.semName + ' · ' + first.year,
                 sub: 'Weeks ' + first.number + '–' + last.number + (isLatest ? ' so far' : ''),
             };
+        }
+        if (unit === 'all') {
+            return { label: 'All time', sub: count + ' since ' + dayMonth(first.start) + ' ' + parse(first.start).getUTCFullYear() };
         }
         return { label: 'Academic year ' + first.year, sub: count + (isLatest ? ' so far' : '') };
     }

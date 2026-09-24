@@ -408,6 +408,8 @@
     flex-wrap: wrap;
 }
 .wm-view-seg { flex-shrink: 0; }
+/* Rebalance moved from the page head into the toolbar; it closes the row. */
+.wm-toolbar .wm-balance-btn { margin-left: auto; }
 .wm-search { flex: 1 1 240px; min-width: 200px; }
 .wm-toolbar .wm-filter-group {
     display: flex;

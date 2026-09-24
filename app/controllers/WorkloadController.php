@@ -13,12 +13,17 @@ use app\core\WorkloadPrototypeData;
 // and which 20-line view they rendered — and both of those views set the same
 // two flags and required the same components/workload_matrix.php.
 //
-// 1. distribution() — GET /workload/distribution. The same matrix for the
-//    Coordinator and the Department In-Charge. The wording differs between
-//    them on purpose: the Coordinator is allocating, the In-Charge is
-//    overseeing. All of that copy lives in self::COPY below.
-// 2. scheduler()    — GET /workload/scheduler. Coordinator only; the In-Charge
-//    has no equivalent.
+// distribution() — GET /workload/distribution[?tab=…]. One page, two jobs:
+//   courses                 the semester allocation matrix. Coordinator and
+//                           In-Charge; the wording differs on purpose (the
+//                           Coordinator allocates, the In-Charge oversees) and
+//                           lives in self::COPY below.
+//   week / requests / free  the Duty Scheduler — one dated duty at a time.
+//                           Coordinator only. It used to be its own page at
+//                           /workload/scheduler, which now redirects here.
+//   history                 every allocation over time — duties (auto,
+//                           manual, cover, replacement) and course changes.
+//                           Both positions; read-only.
 //
 // Note this is NOT instructor/WorkloadController, which is the personal
 // "My Workload" page at /workload — a different screen for a different reader.
@@ -30,12 +35,12 @@ class WorkloadController extends Controller
     // .coordinator-workload-view and .in-charge-workload-view separately.
     private const COPY = [
         'coordinator' => [
-            'title'        => 'Workload Distribution — StaffSync',
-            'pageTitle'    => 'Course Workload Distribution',
-            'pageSubtitle' => 'Macro allocation matrix across Academic Years and Degree Programmes',
+            'title'        => 'Workload — StaffSync',
+            'pageTitle'    => 'Workload',
+            'pageSubtitle' => 'Semester course allocation and this week\'s duties',
             'viewClass'    => 'coordinator-workload-view',
-            'heading'      => 'Course Workload Matrix',
-            'subheading'   => 'Full overview of faculty courses, lecturer-in-charge assignments, and supportive member teams',
+            'heading'      => 'Workload',
+            'subheading'   => 'Semester course allocation, and the dated duties that need cover this week',
         ],
         'in_charge' => [
             'title'        => 'Department Workload Distribution — StaffSync',
@@ -64,63 +69,77 @@ class WorkloadController extends Controller
         $position = $_SESSION['position'];
         $copy = self::COPY[$position];
 
+        $isCoordinator = $position === 'coordinator';
+
+        // Only the Coordinator runs duties, so only they get the duty tabs.
+        // History is read-only oversight, so the In-Charge sees it too.
+        // An unknown or forbidden ?tab= falls back to the matrix.
+        $tabs = $isCoordinator
+            ? ['courses', 'week', 'requests', 'free', 'history']
+            : ['courses', 'history'];
+        $tab = $request->getQueryParams()['tab'] ?? 'courses';
+        if (!in_array($tab, $tabs, true)) {
+            $tab = 'courses';
+        }
+
         return $this->render('workload_distribution', [
             'title' => $copy['title'],
-            'css_file' => ['/css/directory.css', '/css/workload_matrix.css'],
+            'css_file' => ['/css/directory.css', '/css/workload_matrix.css', '/css/scheduler.css', '/css/workload_history.css'],
             'active' => 'workload-dist',
             'pageTitle' => $copy['pageTitle'],
             'pageSubtitle' => $copy['pageSubtitle'],
             'viewClass' => $copy['viewClass'],
             'heading' => $copy['heading'],
             'subheading' => $copy['subheading'],
-            // Only the Coordinator has a scheduler to open.
-            'showSchedulerLink' => $position === 'coordinator',
+            'tabs' => $tabs,
+            'tab' => $tab,
             // The Coordinator allocates; the In-Charge oversees. Same matrix,
             // but only one of them gets the assign/unassign controls.
-            'canEdit' => $position === 'coordinator',
-            // One payload, rendered client-side by js/workload_matrix.js. The
-            // views carry no data of their own any more — swapping
-            // WorkloadPrototypeData for real models is a change to this method
-            // alone. See app/core/WorkloadPrototypeData.php.
+            'canEdit' => $isCoordinator,
+            // One payload per half, rendered client-side by
+            // js/workload_matrix.js and js/scheduler.js. The views carry no
+            // data of their own — swapping WorkloadPrototypeData for real
+            // models is a change to this class alone. See
+            // app/core/WorkloadPrototypeData.php.
             'matrixData' => [
                 'courses'     => WorkloadPrototypeData::courses(),
                 'staff'       => WorkloadPrototypeData::staff(),
                 'load'        => WorkloadPrototypeData::staffLoad(),
                 'engagements' => WorkloadPrototypeData::ENGAGEMENTS,
-                'canEdit'     => $position === 'coordinator',
+                'canEdit'     => $isCoordinator,
+                // Dates edits made this session in the History tab.
+                'today'       => WorkloadPrototypeData::week()['from'],
+            ],
+            'schedulerData' => $isCoordinator ? $this->schedulerData() : null,
+            // Everything before this week, plus this week's duties as they
+            // ship. On the Coordinator's page js/scheduler.js then replaces
+            // the latter live, and js/workload_matrix.js adds course edits.
+            'historyData' => [
+                'records'  => WorkloadPrototypeData::allocationHistory(),
+                'duties'   => WorkloadPrototypeData::duties(),
+                'week'     => WorkloadPrototypeData::week(),
+                'calendar' => WorkloadPrototypeData::calendar(),
+                'staff'    => WorkloadPrototypeData::staff(),
             ],
         ]);
     }
 
-    public function scheduler(Request $request)
+    // js/scheduler.js runs the real allocation rules from CurrentViews/script.js
+    // against this payload, so the algorithm is written and testable before the
+    // backend exists — the port becomes a translation, not a design exercise.
+    private function schedulerData(): array
     {
-        $denied = $this->requirePosition('coordinator');
-        if ($denied !== null) {
-            return $denied;
-        }
-
-        return $this->render('workload_scheduler', [
-            'title' => 'Duty Scheduler — StaffSync',
-            'css_file' => ['/css/directory.css', '/css/workload_matrix.css', '/css/scheduler.css'],
-            'active' => 'workload-sched',
-            'pageTitle' => 'Duty Scheduler',
-            'pageSubtitle' => 'Triage duty requests, auto-allocate the least-loaded available staff, and send invites',
-            // Same seam as distribution(). js/scheduler.js runs the real
-            // allocation rules from CurrentViews/script.js against this payload,
-            // so the algorithm is written and testable before the backend
-            // exists — the port becomes a translation, not a design exercise.
-            'schedulerData' => [
-                'week'         => WorkloadPrototypeData::week(),
-                'requests'     => WorkloadPrototypeData::requests(),
-                'duties'       => WorkloadPrototypeData::duties(),
-                'staff'        => WorkloadPrototypeData::staff(),
-                'load'         => WorkloadPrototypeData::staffLoad(),
-                'availability' => WorkloadPrototypeData::availability(),
-                'leave'        => WorkloadPrototypeData::leave(),
-                'slots'        => WorkloadPrototypeData::SLOTS,
-                'slotHours'    => WorkloadPrototypeData::SLOT_HOURS,
-                'weekdays'     => WorkloadPrototypeData::WEEKDAYS,
-            ],
-        ]);
+        return [
+            'week'         => WorkloadPrototypeData::week(),
+            'requests'     => WorkloadPrototypeData::requests(),
+            'duties'       => WorkloadPrototypeData::duties(),
+            'staff'        => WorkloadPrototypeData::staff(),
+            'load'         => WorkloadPrototypeData::staffLoad(),
+            'availability' => WorkloadPrototypeData::availability(),
+            'leave'        => WorkloadPrototypeData::leave(),
+            'slots'        => WorkloadPrototypeData::SLOTS,
+            'slotHours'    => WorkloadPrototypeData::SLOT_HOURS,
+            'weekdays'     => WorkloadPrototypeData::WEEKDAYS,
+        ];
     }
 }

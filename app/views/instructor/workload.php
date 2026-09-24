@@ -553,11 +553,11 @@ $coverRequests = [
                                 <td style="text-align: right;">
                                     <?php if ($isEval): ?>
                                         <span class="pill pill-active" style="background: #e6f9ed; color: #166534; font-size: 11px;">
-                                            <i class="fa-solid fa-check"></i> Evaluated
+                                            Evaluated
                                         </span>
                                     <?php else: ?>
                                         <span class="pill pill-pending" style="background: #fef3c7; color: #92400e; font-size: 11px;">
-                                            <i class="fa-regular fa-clock"></i> Not Evaluated
+                                            Not Evaluated
                                         </span>
                                     <?php endif; ?>
                                 </td>

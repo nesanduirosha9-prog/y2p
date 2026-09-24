@@ -5,7 +5,7 @@
 // this while they render.
 //
 //   codeBadge('SCS 1308', 'course', { title: 'Foundations of Algorithms' })
-//   codeBadge('TSR', 'staff', { classes: ['has-note'], inner: '<i …></i>' })
+//   codeBadge('TSR', 'staff', { inner: '<button …>&times;</button>' })
 //
 // kind: 'course' | 'lecturer' | 'staff'. `inner` is trusted HTML appended after
 // the code (icons, a remove button) — callers escape anything user-supplied.

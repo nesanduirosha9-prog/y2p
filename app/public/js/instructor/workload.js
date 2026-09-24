@@ -265,7 +265,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     </td>
                     <td style="text-align: right;">
                         <span class="pill pill-pending" style="background: #fef3c7; color: #92400e; font-size: 11px;">
-                            <i class="fa-regular fa-clock"></i> Not Evaluated
+                            Not Evaluated
                         </span>
                     </td>
                 `;

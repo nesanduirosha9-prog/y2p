@@ -1,7 +1,9 @@
-// scheduler.js — the Duty Scheduler screen (/workload/scheduler).
+// scheduler.js — the duty tabs of the Workload page (/workload/distribution:
+// This week, Requests, Who's free).
 //
-// Renders from the #schedData payload that WorkloadController::scheduler()
-// emits, and runs the allocation rules against it in the browser.
+// Renders from the #schedData payload that WorkloadController::distribution()
+// emits, and runs the allocation rules against it in the browser. Which tab is
+// showing is decided by workload_hub.js, which announces it with `hub:tab`.
 //
 // ─────────────────────────────────────────────────────────────────────────────
 // THE ALLOCATOR
@@ -19,6 +21,10 @@
 //       than as an alert afterwards — the one place this improves on the sheet)
 //   6. sort by fewest duties so far, then fewest course hours as a tiebreak
 //   7. take the first `headcount`
+//
+// On top of the sheet: when someone already on a duty goes on leave, the cover
+// they named on their leave application (instructor/leave.php) is swapped in,
+// provided the cover passes the same checks.
 //
 // Writing it here first is deliberate: the rules are pinned down and visible
 // before any table exists, so the server-side port is a translation rather than
@@ -45,10 +51,17 @@
     DATA.load.forEach(l => { baseLoad[l.code] = l; });
 
     // Working state. duties/requests are mutated as you approve and allocate.
-    let duties = DATA.duties.map(d => Object.assign({}, d, { assigned: [...d.assigned] }));
+    // `via` records how each person got onto a duty ({ how, note }), and
+    // `removed` everyone taken off one — the History tab reads both.
+    let duties = DATA.duties.map(d => Object.assign({}, d, {
+        assigned: [...d.assigned],
+        via: Object.fromEntries(d.assigned.map(c => [c, { how: 'auto', note: '' }])),
+    }));
+    const removed = [];                             // { duty, code, note }
     let requests = DATA.requests.map(r => Object.assign({}, r));
     let view = 'week';
     let availDay = 'mon';
+    let availStaff = null;                          // Who's free: one person's week, or everyone
     const selected = new Set();
 
     const el = id => document.getElementById(id);
@@ -65,8 +78,9 @@
     }
 
     function prettyDate(iso) {
+        // Not toLocaleDateString('en-GB'): that now gives "Sept", not "Sep".
         const d = new Date(iso + 'T00:00:00');
-        return d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
+        return d.getDate() + ' ' + ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'][d.getMonth()];
     }
 
     function dayName(iso) {
@@ -125,6 +139,80 @@
         return duties.reduce((n, d) => n + (d.assigned.includes(code) ? 1 : 0), 0);
     }
 
+    /**
+     * Every reason `code` can't take this duty, in the allocator's order. The
+     * one rule set behind the allocator, the manual picker and the cover
+     * check, so they cannot disagree.
+     */
+    function reasonsAgainst(code, duty) {
+        const s = staffByCode[code];
+        const dayKey = weekdayKey(duty.date);
+        const out = [];
+        if (!s || !s.active) out.push('Inactive');
+        else if (s.paused) out.push('Temporarily paused');
+        if (onLeave(code, duty.date)) out.push(leaveReason(code, duty.date));
+        if (dayKey && !freeForAll(code, dayKey, duty.slots)) out.push('Not free for every slot');
+        if (clashesOn(code, duty.date, duty.slots, duty.id)) out.push('Already booked that day');
+        return out;
+    }
+
+    /** The cover named on this person's leave for that date, or null. */
+    function coverFor(code, iso) {
+        const l = DATA.leave.find(x => x.code === code && iso >= x.from && iso <= x.to);
+        return l && l.cover ? (l.cover[iso] || null) : null;
+    }
+
+    /** The cover, but only if they can actually take this duty. */
+    function usableCover(code, duty) {
+        const cover = coverFor(code, duty.date);
+        if (!cover || duty.assigned.includes(cover)) return null;
+        return reasonsAgainst(cover, duty).length ? null : cover;
+    }
+
+    /** Replaces `code` with their cover on this duty. Returns the cover, or null. */
+    function swapInCover(duty, code) {
+        const cover = usableCover(code, duty);
+        if (!cover) return null;
+        const reason = leaveReason(code, duty.date);
+        duty.assigned = duty.assigned.map(c => (c === code ? cover : c));
+        duty.via[cover] = { how: 'cover', note: 'covering ' + code + (reason ? ' (' + reason + ')' : '') };
+        takeOff(duty, code, (reason || 'On leave') + ' — covered by ' + cover);
+        return cover;
+    }
+
+    /** Removes someone from a duty and keeps the record for History. */
+    function takeOff(duty, code, note) {
+        duty.assigned = duty.assigned.filter(c => c !== code);
+        delete duty.via[code];
+        removed.push({ duty, code, note });
+    }
+
+    /**
+     * This week's allocations as History records — everyone on a duty now,
+     * plus everyone taken off one. Sent with every render, so the History tab
+     * always matches the board.
+     */
+    function historyRows() {
+        const base = d => ({
+            kind: 'duty',
+            date: d.date,
+            week: DATA.week.from,
+            course: d.course,
+            course_name: d.course_name || '',
+            lecturer: d.requester,
+            lecturer_name: d.requester_name || d.requester,
+            title: d.duty,
+            slots: d.slots,
+        });
+        const rows = [];
+        duties.forEach(d => d.assigned.forEach(code => {
+            const v = d.via[code] || { how: 'auto', note: '' };
+            rows.push(Object.assign(base(d), { staff: code, how: v.how, note: v.note }));
+        }));
+        removed.forEach(r => rows.push(Object.assign(base(r.duty), { staff: r.code, how: 'removed', note: r.note })));
+        return rows;
+    }
+
     // ----------------------------------------------------------- the allocator
     /**
      * Returns { picked, rejected } for one duty without mutating anything, so
@@ -143,11 +231,8 @@
             const code = s.code;
             if (duty.assigned.includes(code)) return;            // already on it
 
-            if (!s.active) { rejected.push({ code, why: 'Inactive' }); return; }
-            if (s.paused) { rejected.push({ code, why: 'Temporarily paused' }); return; }
-            if (onLeave(code, duty.date)) { rejected.push({ code, why: leaveReason(code, duty.date) }); return; }
-            if (!freeForAll(code, dayKey, duty.slots)) { rejected.push({ code, why: 'Not free for every slot' }); return; }
-            if (clashesOn(code, duty.date, duty.slots, duty.id)) { rejected.push({ code, why: 'Already booked that day' }); return; }
+            const why = reasonsAgainst(code, duty);
+            if (why.length) { rejected.push({ code, why: why[0] }); return; }
 
             eligible.push({ code, duties: dutyCount(code), hours: (baseLoad[code] || {}).hours || 0 });
         });
@@ -164,6 +249,7 @@
     function allocate(duty) {
         const result = evaluate(duty);
         duty.assigned = duty.assigned.concat(result.picked);
+        result.picked.forEach(c => { duty.via[c] = { how: 'auto', note: '' }; });
         return result;
     }
 
@@ -190,19 +276,34 @@
         return out;
     }
 
+    /**
+     * `clashes` are the rostered people who can't actually do it; `covers`
+     * maps each of them to a usable leave cover, where there is one.
+     */
     function dutyState(d) {
         const problems = dutyProblems(d);
         const clashes = Object.keys(problems);
-        if (clashes.length) return { key: 'clash', clashes, problems };
-        if (d.assigned.length >= d.headcount) return { key: 'filled', clashes: [], problems: {} };
-        return { key: 'short', clashes: [], problems: {} };
+        if (clashes.length) {
+            const covers = {};
+            clashes.forEach(code => {
+                const cover = usableCover(code, d);
+                if (cover) covers[code] = cover;
+            });
+            return { key: 'clash', clashes, problems, covers };
+        }
+        if (d.assigned.length >= d.headcount) return { key: 'filled', clashes: [], problems: {}, covers: {} };
+        return { key: 'short', clashes: [], problems: {}, covers: {} };
     }
 
     // --------------------------------------------------------------- rendering
     function renderKpis() {
-        const filled = duties.reduce((n, d) => n + Math.min(d.assigned.length, d.headcount), 0);
-        const needed = duties.reduce((n, d) => n + d.headcount, 0);
-        const clashes = duties.reduce((n, d) => n + (dutyState(d).key === 'clash' ? 1 : 0), 0);
+        let filled = 0, needed = 0, clashes = 0;
+        duties.forEach(d => {
+            const st = dutyState(d);
+            filled += Math.min(d.assigned.length - st.clashes.length, d.headcount);
+            needed += d.headcount;
+            if (st.key === 'clash') clashes++;
+        });
 
         el('kpiWeek').textContent = 'Week ' + DATA.week.number;
         el('kpiWeekRange').textContent = DATA.week.label;
@@ -215,82 +316,77 @@
         el('weekHeading').textContent = 'Duties this week (' + DATA.week.label + ')';
     }
 
+    /** This week: one row per duty, grouped under a heading per day. */
     function renderWeek() {
-        const grid = el('dutyGrid');
-        const ordered = [...duties].sort((a, b) => a.date.localeCompare(b.date) ||
-            (SLOT_HOURS[a.slots[0]] || 0) - (SLOT_HOURS[b.slots[0]] || 0));
+        const byDay = {};
+        [...duties]
+            .sort((a, b) => a.date.localeCompare(b.date) ||
+                (SLOT_HOURS[a.slots[0]] || 0) - (SLOT_HOURS[b.slots[0]] || 0))
+            .forEach(d => (byDay[d.date] = byDay[d.date] || []).push(d));
 
-        grid.innerHTML = ordered.map(d => {
-            const st = dutyState(d);
-            // Reuses the existing .duty-session-card palette in scheduler.css
-            // rather than introducing a parallel set of card classes.
-            const cardClass = st.key === 'clash' ? 'duty-session-card is-conflict'
-                : st.key === 'filled' ? 'duty-session-card is-fulfilled'
-                : 'duty-session-card is-pending';
-
-            const chips = d.assigned.map(code => {
-                const why = st.problems ? st.problems[code] : null;
-                const bad = !!why;
-                const s = staffByCode[code];
-                return codeBadge(code, 'staff', {
-                    title: (s ? s.name : code) + (bad ? ' — ' + why : ''),
-                    classes: [bad ? 'is-flagged' : ''],
-                    inner: (bad ? '<i class="fa-solid fa-triangle-exclamation"></i>' : '')
-                        + `<button type="button" class="wm-chip-x" data-drop="${esc(d.id)}|${esc(code)}"
-                                title="Remove ${esc(code)}" aria-label="Remove ${esc(code)}">&times;</button>`,
-                });
-            }).join('');
-
-            return `
-                <article class="${cardClass}" data-duty="${esc(d.id)}">
-                    <header class="session-card-top">
-                        <div class="session-day-badge">
-                            <span class="session-day">${esc(dayName(d.date))}</span>
-                            <span class="session-date">${esc(prettyDate(d.date))}</span>
-                        </div>
-                        <span class="session-time-pill">
-                            <i class="fa-regular fa-clock"></i> ${esc(slotRange(d.slots))}
-                        </span>
-                    </header>
-
-                    <div class="session-card-middle">
-                        ${codeBadge(d.course, 'course', { title: d.course_name })}
-                        <h4 class="session-title">${esc(d.duty)}</h4>
-                        <p class="session-course-sub">${esc(d.course_name || '')} · requested by ${esc(d.requester_name || d.requester)}</p>
-                    </div>
-
-                    ${st.key === 'clash' ? `
-                        <div class="session-conflict-alert">
-                            <i class="fa-solid fa-triangle-exclamation"></i>
-                            <span>${Object.entries(st.problems).map(([c, w]) => esc(c) + ' — ' + esc(w)).join('; ')}</span>
-                        </div>` : ''}
-
-                    <footer class="session-card-bottom">
-                        <div class="session-assignees-header">
-                            <span class="assignees-title">Assigned staff</span>
-                            ${d.assigned.length >= d.headcount
-                                ? `<span class="status-chip chip-success"><i class="fa-solid fa-check"></i> ${d.assigned.length} of ${d.headcount}</span>`
-                                : `<span class="status-chip chip-warning"><i class="fa-solid fa-user-clock"></i> ${d.assigned.length} of ${d.headcount}</span>`}
-                        </div>
-                        <div class="session-staff-pills">
-                            ${chips || '<p class="unassigned-notice">Nobody allocated yet.</p>'}
-                            <button type="button" class="wm-add-chip" data-swap="${esc(d.id)}" title="Add someone by hand"><i class="fa-solid fa-plus"></i></button>
-                        </div>
-                        <div class="session-card-actions">
-                            <button type="button" class="btn-secondary-sm" data-fill="${esc(d.id)}"
-                                    ${d.assigned.length >= d.headcount ? 'disabled' : ''}>
-                                <i class="fa-solid fa-wand-magic-sparkles"></i> Fill
-                            </button>
-                            <button type="button" class="btn-ghost" data-invite="${esc(d.id)}"
-                                    ${d.assigned.length === 0 ? 'disabled' : ''}>
-                                <i class="fa-regular fa-envelope"></i> Invite
-                            </button>
-                        </div>
-                    </footer>
-                </article>`;
-        }).join('');
+        el('dutyGrid').innerHTML = Object.keys(byDay).map(iso => `
+            <section class="duty-day">
+                <h4 class="duty-day-head">${esc(dayName(iso))}<span>${esc(prettyDate(iso))}</span></h4>
+                ${byDay[iso].map(dutyRow).join('')}
+            </section>`).join('');
 
         el('dutyEmpty').hidden = duties.length > 0;
+    }
+
+    /**
+     * One duty. The count shows only people who can actually do it, so a
+     * roster with someone on leave reads 2/3, not 3/3. Each problem gets
+     * exactly one fix: their leave cover if that cover is free, otherwise
+     * Replace (drop them and let the allocator pick).
+     */
+    function dutyRow(d) {
+        const st = dutyState(d);
+        const ok = d.assigned.length - st.clashes.length;
+
+        const chips = d.assigned.map(code => {
+            const why = st.problems[code];
+            const s = staffByCode[code];
+            // Plain chip; the problem is spelled out in the issue line below.
+            return codeBadge(code, 'staff', { title: (s ? s.name : code) + (why ? ' — ' + why : '') });
+        }).join('');
+
+        const issues = st.clashes.map(code => {
+            const cover = st.covers[code];
+            return `
+                <div class="duty-row-issue">
+                    <i class="fa-solid fa-triangle-exclamation"></i>
+                    <span>${esc(code)} — ${esc(st.problems[code])}${cover ? ' · cover: ' + esc(cover) : ''}</span>
+                    ${cover
+                        ? `<button type="button" class="btn-secondary-sm" data-cover="${esc(d.id)}|${esc(code)}">
+                               <i class="fa-solid fa-user-shield"></i> Use ${esc(cover)}
+                           </button>`
+                        : `<button type="button" class="btn-ghost" data-replace="${esc(d.id)}|${esc(code)}">Replace</button>`}
+                </div>`;
+        }).join('');
+
+        return `
+            <article class="duty-row is-${st.key}" data-duty="${esc(d.id)}">
+                <span class="duty-row-time">${esc(slotRange(d.slots))}</span>
+                <div class="duty-row-main">
+                    ${codeBadge(d.course, 'course', { title: d.course_name })}
+                    <span class="duty-row-title" title="${esc(d.course_name || d.course)} · requested by ${esc(d.requester_name || d.requester)}">${esc(d.duty)}</span>
+                </div>
+                <div class="duty-row-staff">
+                    ${chips || '<span class="wm-none">Nobody yet</span>'}
+                    <button type="button" class="wm-add-chip" data-swap="${esc(d.id)}" title="Add or remove staff by hand" aria-label="Add or remove staff"><i class="fa-solid fa-plus"></i></button>
+                    <span class="duty-row-count" title="${ok} of ${d.headcount} staff can do it">${ok}/${d.headcount}</span>
+                </div>
+                <div class="duty-row-actions">
+                    ${ok < d.headcount && !st.clashes.length
+                        ? `<button type="button" class="btn-secondary-sm" data-fill="${esc(d.id)}"><i class="fa-solid fa-wand-magic-sparkles"></i> Fill</button>`
+                        : ''}
+                    <button type="button" class="btn-ghost" data-invite="${esc(d.id)}" title="Preview invite" aria-label="Preview invite"
+                            ${d.assigned.length ? '' : 'disabled'}>
+                        <i class="fa-regular fa-envelope"></i>
+                    </button>
+                </div>
+                ${issues}
+            </article>`;
     }
 
     function renderRequests() {
@@ -337,56 +433,110 @@
         all.checked = requests.length > 0 && selected.size === requests.length;
     }
 
+    /**
+     * ISO date of that weekday in the active week, built from local parts.
+     * toISOString() would convert local midnight to UTC, which in Sri Lanka
+     * (UTC+5:30) lands on the previous day.
+     */
+    function isoForDay(dayKey) {
+        const d = new Date(DATA.week.from + 'T00:00:00');
+        d.setDate(d.getDate() + DAY_KEYS.indexOf(dayKey));
+        return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' +
+            String(d.getDate()).padStart(2, '0');
+    }
+
+    /**
+     * One person × one weekday: the slot cells, how many slots are genuinely
+     * free (not on duty, not blocked), and why the whole day is blocked.
+     * Leave, inactive and paused beat a free slot.
+     */
+    function availRow(s, dayKey) {
+        const iso = isoForDay(dayKey);
+        const free = (DATA.availability[s.code] || {})[dayKey] || [];
+        const leave = onLeave(s.code, iso);
+        const blocked = !s.active || s.paused || leave;
+        const reason = !s.active ? 'Inactive' : s.paused ? 'Paused' : leave ? leaveReason(s.code, iso) : '';
+
+        let count = 0;
+        const cells = SLOTS.map(slot => {
+            const booked = duties.some(d => d.date === iso && d.assigned.includes(s.code) && d.slots.includes(slot));
+            const isFree = !blocked && !booked && free.includes(slot);
+            if (isFree) count++;
+            const cls = booked ? 'is-booked' : isFree ? 'is-free' : 'is-busy';
+            const t = booked ? 'On duty' : isFree ? 'Free' : (reason || 'Unavailable');
+            return `<td class="avail-cell ${cls}" title="${esc(slot + ' · ' + t)}"></td>`;
+        }).join('');
+
+        return { cells, count, blocked, reason };
+    }
+
+    /**
+     * Everyone for one weekday, or — with a staff member picked — that
+     * person's whole week, one row per day. The day switch only means
+     * something in the first mode, so it hides in the second.
+     */
     function renderAvailability() {
+        const one = availStaff ? staffByCode[availStaff] : null;
+
+        el('availStaffLabel').textContent = one ? one.code + ' · ' + one.name : 'All staff';
+        el('availDaySeg').hidden = !!one;
         el('availDaySeg').innerHTML = DAY_KEYS.map(k =>
             `<button type="button" class="seg-btn ${k === availDay ? 'active' : ''}" data-day="${k}">${esc(WEEKDAYS[k].slice(0, 3))}</button>`
         ).join('');
 
         el('availHead').innerHTML = `
             <tr>
-                <th style="width:180px;">Staff</th>
+                <th style="width:180px;">${one ? 'Day' : 'Staff'}</th>
                 ${SLOTS.map(s => `<th class="avail-slot-head">${esc(s)}</th>`).join('')}
                 <th style="width:90px;text-align:right;">Free</th>
             </tr>`;
 
-        // Anyone on leave on the selected weekday's date this week is shown as
-        // unavailable outright, because leave beats a free slot.
-        const dayIndex = DAY_KEYS.indexOf(availDay);
-        const weekStart = new Date(DATA.week.from + 'T00:00:00');
-        const dayDate = new Date(weekStart);
-        dayDate.setDate(weekStart.getDate() + dayIndex);
-        const iso = dayDate.toISOString().slice(0, 10);
+        const rows = one
+            ? DAY_KEYS.map(k => ({
+                label: `<strong>${esc(WEEKDAYS[k])}</strong> <span class="wm-sum-courses">${esc(prettyDate(isoForDay(k)))}</span>`,
+                r: availRow(one, k),
+            }))
+            : DATA.staff.map(s => ({
+                label: `<div class="lec-identity">${codeBadge(s.code, 'staff')}<span class="lec-name">${esc(s.name)}</span></div>`,
+                r: availRow(s, availDay),
+            }));
 
-        el('availBody').innerHTML = DATA.staff.map(s => {
-            const free = (DATA.availability[s.code] || {})[availDay] || [];
-            const leave = onLeave(s.code, iso);
-            const blocked = !s.active || s.paused || leave;
-            const reason = !s.active ? 'Inactive' : s.paused ? 'Paused' : leave ? leaveReason(s.code, iso) : '';
+        el('availBody').innerHTML = rows.map(({ label, r }) => `
+            <tr class="${r.blocked ? 'avail-blocked' : ''}">
+                <td>
+                    ${label}
+                    ${r.reason ? `<span class="wm-sum-courses">${esc(r.reason)}</span>` : ''}
+                </td>
+                ${r.cells}
+                <td style="text-align:right;"><strong>${r.count}</strong></td>
+            </tr>`).join('');
+    }
 
-            return `
-                <tr class="${blocked ? 'avail-blocked' : ''}">
-                    <td>
-                        <div class="lec-identity">
-                            ${codeBadge(s.code, 'staff')}
-                            <div>
-                                <span class="lec-name">${esc(s.name)}</span>
-                                ${reason ? `<span class="wm-sum-courses">${esc(reason)}</span>` : ''}
-                            </div>
-                        </div>
-                    </td>
-                    ${SLOTS.map(slot => {
-                        const isFree = !blocked && free.includes(slot);
-                        const booked = duties.some(d => d.date === iso && d.assigned.includes(s.code) && d.slots.includes(slot));
-                        const cls = booked ? 'avail-cell is-booked' : isFree ? 'avail-cell is-free' : 'avail-cell is-busy';
-                        const t = booked ? 'On duty' : isFree ? 'Free' : blocked ? reason : 'Unavailable';
-                        return `<td class="${cls}" title="${esc(t)}"></td>`;
-                    }).join('')}
-                    <td style="text-align:right;"><strong>${blocked ? 0 : free.length}</strong></td>
-                </tr>`;
-        }).join('');
+    /** The staff picker's option list, filtered by its search box. */
+    function renderStaffOptions() {
+        const q = el('availStaffSearch').value.trim().toLowerCase();
+        const opts = DATA.staff.filter(s => !q || (s.code + ' ' + s.name).toLowerCase().includes(q));
+        el('availStaffList').innerHTML =
+            (q ? '' : `<button type="button" class="sched-combo-opt ${availStaff ? '' : 'is-selected'}" data-staff="" role="option">All staff</button>`) +
+            opts.map(s => `
+                <button type="button" class="sched-combo-opt ${s.code === availStaff ? 'is-selected' : ''}" data-staff="${esc(s.code)}" role="option">
+                    ${codeBadge(s.code, 'staff')}<span>${esc(s.name)}</span>
+                </button>`).join('') ||
+            '<p class="dir-empty">No staff match.</p>';
+    }
+
+    function toggleStaffPop(open) {
+        el('availStaffPop').hidden = !open;
+        el('availStaffBtn').setAttribute('aria-expanded', open ? 'true' : 'false');
+        if (open) {
+            el('availStaffSearch').value = '';
+            renderStaffOptions();
+            el('availStaffSearch').focus();
+        }
     }
 
     function render() {
+        document.dispatchEvent(new CustomEvent('sched:changed', { detail: { rows: historyRows() } }));
         renderKpis();
         if (view === 'week') renderWeek();
         else if (view === 'requests') renderRequests();
@@ -446,18 +596,12 @@
     function showSwap(dutyId) {
         const duty = duties.find(d => d.id === dutyId);
         if (!duty) return;
-        const dayKey = weekdayKey(duty.date);
         el('swapModalTitle').textContent = 'Add staff to ' + duty.course;
 
         const rows = DATA.staff.map(s => {
             const code = s.code;
             const already = duty.assigned.includes(code);
-            const reasons = [];
-            if (!s.active) reasons.push('Inactive');
-            if (s.paused) reasons.push('Paused');
-            if (onLeave(code, duty.date)) reasons.push(leaveReason(code, duty.date));
-            if (dayKey && !freeForAll(code, dayKey, duty.slots)) reasons.push('Not free for every slot');
-            if (clashesOn(code, duty.date, duty.slots, duty.id)) reasons.push('Already booked that day');
+            const reasons = reasonsAgainst(code, duty);
 
             return { code, name: s.name, already, reasons, duties: dutyCount(code) };
         }).sort((a, b) => a.reasons.length - b.reasons.length || a.duties - b.duties || a.code.localeCompare(b.code));
@@ -516,24 +660,28 @@
     }
 
     // ----------------------------------------------------------------- wiring
-    document.querySelector('.sched-nav-tabs').addEventListener('click', e => {
-        const btn = e.target.closest('[data-view]');
-        if (!btn) return;
-        view = btn.dataset.view;
-        document.querySelectorAll('.sched-nav-tab').forEach(t => {
-            const on = t === btn;
-            t.classList.toggle('active', on);
-            t.setAttribute('aria-selected', on ? 'true' : 'false');
-        });
-        el('panelWeek').hidden = view !== 'week';
-        el('panelRequests').hidden = view !== 'requests';
-        el('panelAvailability').hidden = view !== 'availability';
+    // workload_hub.js owns the tab bar and the panel visibility; this only
+    // tracks which of its panels to render.
+    document.addEventListener('hub:tab', e => {
+        const map = { week: 'week', requests: 'requests', free: 'availability' };
+        if (!map[e.detail.tab]) return;
+        view = map[e.detail.tab];
         render();
     });
 
     el('autoAllocateBtn').addEventListener('click', () => {
+        // First, anyone rostered on a day they are on leave hands over to the
+        // cover they named — if that cover passes the same checks. Nobody else
+        // is dropped automatically; that stays a Replace click.
+        const swaps = [];
+        duties.forEach(d => d.assigned.slice().forEach(code => {
+            if (!onLeave(code, d.date)) return;
+            const to = swapInCover(d, code);
+            if (to) swaps.push(code + ' → ' + to + ' on ' + d.course);
+        }));
+
         const open = duties.filter(d => d.assigned.length < d.headcount);
-        if (!open.length) {
+        if (!open.length && !swaps.length) {
             showAllocationResult('Nothing to allocate', []);
             el('allocModalBody').innerHTML = '<p class="dir-empty">Every duty this week is already fully staffed.</p>';
             return;
@@ -542,7 +690,22 @@
         // counts, which is what keeps the spread even across the week.
         const results = open.map(d => ({ duty: d, result: allocate(d) }));
         render();
-        showAllocationResult('Allocated ' + open.length + ' dut' + (open.length === 1 ? 'y' : 'ies'), results);
+
+        const parts = [];
+        if (open.length) parts.push('allocated ' + open.length + ' dut' + (open.length === 1 ? 'y' : 'ies'));
+        if (swaps.length) parts.push(swaps.length + ' cover' + (swaps.length === 1 ? '' : 's') + ' swapped in');
+        const title = parts.join(', ');
+        showAllocationResult(title.charAt(0).toUpperCase() + title.slice(1), results);
+
+        if (swaps.length) {
+            el('allocModalBody').insertAdjacentHTML('afterbegin', `
+                <div class="alloc-result is-ok">
+                    <p class="alloc-line">
+                        <i class="fa-solid fa-user-shield"></i>
+                        Leave covers swapped in: <strong>${esc(swaps.join(', '))}</strong>
+                    </p>
+                </div>`);
+        }
     });
 
     el('dutyGrid').addEventListener('click', e => {
@@ -554,12 +717,24 @@
             showAllocationResult('Filled ' + d.course, [{ duty: d, result }]);
             return;
         }
-        const drop = e.target.closest('[data-drop]');
-        if (drop) {
-            const [id, code] = drop.dataset.drop.split('|');
-            const d = duties.find(x => x.id === id);
-            d.assigned = d.assigned.filter(c => c !== code);
+        const cover = e.target.closest('[data-cover]');
+        if (cover) {
+            const [id, code] = cover.dataset.cover.split('|');
+            swapInCover(duties.find(x => x.id === id), code);
             render();
+            return;
+        }
+        // No usable cover: drop them and let the allocator pick a replacement,
+        // explaining the choice like any other fill.
+        const replace = e.target.closest('[data-replace]');
+        if (replace) {
+            const [id, code] = replace.dataset.replace.split('|');
+            const d = duties.find(x => x.id === id);
+            takeOff(d, code, (dutyProblems(d)[code] || 'Could not do it') + ' — replaced');
+            const result = allocate(d);
+            result.picked.forEach(c => { d.via[c] = { how: 'replacement', note: 'replacing ' + code }; });
+            render();
+            showAllocationResult('Replaced ' + code + ' on ' + d.course, [{ duty: d, result }]);
             return;
         }
         const swap = e.target.closest('[data-swap]');
@@ -573,7 +748,10 @@
         if (add) {
             const [id, code] = add.dataset.swapAdd.split('|');
             const d = duties.find(x => x.id === id);
-            if (d && !d.assigned.includes(code)) d.assigned.push(code);
+            if (d && !d.assigned.includes(code)) {
+                d.assigned.push(code);
+                d.via[code] = { how: 'manual', note: 'added by hand' };
+            }
             render();
             showSwap(id);
             return;
@@ -582,7 +760,7 @@
         if (rm) {
             const [id, code] = rm.dataset.swapRemove.split('|');
             const d = duties.find(x => x.id === id);
-            if (d) d.assigned = d.assigned.filter(c => c !== code);
+            if (d && d.assigned.includes(code)) takeOff(d, code, 'removed by hand');
             render();
             showSwap(id);
         }
@@ -613,12 +791,13 @@
                 requester: r.requester,
                 requester_name: r.requester_name,
                 course: r.course,
-                course_name: '',
+                course_name: r.course_name || '',
                 duty: r.duty,
                 date: r.date,
                 slots: r.slots,
                 headcount: r.headcount,
                 assigned: [],
+                via: {},
             };
             duties.push(duty);
             return { duty, result: allocate(duty) };
@@ -628,14 +807,7 @@
         selected.clear();
 
         view = 'week';
-        document.querySelectorAll('.sched-nav-tab').forEach(t => {
-            const on = t.dataset.view === 'week';
-            t.classList.toggle('active', on);
-            t.setAttribute('aria-selected', on ? 'true' : 'false');
-        });
-        el('panelWeek').hidden = false;
-        el('panelRequests').hidden = true;
-        el('panelAvailability').hidden = true;
+        if (window.wmHubShow) window.wmHubShow('week');
 
         render();
         showAllocationResult('Scheduled ' + taken.length + ' request' + (taken.length === 1 ? '' : 's'), results);
@@ -648,6 +820,27 @@
         renderAvailability();
     });
 
+    // Staff picker: type to narrow, Enter takes the first match, a click
+    // anywhere else closes it.
+    el('availStaffBtn').addEventListener('click', () => toggleStaffPop(el('availStaffPop').hidden));
+    el('availStaffSearch').addEventListener('input', renderStaffOptions);
+    el('availStaffSearch').addEventListener('keydown', e => {
+        if (e.key !== 'Enter') return;
+        e.preventDefault();
+        const first = el('availStaffList').querySelector('[data-staff]');
+        if (first) first.click();
+    });
+    el('availStaffList').addEventListener('click', e => {
+        const opt = e.target.closest('[data-staff]');
+        if (!opt) return;
+        availStaff = opt.dataset.staff || null;
+        toggleStaffPop(false);
+        renderAvailability();
+    });
+    document.addEventListener('click', e => {
+        if (!el('availStaffPop').hidden && !e.target.closest('#availStaffCombo')) toggleStaffPop(false);
+    });
+
     [['allocModal', 'allocModalClose', 'allocModalDismiss'],
      ['swapModal', 'swapModalClose', 'swapModalDismiss'],
      ['inviteModal', 'inviteModalClose', 'inviteModalDismiss']].forEach(([modal, close, dismiss]) => {
@@ -658,6 +851,7 @@
 
     document.addEventListener('keydown', e => {
         if (e.key !== 'Escape') return;
+        if (!el('availStaffPop').hidden) { toggleStaffPop(false); el('availStaffBtn').focus(); return; }
         ['allocModal', 'swapModal', 'inviteModal'].forEach(m => { if (!el(m).hidden) closeModal(m); });
     });
 

@@ -191,8 +191,9 @@ $router->get('/workload', function (Request $request, Response $response) {
 $router->get('/workload/distribution', function (Request $request, Response $response) {
     return (new WorkloadController())->distribution($request);
 });
+// The Duty Scheduler is now a set of tabs on the Workload page.
 $router->get('/workload/scheduler', function (Request $request, Response $response) {
-    return (new WorkloadController())->scheduler($request);
+    $response->redirect('/workload/distribution?tab=week');
 });
 
 // --- Evaluations -----------------------------------------------------------
@@ -319,7 +320,7 @@ $legacyRedirects = [
     '/instructor/workload'               => '/workload',
     '/coordinator/workload/distribution' => '/workload/distribution',
     '/in-charge/workload/distribution'   => '/workload/distribution',
-    '/coordinator/workload/scheduler'    => '/workload/scheduler',
+    '/coordinator/workload/scheduler'    => '/workload/distribution?tab=week',
     '/instructor/evaluations'            => '/evaluations',
     '/coordinator/evaluations'           => '/evaluations',
     '/in-charge/evaluations'             => '/evaluations',

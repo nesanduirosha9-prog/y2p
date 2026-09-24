@@ -133,8 +133,8 @@
                 </td>
                 <td style="text-align:right;">
                     ${r.sub
-                        ? '<span class="pill pill-active"><i class="fa-solid fa-check"></i> Evaluated</span>'
-                        : '<span class="pill pill-warn"><i class="fa-regular fa-clock"></i> Not evaluated</span>'}
+                        ? '<span class="pill pill-active">Evaluated</span>'
+                        : '<span class="pill pill-warn">Not evaluated</span>'}
                 </td>
             </tr>`).join('');
 

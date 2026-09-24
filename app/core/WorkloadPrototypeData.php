@@ -31,6 +31,9 @@ namespace app\core;
 //                     duty_assignments)
 //   evaluations()  -> EvaluationModel::submitted()
 //   calendar()     -> AcademicCalendarModel (semester start + length)
+//   allocationHistory() -> AllocationHistoryModel            (needs
+//                     duty_assignments with how/note, and dated
+//                     course_staff rows instead of a current-only list)
 //
 // Nothing here writes anywhere. The prototype's edits live in the browser.
 class WorkloadPrototypeData
@@ -161,20 +164,26 @@ class WorkloadPrototypeData
         // Without this the board opens showing staff rostered onto slots the
         // availability tab says they are busy in, and the prototype looks
         // broken rather than opinionated. The ONE deliberate inconsistency is
-        // TSH on 24 Mar: they are on leave that day but pre-assigned to
+        // TSH on Tuesday: they are on leave that day but pre-assigned to
         // duty-2, so the board has a real conflict to detect on first load.
+        //
+        // A leave cover counts too: they agreed to stand in for that person,
+        // so they are free for the duties they inherit — which is what lets
+        // the board offer "Use NJN" for TSH instead of a dead end.
         foreach (self::duties() as $duty) {
             $weekday = self::weekdayKeyFor($duty['date']);
             if ($weekday === null) {
                 continue;
             }
             foreach ($duty['assigned'] as $code) {
-                if (!isset($grid[$code])) {
-                    continue;
+                foreach (array_filter([$code, self::coverFor($code, $duty['date'])]) as $who) {
+                    if (!isset($grid[$who])) {
+                        continue;
+                    }
+                    $grid[$who][$weekday] = array_values(array_unique(
+                        array_merge($grid[$who][$weekday], $duty['slots'])
+                    ));
                 }
-                $grid[$code][$weekday] = array_values(array_unique(
-                    array_merge($grid[$code][$weekday], $duty['slots'])
-                ));
             }
         }
 
@@ -192,28 +201,46 @@ class WorkloadPrototypeData
      * Approved leave. The allocator must exclude anyone whose leave covers the
      * duty date — CurrentViews/script.js does this via getLeaveMap().
      *
+     * `cover` is the per-day cover the instructor names when applying (the
+     * "Cover Staff by Date" step in instructor/leave.php), keyed by ISO date.
+     * The scheduler swaps that person in for any duty the absentee holds.
+     *
      * Future shape: LeaveModel::approvedBetween($from, $to) over the EXISTING
      * leave_requests table (migration 009). This is the cheapest gap to close.
      */
     public static function leave(): array
     {
         return [
-            ['code' => 'TSH', 'from' => '2026-03-24', 'to' => '2026-03-24', 'reason' => 'Medical'],
-            ['code' => 'GLS', 'from' => '2026-03-25', 'to' => '2026-03-27', 'reason' => 'Annual'],
-            ['code' => 'MVT', 'from' => '2026-03-26', 'to' => '2026-03-26', 'reason' => 'Personal'],
+            ['code' => 'TSH', 'from' => self::day(1), 'to' => self::day(1), 'reason' => 'Medical',
+             'cover' => [self::day(1) => 'NJN']],
+            ['code' => 'GLS', 'from' => self::day(2), 'to' => self::day(4), 'reason' => 'Annual',
+             'cover' => [self::day(2) => 'AYS', self::day(3) => 'AYS', self::day(4) => 'WIJ']],
+            ['code' => 'MVT', 'from' => self::day(3), 'to' => self::day(3), 'reason' => 'Personal',
+             'cover' => [self::day(3) => 'ADM']],
         ];
+    }
+
+    /** Who covers $code on $iso according to their leave, or null. */
+    private static function coverFor(string $code, string $iso): ?string
+    {
+        foreach (self::leave() as $l) {
+            if ($l['code'] === $code && $iso >= $l['from'] && $iso <= $l['to']) {
+                return $l['cover'][$iso] ?? null;
+            }
+        }
+        return null;
     }
 
     /** Lecturer duty requests awaiting triage — the spreadsheet's Request sheet. */
     public static function requests(): array
     {
         return [
-            ['id' => 'req-1', 'requester' => 'AYS', 'requester_name' => 'W. M. A. Sanahari',     'course' => 'IS 4115',  'duty' => 'In-class Assignment',            'date' => '2026-03-23', 'slots' => ['10-11', '11-12'],                                  'headcount' => 3,  'note' => ''],
-            ['id' => 'req-2', 'requester' => 'AMD', 'requester_name' => 'Amod Pathirana',        'course' => 'SCS 2314', 'duty' => 'Middleware In-class Assessment', 'date' => '2026-03-24', 'slots' => ['1-2', '2-3'],                                      'headcount' => 4,  'note' => ''],
-            ['id' => 'req-3', 'requester' => 'NPK', 'requester_name' => 'Dr. N. P. Karunaratne', 'course' => 'IS 1212',  'duty' => 'Probability Lab Quiz',           'date' => '2026-03-25', 'slots' => ['8-9', '9-10'],                                     'headcount' => 3,  'note' => 'Two lab rooms in parallel'],
-            ['id' => 'req-4', 'requester' => 'TSR', 'requester_name' => 'T. S. Rathnayake',      'course' => 'SCS 2313', 'duty' => 'Architecture Lab Test',          'date' => '2026-03-26', 'slots' => ['1-2', '2-3'],                                      'headcount' => 4,  'note' => ''],
-            ['id' => 'req-5', 'requester' => 'PDW', 'requester_name' => 'Prof. D. Wijesekara',   'course' => 'SCS 2312', 'duty' => 'Computational Models Evaluation','date' => '2026-03-27', 'slots' => ['8-9', '9-10'],                                     'headcount' => 6,  'note' => ''],
-            ['id' => 'req-6', 'requester' => 'MAS', 'requester_name' => 'Dr. M. A. Silva',       'course' => 'IS 4101',  'duty' => 'Final Year Project Vivas',       'date' => '2026-03-27', 'slots' => ['8-9', '9-10', '10-11', '11-12', '12-1', '1-2', '2-3'], 'headcount' => 10, 'note' => 'All-day panel'],
+            ['id' => 'req-1', 'requester' => 'AYS', 'requester_name' => 'W. M. A. Sanahari',     'course' => 'IS 4115',  'duty' => 'In-class Assignment',            'date' => self::day(0), 'slots' => ['10-11', '11-12'],                                  'headcount' => 3,  'note' => ''],
+            ['id' => 'req-2', 'requester' => 'AMD', 'requester_name' => 'Amod Pathirana',        'course' => 'SCS 2314', 'duty' => 'Middleware In-class Assessment', 'date' => self::day(1), 'slots' => ['1-2', '2-3'],                                      'headcount' => 4,  'note' => ''],
+            ['id' => 'req-3', 'requester' => 'NPK', 'requester_name' => 'Dr. N. P. Karunaratne', 'course' => 'IS 1212',  'duty' => 'Probability Lab Quiz',           'date' => self::day(2), 'slots' => ['8-9', '9-10'],                                     'headcount' => 3,  'note' => 'Two lab rooms in parallel'],
+            ['id' => 'req-4', 'requester' => 'TSR', 'requester_name' => 'T. S. Rathnayake',      'course' => 'SCS 2313', 'duty' => 'Architecture Lab Test',          'date' => self::day(3), 'slots' => ['1-2', '2-3'],                                      'headcount' => 4,  'note' => ''],
+            ['id' => 'req-5', 'requester' => 'PDW', 'requester_name' => 'Prof. D. Wijesekara',   'course' => 'SCS 2312', 'duty' => 'Computational Models Evaluation','date' => self::day(4), 'slots' => ['8-9', '9-10'],                                     'headcount' => 6,  'note' => ''],
+            ['id' => 'req-6', 'requester' => 'MAS', 'requester_name' => 'Dr. M. A. Silva',       'course' => 'IS 4101',  'duty' => 'Final Year Project Vivas',       'date' => self::day(4), 'slots' => ['8-9', '9-10', '10-11', '11-12', '12-1', '1-2', '2-3'], 'headcount' => 10, 'note' => 'All-day panel'],
         ];
     }
 
@@ -224,18 +251,55 @@ class WorkloadPrototypeData
     public static function duties(): array
     {
         return [
-            ['id' => 'duty-1', 'requester' => 'DKF', 'requester_name' => 'Dr. K. Fernando',     'course' => 'SCS 1308', 'course_name' => 'Foundations of Algorithms',   'duty' => 'Tutorial Session (Recursion)',      'date' => '2026-03-23', 'slots' => ['10-11', '11-12'], 'headcount' => 3, 'assigned' => ['TSR', 'BMC', 'PRL']],
-            ['id' => 'duty-2', 'requester' => 'CIK', 'requester_name' => 'Dr. C. Iddamalgoda',  'course' => 'SCS 1312', 'course_name' => 'Operating System Concepts',   'duty' => 'Practical Lab (Process Scheduling)','date' => '2026-03-24', 'slots' => ['8-9', '9-10'],    'headcount' => 3, 'assigned' => ['TSH', 'MVT', 'NNE']],
-            ['id' => 'duty-3', 'requester' => 'NAS', 'requester_name' => 'Dr. N. A. Silva',     'course' => 'IS 1214',  'course_name' => 'Data Structures and Algorithms', 'duty' => 'Lab Exam & Practical Evaluation', 'date' => '2026-03-25', 'slots' => ['1-2', '2-3'],     'headcount' => 3, 'assigned' => []],
-            ['id' => 'duty-4', 'requester' => 'CRC', 'requester_name' => 'Dr. C. R. Chandrasiri','course' => 'SCS 2314','course_name' => 'Middleware Architecture',      'duty' => 'RPC Practical Supervision',         'date' => '2026-03-26', 'slots' => ['10-11', '11-12'], 'headcount' => 3, 'assigned' => []],
-            ['id' => 'duty-5', 'requester' => 'ENO', 'requester_name' => 'Dr. E. Osei',         'course' => 'SCS 1309', 'course_name' => 'Database Management Systems', 'duty' => 'SQL Lab Assessment',                'date' => '2026-03-24', 'slots' => ['8-9'],            'headcount' => 2, 'assigned' => []],
+            ['id' => 'duty-1', 'requester' => 'DKF', 'requester_name' => 'Dr. K. Fernando',     'course' => 'SCS 1308', 'course_name' => 'Foundations of Algorithms',   'duty' => 'Tutorial Session',      'date' => self::day(0), 'slots' => ['10-11', '11-12'], 'headcount' => 3, 'assigned' => ['TSR', 'BMC', 'PRL']],
+            ['id' => 'duty-2', 'requester' => 'CIK', 'requester_name' => 'Dr. C. Iddamalgoda',  'course' => 'SCS 1312', 'course_name' => 'Operating System Concepts',   'duty' => 'Practical Lab','date' => self::day(1), 'slots' => ['8-9', '9-10'],    'headcount' => 3, 'assigned' => ['TSH', 'MVT', 'NNE']],
+            ['id' => 'duty-3', 'requester' => 'NAS', 'requester_name' => 'Dr. N. A. Silva',     'course' => 'IS 1214',  'course_name' => 'Data Structures and Algorithms', 'duty' => 'Lab Exam & Practical Evaluation', 'date' => self::day(2), 'slots' => ['1-2', '2-3'],     'headcount' => 3, 'assigned' => []],
+            ['id' => 'duty-4', 'requester' => 'CRC', 'requester_name' => 'Dr. C. R. Chandrasiri','course' => 'SCS 2314','course_name' => 'Middleware Architecture',      'duty' => 'RPC Practical Supervision',         'date' => self::day(3), 'slots' => ['10-11', '11-12'], 'headcount' => 3, 'assigned' => []],
+            ['id' => 'duty-5', 'requester' => 'ENO', 'requester_name' => 'Dr. E. Osei',         'course' => 'SCS 1309', 'course_name' => 'Database Management Systems', 'duty' => 'SQL Lab Assessment',                'date' => self::day(1), 'slots' => ['8-9'],            'headcount' => 2, 'assigned' => []],
         ];
     }
 
-    /** The active academic week the scheduler board shows. */
+    /**
+     * The active week: the one today falls in, Monday to Friday. Everything
+     * dated "this week" across the prototype hangs off this, so the demo
+     * always opens on the real current week.
+     */
     public static function week(): array
     {
-        return ['number' => 5, 'from' => '2026-03-23', 'to' => '2026-03-27', 'label' => '23 Mar – 27 Mar 2026'];
+        $from = self::day(0);
+        $to = self::day(4);
+        $info = self::weekInfo($from);
+        return [
+            'number' => $info['number'] ?? 0,
+            'from'   => $from,
+            'to'     => $to,
+            'label'  => (new \DateTimeImmutable($from))->format('j M') . ' – ' . (new \DateTimeImmutable($to))->format('j M Y'),
+        ];
+    }
+
+    /**
+     * An ISO date relative to this week's Monday: day(0) is Monday, day(4)
+     * Friday, day(-7) last Monday. Fixtures use it instead of literal dates
+     * so they stay "this week" whenever the demo is opened.
+     */
+    public static function day(int $offset): string
+    {
+        $today = new \DateTimeImmutable('today');
+        $monday = $today->modify('-' . ((int)$today->format('N') - 1) . ' days');
+        return $monday->modify(($offset >= 0 ? '+' : '') . $offset . ' days')->format('Y-m-d');
+    }
+
+    /** The semester the current week belongs to (the latest one started). */
+    public static function currentSemester(): array
+    {
+        $cal = self::calendar();
+        $found = $cal['semesters'][0];
+        foreach ($cal['semesters'] as $sem) {
+            if ($sem['start'] <= $cal['current']) {
+                $found = $sem;
+            }
+        }
+        return $found;
     }
 
     /**
@@ -286,6 +350,161 @@ class WorkloadPrototypeData
     }
 
     // ------------------------------------------------------------------
+    // Allocation history
+    // ------------------------------------------------------------------
+
+    /**
+     * Every allocation before the current week, one record per staff member
+     * per event — what the Workload page's History tab reads. The current
+     * week is left out on purpose: the page supplies it live from the duty
+     * board and the matrix, so edits made there show up immediately.
+     *
+     * Record shape:
+     *   kind     'duty' | 'course'
+     *   date     ISO date; week = Monday of its teaching week
+     *   staff, course, course_name, lecturer, lecturer_name
+     *   title    duty name, or engagement label for course rows
+     *   slots    duty rows only
+     *   how      auto | manual | cover | replacement | removed   (duties)
+     *            allocated | added | removed                      (courses)
+     *   note     free text, e.g. 'covering NNE (leave)'
+     */
+    public static function allocationHistory(): array
+    {
+        return array_merge(self::courseHistory(), self::pastDuties());
+    }
+
+    /**
+     * Staff moved on or off a course during the current semester (dated from
+     * its start). Everything else about
+     * course allocation is derived from these plus courses(), so the history
+     * cannot disagree with the matrix.
+     */
+    private static function courseChanges(): array
+    {
+        $at = fn(int $days) => (new \DateTimeImmutable(self::currentSemester()['start']))->modify("+$days days")->format('Y-m-d');
+        return [
+            ['date' => $at(7), 'course' => 'SCS 1308', 'staff' => 'KST', 'how' => 'removed', 'note' => 'temporarily paused'],
+            ['date' => $at(7), 'course' => 'SCS 1308', 'staff' => 'WDI', 'how' => 'added',   'note' => 'replacing KST'],
+            ['date' => $at(14), 'course' => 'SCS 1309', 'staff' => 'GLS', 'how' => 'removed', 'note' => 'moved to SCS 2311'],
+            ['date' => $at(14), 'course' => 'SCS 2311', 'staff' => 'GLS', 'how' => 'added',   'note' => 'moved from SCS 1309'],
+            ['date' => $at(21), 'course' => 'IS 1211',  'staff' => 'JRA', 'how' => 'removed', 'note' => 'account deactivated'],
+            ['date' => $at(21), 'course' => 'IS 1214',  'staff' => 'AMJ', 'how' => 'added',   'note' => 'extra lab group'],
+        ];
+    }
+
+    /**
+     * The semester-start allocation plus the changes after it. The start is
+     * worked backwards from today's matrix: current instructors, minus anyone
+     * added later, plus anyone removed later.
+     */
+    private static function courseHistory(): array
+    {
+        $changes = self::courseChanges();
+        $semStart = self::currentSemester()['start'];
+
+        $out = [];
+        foreach (self::courses() as $c) {
+            $base = [
+                'kind'          => 'course',
+                'course'        => $c['code'],
+                'course_name'   => $c['name'],
+                'lecturer'      => $c['lecturer'],
+                'lecturer_name' => $c['lecturer_name'],
+                'title'         => self::ENGAGEMENTS[$c['engagement']] ?? $c['engagement'],
+                'slots'         => [],
+            ];
+
+            $mine = array_filter($changes, fn($ch) => $ch['course'] === $c['code']);
+            $added = array_column(array_filter($mine, fn($ch) => $ch['how'] === 'added'), 'staff');
+            $removed = array_column(array_filter($mine, fn($ch) => $ch['how'] === 'removed'), 'staff');
+            $initial = array_merge(array_diff($c['instructors'], $added), $removed);
+
+            foreach ($initial as $code) {
+                $out[] = $base + ['date' => $semStart, 'week' => $semStart, 'staff' => $code, 'how' => 'allocated', 'note' => 'semester start'];
+            }
+            foreach ($mine as $ch) {
+                $out[] = $base + [
+                    'date'  => $ch['date'],
+                    'week'  => self::weekInfo($ch['date'])['start'] ?? $ch['date'],
+                    'staff' => $ch['staff'],
+                    'how'   => $ch['how'],
+                    'note'  => $ch['note'],
+                ];
+            }
+        }
+        return $out;
+    }
+
+    /**
+     * Generated duties for every teaching week before the current one,
+     * allocated the way the Duty board does it: active, unpaused staff with
+     * the fewest duties so far. Deterministic (crc32-seeded, like
+     * simulatedEvaluation()), so every reload shows the same past. Uses this
+     * semester's course list for Semester 1 too — a fixture shortcut.
+     */
+    private static function pastDuties(): array
+    {
+        $titles = [
+            'practical'            => 'Lab Assessment',
+            'tutorial'             => 'Tutorial Quiz',
+            'assignment_marking'   => 'Assignment Marking Session',
+            'coordination_lecture' => 'Guest Lecture Support',
+            'coordination_project' => 'Project Progress Review',
+        ];
+        $courses = self::courses();
+        $codes = array_column(array_filter(self::staff(), fn($s) => $s['active'] && !$s['paused']), 'code');
+        $count = array_fill_keys($codes, 0);
+        $current = self::calendar()['current'];
+        $lastSlot = count(self::SLOTS) - 2;
+
+        $out = [];
+        foreach (self::teachingWeeks() as $tw) {
+            if ($tw['start'] === $current) {
+                continue;
+            }
+            $perWeek = 3 + crc32('week|' . $tw['start']) % 3;
+
+            for ($i = 0; $i < $perWeek; $i++) {
+                $h = crc32($tw['start'] . '|' . $i);
+                $c = $courses[$h % count($courses)];
+                $date = (new \DateTimeImmutable($tw['start']))->modify('+' . ($h % 5) . ' days')->format('Y-m-d');
+                $first = ($h >> 3) % ($lastSlot + 1);
+                $slots = [self::SLOTS[$first], self::SLOTS[$first + 1]];
+                $headcount = 2 + ($h >> 6) % 3;
+
+                // Fewest duties first; a seeded tiebreak so it isn't alphabetical.
+                $pool = $codes;
+                usort($pool, fn($a, $b) => ($count[$a] <=> $count[$b]) ?: (crc32($a . $date) <=> crc32($b . $date)));
+
+                foreach (array_slice($pool, 0, $headcount) as $k => $code) {
+                    $count[$code]++;
+                    $roll = crc32($code . '|' . $date . '|' . $i) % 12;
+                    $how = $roll === 0 ? 'cover' : ($roll === 1 ? 'manual' : 'auto');
+                    // The person covered is someone not picked for this duty.
+                    $note = $how === 'cover' ? 'covering ' . $pool[count($pool) - 1 - $k] . ' (leave)' : '';
+
+                    $out[] = [
+                        'kind'          => 'duty',
+                        'date'          => $date,
+                        'week'          => $tw['start'],
+                        'staff'         => $code,
+                        'course'        => $c['code'],
+                        'course_name'   => $c['name'],
+                        'lecturer'      => $c['lecturer'],
+                        'lecturer_name' => $c['lecturer_name'],
+                        'title'         => $titles[$c['engagement']] ?? 'Duty',
+                        'slots'         => $slots,
+                        'how'           => $how,
+                        'note'          => $note,
+                    ];
+                }
+            }
+        }
+        return $out;
+    }
+
+    // ------------------------------------------------------------------
     // Academic calendar and evaluations
     // ------------------------------------------------------------------
 
@@ -302,10 +521,16 @@ class WorkloadPrototypeData
     public static function calendar(): array
     {
         return [
-            'current'   => self::week()['from'],
+            // Not week()['from']: week() asks weekInfo(), which asks this.
+            'current'   => self::day(0),
+            // Semester dates are fixture values. If today falls between
+            // semesters, "this week" has no teaching week and the pages show
+            // their empty states — add the next semester here when it is set.
             'semesters' => [
                 ['id' => '2025-26-S1', 'name' => 'Semester 1', 'year' => '2025/26', 'start' => '2025-09-22', 'weeks' => 15],
                 ['id' => '2025-26-S2', 'name' => 'Semester 2', 'year' => '2025/26', 'start' => '2026-02-23', 'weeks' => 15],
+                ['id' => '2026-27-S1', 'name' => 'Semester 1', 'year' => '2026/27', 'start' => '2026-08-24', 'weeks' => 15],
+                ['id' => '2026-27-S2', 'name' => 'Semester 2', 'year' => '2026/27', 'start' => '2027-02-22', 'weeks' => 15],
             ],
         ];
     }
@@ -412,7 +637,7 @@ class WorkloadPrototypeData
             $records[$e['staff_code'] . '|' . $e['course_code'] . '|' . $e['week']] = $e;
         }
 
-        // A year is ~1,300 records; the real endpoint should return one period
+        // Every past teaching week × every assignment is a couple of thousand records; the real endpoint should return one period
         // at a time instead.
         return array_values($records);
     }
@@ -469,14 +694,14 @@ class WorkloadPrototypeData
     private static function writtenEvaluations(): array
     {
         return [
-            ['id' => 'eval-001', 'staff_code' => 'TSR', 'course_code' => 'SCS 1308', 'date' => '2026-03-15', 'rating' => 5, 'comment' => 'Exceptional algorithm demonstration; students consistently praise his step-by-step trace explanations. Could encourage quieter students to join in more during group tutorials.'],
-            ['id' => 'eval-002', 'staff_code' => 'BMC', 'course_code' => 'SCS 2310', 'date' => '2026-03-12', 'rating' => 4, 'comment' => 'Strong command of MATLAB and the Fourier transform practicals, and proactive in lab setup. Should finish grading a day or two earlier when batches are large.'],
-            ['id' => 'eval-003', 'staff_code' => 'DUH', 'course_code' => 'IS 1214',  'date' => '2026-03-10', 'rating' => 5, 'comment' => 'Very approachable and patient with first-year students struggling with C pointers. Needs to follow the automated grading rubric more strictly.'],
-            ['id' => 'eval-004', 'staff_code' => 'AMJ', 'course_code' => 'IS 1208',  'date' => '2026-03-05', 'rating' => 4, 'comment' => 'Well-versed in UML modelling and agile case studies. Arrived late to two practical sessions because of a timetable clash, which should be resolved before next semester.'],
-            ['id' => 'eval-005', 'staff_code' => 'WIJ', 'course_code' => 'IS 2209',  'date' => '2026-03-02', 'rating' => 5, 'comment' => 'Took over two tutorial groups at short notice without any drop in quality. Carrying one of the heaviest loads in the department — watch for burnout.'],
-            ['id' => 'eval-006', 'staff_code' => 'NJN', 'course_code' => 'SCS 2311', 'date' => '2026-02-27', 'rating' => 4, 'comment' => 'Deep practical knowledge of the OpenSSL toolchain. Some students found the explanations terse.'],
-            ['id' => 'eval-007', 'staff_code' => 'PRL', 'course_code' => 'IS 2211',  'date' => '2026-02-24', 'rating' => 5, 'comment' => 'Ran the Figma critique sessions entirely unaided. Ready for a heavier allocation next semester.'],
-            ['id' => 'eval-008', 'staff_code' => 'TSH', 'course_code' => 'SCS 1309', 'date' => '2026-02-26', 'rating' => 3, 'comment' => 'Lab setup is always ready ahead of the session, but missed two marking deadlines. Needs a clearer handover when on leave.'],
+            ['id' => 'eval-001', 'staff_code' => 'TSR', 'course_code' => 'SCS 1308', 'date' => self::day(-8), 'rating' => 5, 'comment' => 'Exceptional algorithm demonstration; students consistently praise his step-by-step trace explanations. Could encourage quieter students to join in more during group tutorials.'],
+            ['id' => 'eval-002', 'staff_code' => 'BMC', 'course_code' => 'SCS 2310', 'date' => self::day(-11), 'rating' => 4, 'comment' => 'Strong command of MATLAB and the Fourier transform practicals, and proactive in lab setup. Should finish grading a day or two earlier when batches are large.'],
+            ['id' => 'eval-003', 'staff_code' => 'DUH', 'course_code' => 'IS 1214',  'date' => self::day(-13), 'rating' => 5, 'comment' => 'Very approachable and patient with first-year students struggling with C pointers. Needs to follow the automated grading rubric more strictly.'],
+            ['id' => 'eval-004', 'staff_code' => 'AMJ', 'course_code' => 'IS 1208',  'date' => self::day(-18), 'rating' => 4, 'comment' => 'Well-versed in UML modelling and agile case studies. Arrived late to two practical sessions because of a timetable clash, which should be resolved before next semester.'],
+            ['id' => 'eval-005', 'staff_code' => 'WIJ', 'course_code' => 'IS 2209',  'date' => self::day(-21), 'rating' => 5, 'comment' => 'Took over two tutorial groups at short notice without any drop in quality. Carrying one of the heaviest loads in the department — watch for burnout.'],
+            ['id' => 'eval-006', 'staff_code' => 'NJN', 'course_code' => 'SCS 2311', 'date' => self::day(-24), 'rating' => 4, 'comment' => 'Deep practical knowledge of the OpenSSL toolchain. Some students found the explanations terse.'],
+            ['id' => 'eval-007', 'staff_code' => 'PRL', 'course_code' => 'IS 2211',  'date' => self::day(-27), 'rating' => 5, 'comment' => 'Ran the Figma critique sessions entirely unaided. Ready for a heavier allocation next semester.'],
+            ['id' => 'eval-008', 'staff_code' => 'TSH', 'course_code' => 'SCS 1309', 'date' => self::day(-25), 'rating' => 3, 'comment' => 'Lab setup is always ready ahead of the session, but missed two marking deadlines. Needs a clearer handover when on leave.'],
         ];
     }
 }

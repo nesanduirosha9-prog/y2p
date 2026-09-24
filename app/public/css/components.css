@@ -93,8 +93,8 @@
  *   --course    SCS 1308  light slate
  *   --lecturer  DKF       white, outlined (lecturer in-charge)
  *   --staff     TSR       navy (instructors / junior staff)
- * States: .has-note (amber underline), .is-flagged (red — an integrity error
- * the allocator should have prevented, e.g. an inactive member still assigned).
+ * One colour per kind, no state variants: a problem with a person is shown
+ * on the row that holds the badge, not by recolouring the badge.
  */
 .code-badge {
     display: inline-flex;
@@ -117,11 +117,7 @@
 .code-badge--lecturer { background: #fff;    border-color: #cbd5e1; color: #1e293b; }
 .code-badge--staff    { background: #0f1c2e; border-color: #0f1c2e; color: #fff; min-width: 46px; }
 
-.code-badge.has-note   { box-shadow: inset 0 -2px 0 #f59e0b; }
-.code-badge.is-flagged { background: #dc2626; border-color: #dc2626; color: #fff; }
-
 .code-badge > i { font-size: 10px; }
-.code-badge.has-note > .fa-circle-info { color: #fde68a; }
 
 /* ---------- Icon button (header actions, dropdown triggers) ---------- */
 

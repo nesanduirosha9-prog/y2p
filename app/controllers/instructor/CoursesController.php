@@ -263,11 +263,12 @@ class CoursesController extends Controller
             }
         }
 
-        // Evaluation History dataset for this lecturer
+        // Evaluation History dataset for this lecturer. Dates are relative to
+        // this week's Monday, so the newest one always lands in the current week.
         $evaluationHistory = [
             [
                 'id' => 'eval-01',
-                'date' => '2026-03-25',
+                'date' => WorkloadPrototypeData::day(2),
                 'course_code' => 'CS1101',
                 'course_name' => 'Introduction to Programming',
                 'instructor_code' => 'TMF',
@@ -278,7 +279,7 @@ class CoursesController extends Controller
             ],
             [
                 'id' => 'eval-02',
-                'date' => '2026-03-18',
+                'date' => WorkloadPrototypeData::day(-5),
                 'course_code' => 'CS1101',
                 'course_name' => 'Introduction to Programming',
                 'instructor_code' => 'MKA',
@@ -289,7 +290,7 @@ class CoursesController extends Controller
             ],
             [
                 'id' => 'eval-03',
-                'date' => '2026-03-11',
+                'date' => WorkloadPrototypeData::day(-12),
                 'course_code' => 'CS3301',
                 'course_name' => 'Software Engineering',
                 'instructor_code' => 'MNA',
@@ -300,7 +301,7 @@ class CoursesController extends Controller
             ],
             [
                 'id' => 'eval-04',
-                'date' => '2026-03-04',
+                'date' => WorkloadPrototypeData::day(-19),
                 'course_code' => 'CS4401',
                 'course_name' => 'Final Year Project',
                 'instructor_code' => 'MAB',
@@ -311,7 +312,7 @@ class CoursesController extends Controller
             ],
             [
                 'id' => 'eval-05',
-                'date' => '2026-02-25',
+                'date' => WorkloadPrototypeData::day(-26),
                 'course_code' => 'CS4401',
                 'course_name' => 'Final Year Project',
                 'instructor_code' => 'MKO',

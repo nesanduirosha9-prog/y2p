@@ -1,0 +1,127 @@
+/* ==============================================================
+   workload_history.css — the History tab of the Workload page
+   (js/workload_history.js). Layout primitives — .dir-card,
+   .dir-table, .wm-toolbar, .wm-kpi-grid, .seg, .search-box —
+   come from directory.css and workload_matrix.css.
+   ============================================================== */
+
+.hist-page { display: flex; flex-direction: column; gap: 16px; }
+.hist-page[hidden] { display: none; }
+
+/* Period picker on top, filters below it, in the one toolbar card. */
+.hist-toolbar #histPeriodNav {
+    padding-bottom: 12px;
+    margin-bottom: 12px;
+    border-bottom: 1px solid #f1f5f9;
+}
+
+/* ---- Sortable headings ---- */
+.hist-sort {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 0;
+    border: 0;
+    background: none;
+    font: inherit;
+    color: inherit;
+    letter-spacing: inherit;
+    text-transform: inherit;
+    cursor: pointer;
+}
+.hist-sort::after {
+    content: '\f0dc';                         /* fa-sort */
+    font-family: 'Font Awesome 6 Free';
+    font-weight: 900;
+    font-size: 10px;
+    opacity: 0.35;
+}
+.hist-sort.is-asc::after  { content: '\f0de'; opacity: 1; }    /* fa-sort-up */
+.hist-sort.is-desc::after { content: '\f0dd'; opacity: 1; }    /* fa-sort-down */
+.hist-sort:hover { color: var(--color-primary, #2563eb); }
+.hist-sort.is-asc,
+.hist-sort.is-desc { color: var(--color-primary, #2563eb); }
+
+/* ---- Group header rows ---- */
+.hist-table .hist-group-row td {
+    padding: 10px 14px;
+    background: #f8fafc;
+    border-top: 1px solid var(--color-border, #e2e8f0);
+}
+.hist-table .hist-group-row:first-child td { border-top: 0; }
+.hist-group-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--color-text-dark, #1e293b);
+}
+.hist-group-count {
+    margin-left: 8px;
+    padding: 1px 8px;
+    font-size: 11px;
+    font-weight: 700;
+    color: #475569;
+    background: #e2e8f0;
+    border-radius: 10px;
+}
+
+/* ---- Cells ---- */
+.hist-sub {
+    display: block;
+    font-size: 11.5px;
+    color: var(--color-text-muted, #64748b);
+}
+.hist-date { margin-left: 4px; font-size: 12px; color: var(--color-text-muted, #64748b); }
+.hist-group-sub { margin-left: 6px; font-weight: 500; color: var(--color-text-muted, #64748b); }
+.hist-what { font-weight: 600; color: var(--color-text, #0f1c2e); }
+
+.hist-staff { display: flex; align-items: center; gap: 8px; min-width: 0; }
+.hist-staff-name {
+    font-size: 13px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* A code badge that filters the table to its code. */
+.hist-pick {
+    padding: 0;
+    border: 0;
+    background: none;
+    cursor: pointer;
+}
+.hist-pick:hover .code-badge { filter: brightness(0.94); }
+.hist-pick:focus-visible { outline: 2px solid var(--color-primary, #2563eb); outline-offset: 2px; border-radius: 4px; }
+
+.hist-row-removed td { color: var(--color-text-muted, #64748b); }
+.hist-row-removed .hist-what { color: inherit; text-decoration: line-through; }
+
+/* ---- How it happened ---- */
+.hist-how {
+    display: inline-block;
+    padding: 2px 9px;
+    font-size: 11px;
+    font-weight: 700;
+    border-radius: 10px;
+    white-space: nowrap;
+}
+.hist-how-auto        { background: #eff6ff; color: #1d4ed8; }
+.hist-how-manual      { background: #f1f5f9; color: #334155; }
+.hist-how-cover       { background: #fef3c7; color: #b45309; }
+.hist-how-replacement { background: #ffedd5; color: #c2410c; }
+.hist-how-removed     { background: #fee2e2; color: #b91c1c; }
+.hist-how-allocated   { background: #ecfdf5; color: #047857; }
+.hist-how-added       { background: #d1fae5; color: #047857; }
+
+.hist-note {
+    display: block;
+    margin-top: 3px;
+    font-size: 11.5px;
+    color: var(--color-text-muted, #64748b);
+}
+
+@media (max-width: 768px) {
+    .hist-staff-name { display: none; }
+}
