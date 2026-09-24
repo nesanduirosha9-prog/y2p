@@ -46,7 +46,6 @@ document.addEventListener('DOMContentLoaded', function () {
         const remaining = pendingBody ? pendingBody.querySelectorAll('tr').length : 0;
         const badge = document.getElementById('pendingBadge');
         const pill = document.getElementById('pendingSectionPill');
-        const summaryCount = document.getElementById('pendingCountSummary');
         const subText = document.getElementById('pendingRequestsSub');
 
         if (badge) {
@@ -56,9 +55,6 @@ document.addEventListener('DOMContentLoaded', function () {
         if (pill) {
             pill.textContent = remaining + ' Pending';
             pill.style.display = remaining > 0 ? '' : 'none';
-        }
-        if (summaryCount) {
-            summaryCount.textContent = remaining;
         }
         if (subText) {
             subText.textContent = remaining + ' requests awaiting role assignment';
@@ -172,6 +168,117 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
+    // --- Add staff: email + role -> POST /staff/create ---
+    // The directory is server-rendered, so after creating one or more accounts
+    // the page reloads on close rather than re-building the row markup here.
+    const addPanel = document.getElementById('addStaffPanel');
+    const addBackdrop = document.getElementById('addStaffBackdrop');
+    if (addPanel) {
+        const form = document.getElementById('addStaffForm');
+        const done = document.getElementById('addStaffDone');
+        const emailInput = document.getElementById('addStaffEmail');
+        const submitBtn = document.getElementById('addStaffSubmit');
+        const errors = {
+            email: document.getElementById('addStaffEmailError'),
+            role: document.getElementById('addStaffRoleError'),
+            general: document.getElementById('addStaffError'),
+        };
+        let createdAny = false;
+
+        function showError(field, msg) {
+            const el = errors[field] || errors.general;
+            el.textContent = msg;
+            el.hidden = false;
+            if (field === 'email') emailInput.focus();
+        }
+
+        function clearErrors() {
+            Object.values(errors).forEach(function (el) { el.hidden = true; el.textContent = ''; });
+        }
+
+        function resetForm() {
+            form.reset();
+            clearErrors();
+            submitBtn.disabled = false;
+            submitBtn.textContent = 'Create account';
+            form.hidden = false;
+            done.hidden = true;
+        }
+
+        function openAdd() {
+            resetForm();
+            addPanel.hidden = false;
+            addBackdrop.hidden = false;
+            emailInput.focus();
+        }
+
+        function closeAdd() {
+            addPanel.hidden = true;
+            addBackdrop.hidden = true;
+            if (createdAny) window.location.reload();
+        }
+
+        // A field's error goes away as soon as the field is changed.
+        emailInput.addEventListener('input', function () { errors.email.hidden = true; errors.general.hidden = true; });
+        form.querySelectorAll('input[name="role"]').forEach(function (r) {
+            r.addEventListener('change', function () { errors.role.hidden = true; });
+        });
+
+        document.getElementById('addStaffBtn').addEventListener('click', openAdd);
+        addPanel.querySelectorAll('[data-add-close]').forEach(function (b) { b.addEventListener('click', closeAdd); });
+        addBackdrop.addEventListener('click', closeAdd);
+        document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && !addPanel.hidden) closeAdd(); });
+        document.getElementById('addStaffFinish').addEventListener('click', closeAdd);
+        document.getElementById('addStaffAnother').addEventListener('click', function () { resetForm(); emailInput.focus(); });
+
+        form.addEventListener('submit', function (e) {
+            e.preventDefault();
+            clearErrors();
+
+            const email = emailInput.value.trim();
+            const roleInput = form.querySelector('input[name="role"]:checked');
+            let ok = true;
+            if (!email || !emailInput.checkValidity()) { showError('email', 'Enter a valid email address.'); ok = false; }
+            if (!roleInput) { showError('role', 'Choose Lecturer or Junior Staff.'); ok = false; }
+            if (!ok) return;
+
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Creating…';
+
+            fetch(basePath + '/create', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email: email, role: roleInput.value })
+            })
+                .then(function (r) { return r.json(); })
+                .then(function (data) {
+                    if (!data.success) {
+                        showError(data.field || 'general', data.message || 'Could not create the account.');
+                        submitBtn.disabled = false;
+                        submitBtn.textContent = 'Create account';
+                        return;
+                    }
+                    createdAny = true;
+                    const roleLabel = roleInput.value === 'lecturer' ? 'Lecturer' : 'Junior Staff';
+                    document.getElementById('addStaffDoneTitle').textContent =
+                        roleLabel + ' account created — ' + data.code;
+                    document.getElementById('addStaffDoneSub').textContent = data.invited
+                        ? 'We emailed ' + email + ' with how to set a password.'
+                        : data.demo
+                            ? 'Demo mode: no email was sent. ' + email + ' can set a password with "Forgot password" on the sign-in page.'
+                            : 'The account exists, but the email could not be sent. Ask them to use "Forgot password" on the sign-in page with ' + email + '.';
+                    form.hidden = true;
+                    done.hidden = false;
+                    document.getElementById('addStaffFinish').focus();
+                })
+                .catch(function () {
+                    showError('general', 'Something went wrong. Please try again.');
+                    submitBtn.disabled = false;
+                    submitBtn.textContent = 'Create account';
+                });
+        });
+    }
+
     // --- Active Staff Table: Deactivate / Activate & Delete UI actions ---
     const activeStaffTable = document.getElementById('activeStaffTable');
     if (activeStaffTable) {
@@ -229,9 +336,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     // Update counter badges
                     const currentRows = activeStaffTable.querySelectorAll('tbody tr').length;
                     const badge = document.getElementById('activeStaffBadge');
-                    const summary = document.getElementById('activeStaffCountSummary');
                     if (badge) badge.textContent = currentRows;
-                    if (summary) summary.textContent = currentRows;
                     applyFilters();
                 }, 200);
             }

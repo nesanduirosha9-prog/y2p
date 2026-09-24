@@ -10,6 +10,19 @@ document.addEventListener('DOMContentLoaded', function () {
         return d.innerHTML;
     }
 
+    // The shared teaching calendar (WorkloadPrototypeData::calendar()). An
+    // evaluation submitted here belongs to its `current` week.
+    const HISTORY_CAL = (function () {
+        const node = document.getElementById('historyCalendar');
+        try { return node ? JSON.parse(node.textContent) : null; } catch (e) { return null; }
+    })();
+
+    /** "Week 5 · Semester 2" for the current week. */
+    function currentWeekLabel() {
+        const w = HISTORY_CAL && window.PeriodNav ? PeriodNav.weekOf(HISTORY_CAL, HISTORY_CAL.current) : null;
+        return w ? 'Week ' + w.number + ' · ' + w.semName : 'This week';
+    }
+
     // Helper: Toast notification
     function notify(msg, isSuccess = true) {
         if (typeof window.ttToast === 'function') {
@@ -201,7 +214,7 @@ document.addEventListener('DOMContentLoaded', function () {
                                 '<div class="inst-details">' +
                                     '<div class="inst-name-row">' +
                                         '<h3 class="inst-name">' + esc(inst.name) + '</h3>' +
-                                        '<span class="tag tag-instructor" title="' + esc(inst.name) + '">' + esc(inst.code) + '</span>' +
+                                        '<span class="code-badge code-badge--staff" title="' + esc(inst.name) + '">' + esc(inst.code) + '</span>' +
                                     '</div>' +
                                     '<div class="inst-meta">' +
                                         '<span><i class="fa-regular fa-envelope"></i> ' + esc(email) + '</span>' +
@@ -210,7 +223,7 @@ document.addEventListener('DOMContentLoaded', function () {
                             '</div>' +
                             '<div class="inst-score-summary">' +
                                 '<span class="rating-badge rating-badge-active" id="badge_' + esc(inst.code) + '">' +
-                                    '<i class="fa-solid fa-star"></i> 4.0 / 5.0' +
+                                    '<i class="fa-solid fa-star"></i> 4 / 5' +
                                 '</span>' +
                             '</div>' +
                         '</div>' +
@@ -295,7 +308,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 if (hint) hint.textContent = ratingLabels[currentRating] || (currentRating + ' / 5');
                 if (summaryBadge) {
                     summaryBadge.className = 'rating-badge rating-badge-active';
-                    summaryBadge.innerHTML = '<i class="fa-solid fa-star"></i> ' + currentRating.toFixed(1) + ' / 5.0';
+                    summaryBadge.innerHTML = '<i class="fa-solid fa-star"></i> ' + Math.round(currentRating) + ' / 5';
                 }
             });
         });
@@ -326,7 +339,6 @@ document.addEventListener('DOMContentLoaded', function () {
             }
 
             const historyTbody = document.getElementById('evaluationHistoryTbody');
-            const historyBadge = document.getElementById('historyCountBadge');
             const now = new Date();
             const dateStr = now.toISOString().split('T')[0];
             const courseCode = evalCourseHeading ? (evalCourseHeading.textContent.split('—')[0] || '').trim() : '';
@@ -343,7 +355,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 const statusPill = document.getElementById('instStatus_' + code);
                 if (statusPill) {
                     statusPill.className = 'pill pill-active status-pill';
-                    statusPill.innerHTML = '<i class="fa-solid fa-check"></i> Evaluated (' + rating.toFixed(1) + ')';
+                    statusPill.innerHTML = '<i class="fa-solid fa-check"></i> Evaluated (' + Math.round(rating) + ')';
                 }
                 const evalBtn = document.getElementById('btnEval_' + code);
                 if (evalBtn) {
@@ -364,36 +376,30 @@ document.addEventListener('DOMContentLoaded', function () {
                 if (historyTbody) {
                     const newRow = document.createElement('tr');
                     newRow.className = 'history-row';
+                    newRow.dataset.status = 'evaluated';
                     newRow.dataset.id = 'eval-' + Date.now() + '-' + code;
-                    newRow.dataset.week = 'Week 5';
-                    newRow.dataset.month = 'March 2026';
-                    newRow.dataset.sem = 'Semester 1 - 2026';
+                    newRow.dataset.weekStart = HISTORY_CAL ? HISTORY_CAL.current : '';
                     newRow.dataset.course = courseCode;
                     newRow.dataset.instructor = code;
-                    newRow.dataset.search = (courseCode + ' ' + code + ' ' + instName + ' ' + comment + ' week 5 march 2026').toLowerCase();
-
-                    const initials = instName.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
+                    newRow.dataset.search = (courseCode + ' ' + code + ' ' + instName + ' ' + comment).toLowerCase();
 
                     newRow.innerHTML = 
                         '<td>' +
                             '<div style="font-weight: 600; color: #0f1c2e;">' + esc(dateStr) + '</div>' +
-                            '<div style="font-size: 11px; color: #64748b;">Week 5 &middot; Current Week</div>' +
+                            '<div style="font-size: 11px; color: #64748b;">' + esc(currentWeekLabel()) + '</div>' +
                         '</td>' +
                         '<td>' +
-                            '<strong>' + esc(courseCode) + '</strong>' +
+                            codeBadge(courseCode, 'course') +
                         '</td>' +
                         '<td>' +
                             '<div class="lec-identity">' +
-                                '<span class="lec-avatar" style="width: 32px; height: 32px; font-size: 11px;">' + esc(initials) + '</span>' +
-                                '<span>' +
-                                    '<span class="lec-name" style="font-size: 13px;">' + esc(instName) + '</span>' +
-                                    '<span class="pill pill-muted" style="font-size: 10px; padding: 1px 5px;">' + esc(code) + '</span>' +
-                                '</span>' +
+                                codeBadge(code, 'staff', { title: instName }) +
+                                '<span class="lec-name" style="font-size: 13px;">' + esc(instName) + '</span>' +
                             '</div>' +
                         '</td>' +
                         '<td>' +
                             '<span class="rating-badge rating-badge-active">' +
-                                '<i class="fa-solid fa-star"></i> ' + rating.toFixed(1) + ' / 5.0' +
+                                '<i class="fa-solid fa-star"></i> ' + Math.round(rating) + ' / 5' +
                             '</span>' +
                         '</td>' +
                         '<td style="font-size: 12.5px; color: #334155; line-height: 1.45;">' +
@@ -401,14 +407,11 @@ document.addEventListener('DOMContentLoaded', function () {
                         '</td>' +
                         '<td style="text-align: right;">' +
                             '<span class="pill pill-active" style="background: #e6f9ed; color: #166534; font-size: 11px;">' +
-                                '<i class="fa-solid fa-check"></i> Submitted' +
+                                '<i class="fa-solid fa-check"></i> Evaluated' +
                             '</span>' +
                         '</td>';
 
                     historyTbody.insertBefore(newRow, historyTbody.firstChild);
-                    if (historyBadge) {
-                        historyBadge.textContent = parseInt(historyBadge.textContent || '0', 10) + 1;
-                    }
                 }
             });
 
@@ -623,7 +626,7 @@ document.addEventListener('DOMContentLoaded', function () {
             const statusPill = document.getElementById('instStatus_' + instCode);
             if (statusPill) {
                 statusPill.className = 'pill pill-active status-pill';
-                statusPill.innerHTML = '<i class="fa-solid fa-check"></i> Evaluated (' + rating.toFixed(1) + ')';
+                statusPill.innerHTML = '<i class="fa-solid fa-check"></i> Evaluated (' + Math.round(rating) + ')';
             }
 
             // Update evaluate button to evaluated on instructor row
@@ -644,42 +647,35 @@ document.addEventListener('DOMContentLoaded', function () {
 
             // Append row to History table
             const historyTbody = document.getElementById('evaluationHistoryTbody');
-            const historyBadge = document.getElementById('historyCountBadge');
             if (historyTbody) {
                 const now = new Date();
                 const dateStr = now.toISOString().split('T')[0];
                 const newRow = document.createElement('tr');
                 newRow.className = 'history-row';
+                newRow.dataset.status = 'evaluated';
                 newRow.dataset.id = 'eval-' + Date.now();
-                newRow.dataset.week = 'Week 5';
-                newRow.dataset.month = 'March 2026';
-                newRow.dataset.sem = 'Semester 1 - 2026';
+                newRow.dataset.weekStart = HISTORY_CAL ? HISTORY_CAL.current : '';
                 newRow.dataset.course = courseCode;
                 newRow.dataset.instructor = instCode;
-                newRow.dataset.search = (courseCode + ' ' + instCode + ' ' + instName + ' ' + comment + ' week 5 march 2026').toLowerCase();
-
-                const initials = instName.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
+                newRow.dataset.search = (courseCode + ' ' + instCode + ' ' + instName + ' ' + comment).toLowerCase();
 
                 newRow.innerHTML = 
                     '<td>' +
                         '<div style="font-weight: 600; color: #0f1c2e;">' + esc(dateStr) + '</div>' +
-                        '<div style="font-size: 11px; color: #64748b;">Week 5 &middot; Current Week</div>' +
+                        '<div style="font-size: 11px; color: #64748b;">' + esc(currentWeekLabel()) + '</div>' +
                     '</td>' +
                     '<td>' +
-                        '<strong>' + esc(courseCode) + '</strong>' +
+                        codeBadge(courseCode, 'course') +
                     '</td>' +
                     '<td>' +
                         '<div class="lec-identity">' +
-                            '<span class="lec-avatar" style="width: 32px; height: 32px; font-size: 11px;">' + esc(initials) + '</span>' +
-                            '<span>' +
-                                '<span class="lec-name" style="font-size: 13px;">' + esc(instName) + '</span>' +
-                                '<span class="pill pill-muted" style="font-size: 10px; padding: 1px 5px;">' + esc(instCode) + '</span>' +
-                            '</span>' +
+                            codeBadge(instCode, 'staff', { title: instName }) +
+                            '<span class="lec-name" style="font-size: 13px;">' + esc(instName) + '</span>' +
                         '</div>' +
                     '</td>' +
                     '<td>' +
                         '<span class="rating-badge rating-badge-active">' +
-                            '<i class="fa-solid fa-star"></i> ' + rating.toFixed(1) + ' / 5.0' +
+                            '<i class="fa-solid fa-star"></i> ' + Math.round(rating) + ' / 5' +
                         '</span>' +
                     '</td>' +
                     '<td style="font-size: 12.5px; color: #334155; line-height: 1.45;">' +
@@ -687,14 +683,11 @@ document.addEventListener('DOMContentLoaded', function () {
                     '</td>' +
                     '<td style="text-align: right;">' +
                         '<span class="pill pill-active" style="background: #e6f9ed; color: #166534; font-size: 11px;">' +
-                            '<i class="fa-solid fa-check"></i> Submitted' +
+                            '<i class="fa-solid fa-check"></i> Evaluated' +
                         '</span>' +
                     '</td>';
 
                 historyTbody.insertBefore(newRow, historyTbody.firstChild);
-                if (historyBadge) {
-                    historyBadge.textContent = parseInt(historyBadge.textContent || '0', 10) + 1;
-                }
             }
 
             closeInstructorDrawer();
@@ -706,14 +699,16 @@ document.addEventListener('DOMContentLoaded', function () {
     // 4. TAB 3: EVALUATION HISTORY FILTERING
     // =========================================================================
     const historySearch = document.getElementById('historySearch');
-    const historyTimeFilter = document.getElementById('historyTimeFilter');
     const historyCourseFilter = document.getElementById('historyCourseFilter');
     const historyInstructorFilter = document.getElementById('historyInstructorFilter');
-    const historyTable = document.getElementById('evaluationHistoryTable');
     const historyTbody = document.getElementById('evaluationHistoryTbody');
     const historyEmptyMsg = document.getElementById('historyEmptyMsg');
 
-    let currentHistoryTime = '';
+    // The Monday ISO dates of the weeks in the chosen period (PeriodNav).
+    let historyWeeks = null;
+    // '' | 'evaluated' | 'missing'
+    let historyStatus = '';
+    const historyStatusFilter = document.getElementById('historyStatusFilter');
 
     function applyHistoryFilters() {
         if (!historyTbody) return;
@@ -724,27 +719,13 @@ document.addEventListener('DOMContentLoaded', function () {
         let visibleCount = 0;
 
         rows.forEach(function (row) {
-            const searchKey = row.dataset.search || '';
-            const rowCourse = row.dataset.course || '';
-            const rowInstructor = row.dataset.instructor || '';
-            const rowWeek = row.dataset.week || '';
-            const rowMonth = row.dataset.month || '';
-            const rowSem = row.dataset.sem || '';
+            const matchQuery = !query || (row.dataset.search || '').includes(query);
+            const matchCourse = !courseVal || row.dataset.course === courseVal;
+            const matchInst = !instVal || row.dataset.instructor === instVal;
+            const matchTime = !historyWeeks || historyWeeks.has(row.dataset.weekStart || '');
+            const matchStatus = !historyStatus || row.dataset.status === historyStatus;
 
-            const matchQuery = !query || searchKey.includes(query);
-            const matchCourse = !courseVal || rowCourse === courseVal;
-            const matchInst = !instVal || rowInstructor === instVal;
-
-            let matchTime = true;
-            if (currentHistoryTime === 'week') {
-                matchTime = rowWeek.toLowerCase().includes('week 5'); // Current active week
-            } else if (currentHistoryTime === 'month') {
-                matchTime = rowMonth.toLowerCase().includes('march');
-            } else if (currentHistoryTime === 'sem') {
-                matchTime = rowSem.toLowerCase().includes('semester 1');
-            }
-
-            const show = matchQuery && matchCourse && matchInst && matchTime;
+            const show = matchQuery && matchCourse && matchInst && matchTime && matchStatus;
             row.style.display = show ? '' : 'none';
             if (show) visibleCount++;
         });
@@ -755,15 +736,26 @@ document.addEventListener('DOMContentLoaded', function () {
     if (historySearch) historySearch.addEventListener('input', applyHistoryFilters);
     if (historyCourseFilter) historyCourseFilter.addEventListener('change', applyHistoryFilters);
     if (historyInstructorFilter) historyInstructorFilter.addEventListener('change', applyHistoryFilters);
-
-    if (historyTimeFilter) {
-        historyTimeFilter.addEventListener('click', function (e) {
-            const btn = e.target.closest('.seg-btn');
+    if (historyStatusFilter) {
+        historyStatusFilter.addEventListener('click', function (e) {
+            const btn = e.target.closest('[data-status]');
             if (!btn) return;
-            historyTimeFilter.querySelectorAll('.seg-btn').forEach(b => b.classList.remove('active'));
-            btn.classList.add('active');
-            currentHistoryTime = btn.dataset.value || '';
+            historyStatus = btn.dataset.status;
+            historyStatusFilter.querySelectorAll('.seg-btn').forEach(function (b) { b.classList.toggle('active', b === btn); });
             applyHistoryFilters();
+        });
+    }
+
+    // Week / Month / Semester with previous-next arrows; this week by default.
+    const historyNavEl = document.getElementById('historyPeriodNav');
+    if (historyNavEl && HISTORY_CAL && window.PeriodNav) {
+        PeriodNav.create(historyNavEl, {
+            calendar: HISTORY_CAL,
+            units: ['week', 'month', 'semester'],
+            onChange: function (p) {
+                historyWeeks = new Set(p.weeks.map(function (w) { return w.start; }));
+                applyHistoryFilters();
+            }
         });
     }
 
@@ -782,7 +774,7 @@ document.addEventListener('DOMContentLoaded', function () {
             }
             if (pill) {
                 pill.className = 'pill pill-active status-pill';
-                pill.innerHTML = '<i class="fa-solid fa-check"></i> Evaluated (' + Number(data.rating).toFixed(1) + ')';
+                pill.innerHTML = '<i class="fa-solid fa-check"></i> Evaluated (' + Math.round(Number(data.rating)) + ')';
             }
         });
     } catch (e) {}

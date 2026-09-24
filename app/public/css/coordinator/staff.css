@@ -233,3 +233,77 @@
     color: #0f1c2e;
     background: #fff;
 }
+
+/* ---- Add staff ---- */
+.staff-add-btn { margin-left: auto; }
+
+/* The form and the "done" state each fill the panel: body scrolls, foot stays. */
+.add-staff-pane { flex: 1; min-height: 0; display: flex; flex-direction: column; }
+
+.add-staff-roles { border: none; padding: 0; margin: 0 0 14px; }
+.add-staff-roles legend {
+    font-size: 12.5px;
+    font-weight: 500;
+    color: #374151;
+    margin-bottom: 6px;
+    padding: 0;
+}
+
+/* Radio cards: the input stays in the DOM (keyboard + screen readers), the
+   card is what you see. */
+.role-option { display: block; cursor: pointer; }
+.role-option + .role-option { margin-top: 8px; }
+.role-option input { position: absolute; opacity: 0; pointer-events: none; }
+.role-option-card {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 11px 14px;
+    border: 1px solid #dde3ee;
+    border-radius: 10px;
+    background: #fff;
+    transition: border-color 0.15s ease, background 0.15s ease, box-shadow 0.15s ease;
+}
+.role-option-card > i {
+    width: 34px;
+    height: 34px;
+    border-radius: 9px;
+    background: #f1f5f9;
+    color: #475569;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+.role-option-card strong { display: block; font-size: 13px; color: #0f1c2e; }
+.role-option-card small { display: block; font-size: 11.5px; color: #6b7c96; margin-top: 1px; }
+.role-option:hover .role-option-card { border-color: #cbd5e1; }
+.role-option input:checked + .role-option-card {
+    border-color: #1a3a6b;
+    background: #f5f8fd;
+    box-shadow: 0 0 0 1px #1a3a6b;
+}
+.role-option input:checked + .role-option-card > i { background: #1a3a6b; color: #fff; }
+.role-option input:focus-visible + .role-option-card { box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.25); }
+
+.add-staff-note {
+    display: flex;
+    gap: 9px;
+    font-size: 12px;
+    line-height: 1.5;
+    color: #6b7c96;
+    background: #f8fafc;
+    border-radius: 8px;
+    padding: 10px 12px;
+}
+.add-staff-note i { color: #2563eb; margin-top: 2px; }
+
+.add-staff-pane[hidden] { display: none; }
+.add-staff-done .side-panel-body { text-align: center; padding-top: 48px; }
+.add-staff-done-icon { font-size: 40px; color: #16a34a; margin-bottom: 10px; }
+.add-staff-done-title { font-size: 15px; font-weight: 700; color: #0f1c2e; }
+.add-staff-done-sub { font-size: 12.5px; color: #6b7c96; margin-top: 6px; line-height: 1.5; }
+
+@media (max-width: 768px) {
+    .staff-add-btn { margin-left: 0; flex: 1 1 100%; }
+}

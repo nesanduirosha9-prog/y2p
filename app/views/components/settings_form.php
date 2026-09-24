@@ -166,32 +166,64 @@ $initials = ViewHelpers::currentAvatarCode();
     </div>
 
     <?php if ($isInCharge): ?>
-        <!-- Panel 2: Account Handover (In-Charge Only) -->
+        <!-- Panel 2: Account Handover (In-Charge Only)
+             Coordinator is a multi-seat role: the In-Charge decides how many
+             there are (Add coordinator / Revoke). The In-Charge and Timetable
+             Officer seats are single, so those rows only offer Change. -->
+        <?php
+        $coordinatorCount = count(array_filter($roleHolders ?? [], fn($h) => ($h['position'] ?? '') === 'coordinator'));
+        ?>
         <div class="settings-panel" id="settings-panel-handover" role="tabpanel" aria-labelledby="tab-handover" hidden>
             <div class="dir-card">
+                <div class="handover-head">
+                    <div>
+                        <h3>Key roles</h3>
+                        <p class="page-head-sub"><?= $coordinatorCount ?> Coordinator<?= $coordinatorCount === 1 ? '' : 's' ?> &middot; 1 In-Charge &middot; 1 Timetable Officer</p>
+                    </div>
+                    <a class="btn-primary handover-add-btn" href="/settings/handover/add/coordinator">
+                        <i class="fa-solid fa-user-plus"></i> Add coordinator
+                    </a>
+                </div>
                 <div class="dir-scroll">
                     <table class="dir-table">
                         <thead>
                             <tr>
                                 <th>Role</th>
-                                <th>Lecturer Name</th>
+                                <th>Name</th>
                                 <th>Email Address</th>
-                                <th></th>
+                                <th style="text-align:right;">Actions</th>
                             </tr>
                         </thead>
-                        <tbody>
+                        <tbody id="handoverBody">
                             <?php foreach (($roleHolders ?? []) as $h): ?>
                                 <?php
                                 $posKey = $h['role'] === 'timetable_officer' ? 'timetable_officer' : $h['position'];
+                                $isCoordinator = $posKey === 'coordinator';
+                                $isLastCoordinator = $isCoordinator && $coordinatorCount <= 1;
                                 ?>
                                 <tr>
                                     <td><span class="pill pill-muted"><?= htmlspecialchars(ViewHelpers::roleHolderLabel($h)) ?></span></td>
-                                    <td><?= htmlspecialchars($h['name']) ?></td>
+                                    <td>
+                                        <div class="lec-identity">
+                                            <?= ViewHelpers::codeBadge($h['code'], $h['academic_rank'] === 'senior' ? 'lecturer' : 'staff') ?>
+                                            <span class="lec-name"><?= htmlspecialchars($h['name']) ?></span>
+                                        </div>
+                                    </td>
                                     <td><?= htmlspecialchars($h['email']) ?></td>
                                     <td>
-                                        <a class="btn-secondary" href="/settings/handover/change/<?= urlencode($posKey) ?>/<?= urlencode($h['code']) ?>">
-                                            Change
-                                        </a>
+                                        <div class="handover-row-actions">
+                                            <a class="btn-secondary" href="/settings/handover/change/<?= urlencode($posKey) ?>/<?= urlencode($h['code']) ?>">
+                                                Change
+                                            </a>
+                                            <?php if ($isCoordinator): ?>
+                                                <button type="button" class="btn-revoke"
+                                                        data-revoke="<?= htmlspecialchars($h['code']) ?>"
+                                                        data-name="<?= htmlspecialchars($h['name']) ?>"
+                                                        <?= $isLastCoordinator ? 'disabled title="The department needs at least one Coordinator"' : 'title="Take the Coordinator role away. They stay on staff as Junior Staff."' ?>>
+                                                    Revoke
+                                                </button>
+                                            <?php endif; ?>
+                                        </div>
                                     </td>
                                 </tr>
                             <?php endforeach; ?>
@@ -203,9 +235,9 @@ $initials = ViewHelpers::currentAvatarCode();
                 </div>
             </div>
 
-            <p class="accounts-note" style="margin-top: 14px; font-size: 12.5px; color: #6b7c96; display: flex; align-items: center; gap: 8px;">
+            <p class="accounts-note">
                 <i class="fa-solid fa-shield-halved" style="color: #1a3a6b;"></i>
-                Role changes require OTP verification to ensure only you can reassign these seats.
+                Giving someone a role needs a verification code from them. Revoking a Coordinator takes effect straight away.
             </p>
         </div>
     <?php endif; ?>

@@ -191,7 +191,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 newRow.dataset.search = searchStr;
 
                 newRow.innerHTML = `
-                    <td><span class="pill pill-muted">${esc(code)}</span></td>
+                    <td>${codeBadge(code, 'course', { title: title })}</td>
                     <td>
                         <strong>${esc(title)}</strong>
                         <div class="course-sessions-hint" style="font-size: 11.5px; color: #64748b; margin-top: 2px;">
@@ -203,7 +203,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     <td><span class="pill pill-muted">${esc(program)}</span></td>
                     <td>
                         <div class="tag-row">
-                            <span class="tag tag-lecturer" title="${esc(lecturerName)}">${esc(lecturerCode)}</span>
+                            <span class="code-badge code-badge--lecturer" title="${esc(lecturerName)}">${esc(lecturerCode)}</span>
                         </div>
                     </td>
                     <td>

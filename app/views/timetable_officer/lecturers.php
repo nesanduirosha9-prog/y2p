@@ -64,7 +64,7 @@ function renderStaffTable(string $idPrefix, array $staff, array $courseMeta, str
                         <tr data-programs="<?= htmlspecialchars(implode(',', $programs)) ?>"
                             data-years="<?= htmlspecialchars(implode(',', $years)) ?>"
                             data-search="<?= htmlspecialchars($search) ?>">
-                            <td><span class="pill pill-muted"><?= htmlspecialchars($code) ?></span></td>
+                            <td><?= ViewHelpers::codeBadge($code, $idPrefix === 'lecturer' ? 'lecturer' : 'staff', $s['name']) ?></td>
                             <td>
                                 <div class="lec-identity">
                                     <span class="lec-avatar"><?= htmlspecialchars(ViewHelpers::staffInitials($s['name'])) ?></span>
@@ -78,7 +78,7 @@ function renderStaffTable(string $idPrefix, array $staff, array $courseMeta, str
                             <td>
                                 <div class="tag-row">
                                     <?php foreach ($s['courses'] as $cc): ?>
-                                        <span class="tag tag-course"><?= htmlspecialchars($cc) ?></span>
+                                        <span class="code-badge code-badge--course"><?= htmlspecialchars($cc) ?></span>
                                     <?php endforeach; ?>
                                 </div>
                             </td>

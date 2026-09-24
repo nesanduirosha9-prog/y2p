@@ -89,7 +89,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (info.dates.length > 0) {
                 title += ` (${info.dates.join(', ')})`;
             }
-            return `<span class="tag tag-instructor" title="${esc(title)}">${esc(info.code)}</span>`;
+            return `<span class="code-badge code-badge--staff" title="${esc(title)}">${esc(info.code)}</span>`;
         });
 
         return `<div class="tag-row">${badges.join('')}</div>`;
@@ -339,7 +339,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (hasAssigned) {
                 triggerHtml = `
                     <span class="lv-combobox-selected-text">
-                        <span class="tag tag-instructor" style="margin-right: 6px;">${esc(assigned.code)}</span>
+                        <span class="code-badge code-badge--staff" style="margin-right: 6px;">${esc(assigned.code)}</span>
                         <strong>${esc(assigned.name)}</strong>
                     </span>
                     <button type="button" class="lv-combobox-clear-btn" data-clear-date="${esc(d)}" title="Clear assignment"><i class="fa-solid fa-xmark"></i></button>
@@ -357,7 +357,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 const isSel = hasAssigned && assigned.code === inst.code;
                 return `
                     <div class="lv-combobox-item ${isSel ? 'selected' : ''}" data-date="${esc(d)}" data-code="${esc(inst.code)}" data-name="${esc(inst.name)}">
-                        <span class="tag tag-instructor">${esc(inst.code)}</span>
+                        <span class="code-badge code-badge--staff">${esc(inst.code)}</span>
                         <span class="lv-combobox-name">${esc(inst.name)}</span>
                         ${isSel ? '<i class="fa-solid fa-check" style="color: #2563eb; font-size: 11px;"></i>' : ''}
                     </div>

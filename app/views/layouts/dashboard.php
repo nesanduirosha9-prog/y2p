@@ -18,44 +18,57 @@ $isInstructor = $role === 'academic_staff';
 $active = $active ?? 'timetable';
 $userEmail = $_SESSION['user_email'] ?? ($isInstructor ? 'tmf@ucsc.cmb.ac.lk' : 'tmo@ucsc.cmb.ac.lk');
 
-// Base nav items per role.
+// Sidebar, as groups. The ordering rules live in the structure, so appending
+// an item cannot break them:
+//   - personal pages first, administrative ones after (Coordinator / In-Charge);
+//   - Messages and Settings are always the last two, for every role.
+$nav = fn($href, $icon, $label, $key) => compact('href', 'icon', 'label', 'key');
+$navGroups = [];
+
 if (!$isInstructor) {
-    $navItems = [
-        ['href' => '/timetable',     'icon' => 'fa-solid fa-calendar-days', 'label' => 'Timetable',      'key' => 'timetable'],
-        ['href' => '/courses',       'icon' => 'fa-solid fa-book-open',     'label' => 'Course Details', 'key' => 'courses'],
-        ['href' => '/staff',         'icon' => 'fa-solid fa-users',         'label' => 'Staff Details',  'key' => 'lecturers'],
-        ['href' => '/lecture-halls', 'icon' => 'fa-solid fa-building',      'label' => 'Lecture Halls',  'key' => 'lecture-halls'],
-        ['href' => '/messages',      'icon' => 'fa-regular fa-message',     'label' => 'Messages',       'key' => 'messages'],
-    ];
+    $navGroups[] = ['label' => 'Navigation', 'items' => [
+        $nav('/timetable',     'fa-solid fa-calendar-days', 'Timetable',      'timetable'),
+        $nav('/courses',       'fa-solid fa-book-open',     'Course Details', 'courses'),
+        $nav('/staff',         'fa-solid fa-users',         'Staff Details',  'lecturers'),
+        $nav('/lecture-halls', 'fa-solid fa-building',      'Lecture Halls',  'lecture-halls'),
+    ]];
 } else {
     // Academic Staff: Lecturers (senior) see My Courses; Instructors (junior) see My Workload
-    $navItems = [
-        ['href' => '/timetable', 'icon' => 'fa-solid fa-calendar-days', 'label' => 'Timetable', 'key' => 'timetable'],
-    ];
-    if ($academicRank === 'senior' || $position === 'in_charge') {
-        $navItems[] = ['href' => '/courses', 'icon' => 'fa-solid fa-book-open', 'label' => 'My Courses', 'key' => 'courses'];
-    } else {
-        $navItems[] = ['href' => '/workload', 'icon' => 'fa-solid fa-layer-group', 'label' => 'My Workload', 'key' => 'workload'];
+    $own = [$nav('/timetable', 'fa-solid fa-calendar-days', 'Timetable', 'timetable')];
+    $own[] = ($academicRank === 'senior' || $position === 'in_charge')
+        ? $nav('/courses',  'fa-solid fa-book-open',   'My Courses',  'courses')
+        : $nav('/workload', 'fa-solid fa-layer-group', 'My Workload', 'workload');
+    $own[] = $nav('/leave', 'fa-regular fa-calendar-minus', 'Leave', 'leave');
+
+    $admin = [];
+    if ($position === 'coordinator' || $position === 'in_charge') {
+        // Same screens, same names for both positions — only the Coordinator
+        // runs the Duty Scheduler.
+        $admin[] = $nav('/workload/distribution', 'fa-solid fa-table-cells', 'Workload Matrix', 'workload-dist');
+        if ($position === 'coordinator') {
+            $admin[] = $nav('/workload/scheduler', 'fa-solid fa-calendar-check', 'Duty Scheduler', 'workload-sched');
+        }
+        $admin[] = $nav('/evaluations', 'fa-solid fa-clipboard-check', 'Evaluations',   'evaluations');
+        $admin[] = $nav('/staff',       'fa-solid fa-user-check',      'Staff Details', 'staff');
+        // The department-wide log is rarely needed, so it closes the admin
+        // group. Every role can still read its OWN log from the profile menu
+        // (components/user_chip.php); these two do not see the same rows — see
+        // AuditController.
+        $admin[] = $nav('/audit', 'fa-solid fa-clock-rotate-left', 'Activity Log', 'audit');
     }
 
-    // Role-specific Workload & Evaluation extensions
-    if ($position === 'coordinator') {
-        $navItems[] = ['href' => '/workload/distribution', 'icon' => 'fa-solid fa-table-cells',     'label' => 'Workload Matrix', 'key' => 'workload-dist'];
-        $navItems[] = ['href' => '/workload/scheduler',    'icon' => 'fa-solid fa-calendar-check',  'label' => 'Duty Scheduler',  'key' => 'workload-sched'];
-        $navItems[] = ['href' => '/staff',                 'icon' => 'fa-solid fa-user-check',      'label' => 'Staff',           'key' => 'staff'];
-        $navItems[] = ['href' => '/evaluations',           'icon' => 'fa-solid fa-clipboard-check', 'label' => 'Evaluations',     'key' => 'evaluations'];
-    } elseif ($position === 'in_charge') {
-        $navItems[] = ['href' => '/workload/distribution', 'icon' => 'fa-solid fa-table-cells',     'label' => 'Workload Matrix', 'key' => 'workload-dist'];
-        $navItems[] = ['href' => '/staff',                 'icon' => 'fa-solid fa-user-check',      'label' => 'Staff',           'key' => 'staff'];
-        $navItems[] = ['href' => '/evaluations',           'icon' => 'fa-solid fa-award',           'label' => 'Appraisals',      'key' => 'evaluations'];
+    // With a single group a "My work" heading would be noise.
+    $navGroups[] = ['label' => $admin ? 'My work' : 'Navigation', 'items' => $own];
+    if ($admin) {
+        $navGroups[] = ['label' => 'Administration', 'items' => $admin];
     }
-
-    $navItems[] = ['href' => '/leave',    'icon' => 'fa-regular fa-calendar-minus', 'label' => 'Leave',    'key' => 'leave'];
-    $navItems[] = ['href' => '/messages', 'icon' => 'fa-regular fa-message',        'label' => 'Messages', 'key' => 'messages'];
 }
 
-// Settings is one URL for everybody, so this no longer branches on role.
-$navItems[] = ['href' => '/settings', 'icon' => 'fa-solid fa-gear', 'label' => 'Settings', 'key' => 'settings'];
+// Always last, always in this order, for every role.
+$navGroups[] = ['label' => null, 'items' => [
+    $nav('/messages', 'fa-regular fa-message', 'Messages', 'messages'),
+    $nav('/settings', 'fa-solid fa-gear',      'Settings', 'settings'),
+]];
 
 // The profile chip builds itself from ViewHelpers (the signed-in member's name
 // and 3-letter code) — see components/user_chip.php. It used to show a role
@@ -84,6 +97,8 @@ $titleSuffix = $isInstructor ? 'StaffSync - Instructor' : 'StaffSync';
     <?php foreach ((array)($css_file ?? []) as $cssHref): ?>
         <link rel="stylesheet" href="<?= htmlspecialchars($cssHref) ?>">
     <?php endforeach; ?>
+    <!-- In <head>, not beside dashboard.js: page scripts inside $content call codeBadge() while they render. -->
+    <script src="/js/code_badge.js"></script>
 </head>
 <body>
 
@@ -99,12 +114,18 @@ $titleSuffix = $isInstructor ? 'StaffSync - Instructor' : 'StaffSync';
             </div>
 
             <nav class="sidebar-nav">
-                <p class="nav-label">Navigation</p>
-                <?php foreach ($navItems as $item): ?>
-                    <a href="<?= htmlspecialchars($item['href']) ?>" class="nav-item <?= $active === $item['key'] ? 'active' : '' ?>">
-                        <i class="<?= htmlspecialchars($item['icon']) ?>"></i>
-                        <span><?= htmlspecialchars($item['label']) ?></span>
-                    </a>
+                <?php foreach ($navGroups as $group): ?>
+                    <div class="nav-group <?= $group['label'] === null ? 'nav-group-tail' : '' ?>">
+                        <?php if ($group['label'] !== null): ?>
+                            <p class="nav-label"><?= htmlspecialchars($group['label']) ?></p>
+                        <?php endif; ?>
+                        <?php foreach ($group['items'] as $item): ?>
+                            <a href="<?= htmlspecialchars($item['href']) ?>" class="nav-item <?= $active === $item['key'] ? 'active' : '' ?>">
+                                <i class="<?= htmlspecialchars($item['icon']) ?>"></i>
+                                <span><?= htmlspecialchars($item['label']) ?></span>
+                            </a>
+                        <?php endforeach; ?>
+                    </div>
                 <?php endforeach; ?>
             </nav>
 

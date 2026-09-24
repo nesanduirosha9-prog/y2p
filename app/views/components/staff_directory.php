@@ -16,15 +16,6 @@ $currentUserPosition = $_SESSION['position'] ?? '';
 
 <div class="staff-view" data-base-path="<?= htmlspecialchars($basePath) ?>">
 
-    <div class="page-head">
-        <div>
-            <p class="page-head-sub" id="staffSummarySub">
-                <span id="activeStaffCountSummary"><?= count($activeStaff) ?></span> active members &middot; 
-                <span id="pendingCountSummary"><?= count($pending) ?></span> pending requests
-            </p>
-        </div>
-    </div>
-
     <!-- Tab Bar: Active Staff Members & Pending Registration Requests -->
     <div class="staff-tabs" id="staffTabs" role="tablist">
         <button type="button" class="staff-tab active" data-tab="active" role="tab" aria-selected="true" id="tab-active">
@@ -52,6 +43,9 @@ $currentUserPosition = $_SESSION['position'] ?? '';
                 <button type="button" class="seg-btn" data-value="senior">Lecturer</button>
                 <button type="button" class="seg-btn" data-value="timetable_officer">Timetable Officer</button>
             </div>
+            <button type="button" class="btn-primary staff-add-btn" id="addStaffBtn">
+                <i class="fa-solid fa-user-plus"></i> Add staff
+            </button>
         </div>
 
         <div class="dir-card">
@@ -107,7 +101,7 @@ $currentUserPosition = $_SESSION['position'] ?? '';
                                 data-role="<?= htmlspecialchars($rankKey) ?>"
                                 data-search="<?= htmlspecialchars($search) ?>"
                                 data-status="<?= $isPending ? 'pending' : 'active' ?>">
-                                <td><span class="pill pill-muted"><?= htmlspecialchars($s['code']) ?></span></td>
+                                <td><?= ViewHelpers::codeBadge($s['code'], $rankKey === 'senior' ? 'lecturer' : 'staff', $s['name']) ?></td>
                                 <td>
                                     <div class="lec-identity">
                                         <span class="lec-avatar"><?= htmlspecialchars(ViewHelpers::staffInitials($s['name'])) ?></span>
@@ -123,7 +117,7 @@ $currentUserPosition = $_SESSION['position'] ?? '';
                                     <?php if (!empty($courses)): ?>
                                         <div class="tag-row">
                                             <?php foreach ($courses as $cc): ?>
-                                                <span class="tag tag-course"><?= htmlspecialchars($cc) ?></span>
+                                                <span class="code-badge code-badge--course"><?= htmlspecialchars($cc) ?></span>
                                             <?php endforeach; ?>
                                         </div>
                                     <?php else: ?>
@@ -207,7 +201,7 @@ $currentUserPosition = $_SESSION['position'] ?? '';
                                     <select class="assign-role-select">
                                         <option value="">Select role&hellip;</option>
                                         <option value="junior">Junior Staff Member</option>
-                                        <option value="senior">Senior Lecturer</option>
+                                        <option value="senior">Lecturer</option>
                                         <option value="timetable_officer">Timetable Officer</option>
                                     </select>
                                 </td>
@@ -230,4 +224,77 @@ $currentUserPosition = $_SESSION['position'] ?? '';
         </div>
     </div>
 
+    <!-- Add staff: email + role is all that is needed. The member sets their
+         own password (Forgot Password) and fills in their name from Settings.
+         Opens from the right, like every other panel in the system. -->
+    <div class="side-panel-backdrop" id="addStaffBackdrop" hidden></div>
+    <aside class="side-panel" id="addStaffPanel" hidden role="dialog" aria-modal="true" aria-labelledby="addStaffTitle">
+        <div class="side-panel-head">
+            <div>
+                <span class="side-panel-tag">Staff Details</span>
+                <h3 class="side-panel-title" id="addStaffTitle">Add staff</h3>
+                <p class="side-panel-sub">An email and a role is all it takes.</p>
+            </div>
+            <button type="button" class="side-panel-close" data-add-close aria-label="Close"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+
+        <form class="add-staff-pane" id="addStaffForm" novalidate>
+            <div class="side-panel-body">
+                <div class="form-row">
+                    <label for="addStaffEmail">University email</label>
+                    <input type="email" id="addStaffEmail" name="email" placeholder="name@ucsc.cmb.ac.lk" autocomplete="off" required>
+                    <p class="form-error" id="addStaffEmailError" hidden></p>
+                </div>
+
+                <fieldset class="form-row add-staff-roles">
+                    <legend>Role</legend>
+                    <label class="role-option">
+                        <input type="radio" name="role" value="lecturer">
+                        <span class="role-option-card">
+                            <i class="fa-solid fa-chalkboard-user"></i>
+                            <span>
+                                <strong>Lecturer</strong>
+                                <small>Teaches courses, evaluates junior staff</small>
+                            </span>
+                        </span>
+                    </label>
+                    <label class="role-option">
+                        <input type="radio" name="role" value="junior">
+                        <span class="role-option-card">
+                            <i class="fa-solid fa-user-graduate"></i>
+                            <span>
+                                <strong>Junior Staff</strong>
+                                <small>Supports courses: practicals, tutorials, marking</small>
+                            </span>
+                        </span>
+                    </label>
+                    <p class="form-error" id="addStaffRoleError" hidden></p>
+                </fieldset>
+
+                <p class="add-staff-note">
+                    <i class="fa-solid fa-envelope-circle-check"></i>
+                    They'll get an email telling them how to set a password. They add their name and phone number themselves from Settings.
+                </p>
+                <p class="form-error" id="addStaffError" hidden></p>
+            </div>
+
+            <div class="side-panel-foot">
+                <button type="button" class="btn-cancel" data-add-close>Cancel</button>
+                <button type="submit" class="btn-block" id="addStaffSubmit">Create account</button>
+            </div>
+        </form>
+
+        <!-- Shown in place of the form once the account exists -->
+        <div class="add-staff-pane add-staff-done" id="addStaffDone" hidden>
+            <div class="side-panel-body">
+                <div class="add-staff-done-icon"><i class="fa-solid fa-circle-check"></i></div>
+                <p class="add-staff-done-title" id="addStaffDoneTitle"></p>
+                <p class="add-staff-done-sub" id="addStaffDoneSub"></p>
+            </div>
+            <div class="side-panel-foot">
+                <button type="button" class="btn-cancel" id="addStaffAnother">Add another</button>
+                <button type="button" class="btn-block" id="addStaffFinish">Done</button>
+            </div>
+        </div>
+    </aside>
 </div>

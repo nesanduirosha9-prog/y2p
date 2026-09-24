@@ -314,7 +314,7 @@ $coverRequests = [
                          data-sessions="<?= htmlspecialchars(implode(',', $cr['sessions'] ?? [])) ?>">
                         <div class="wk-cover-icon"><i class="fa-solid fa-user-clock"></i></div>
                         <div class="wk-cover-info">
-                            <p class="wk-cover-title"><span class="pill pill-muted" style="margin-right: 6px;"><?= htmlspecialchars($cr['code']) ?></span> <?= htmlspecialchars($cr['title']) ?></p>
+                            <p class="wk-cover-title"><?= \app\core\ViewHelpers::codeBadge($cr['code'], 'course', '', 'wk-inline-code') ?> <?= htmlspecialchars($cr['title']) ?></p>
                             <p class="wk-cover-meta">Staff on leave: <strong><?= htmlspecialchars($cr['staff_on_leave']) ?></strong> · Schedule: <?= htmlspecialchars($cr['date']) ?> · Duration: <?= htmlspecialchars($cr['duration']) ?></p>
                         </div>
                         <div class="wk-cover-actions">
@@ -406,7 +406,7 @@ $coverRequests = [
                                 data-program="<?= htmlspecialchars($ac['program']) ?>"
                                 data-sessions="<?= htmlspecialchars(implode(',', $sessionsList)) ?>"
                                 data-search="<?= htmlspecialchars($searchStr) ?>">
-                                <td><span class="pill pill-muted"><?= htmlspecialchars($ac['code']) ?></span></td>
+                                <td><?= \app\core\ViewHelpers::codeBadge($ac['code'], 'course', $ac['name']) ?></td>
                                 <td>
                                     <strong><?= htmlspecialchars($ac['name']) ?></strong>
                                     <div class="course-sessions-hint" style="font-size: 11.5px; color: #64748b; margin-top: 2px;">
@@ -419,7 +419,7 @@ $coverRequests = [
                                 <td>
                                     <div class="tag-row">
                                         <?php foreach (($ac['lecturers'] ?? []) as $lec): ?>
-                                            <span class="tag tag-lecturer" title="<?= htmlspecialchars($lec['name']) ?>"><?= htmlspecialchars($lec['code']) ?></span>
+                                            <span class="code-badge code-badge--lecturer" title="<?= htmlspecialchars($lec['name']) ?>"><?= htmlspecialchars($lec['code']) ?></span>
                                         <?php endforeach; ?>
                                     </div>
                                 </td>
@@ -427,7 +427,7 @@ $coverRequests = [
                                     <div class="tag-row">
                                         <?php if (!empty($ac['other_instructors'])): ?>
                                             <?php foreach ($ac['other_instructors'] as $oInst): ?>
-                                                <span class="tag tag-instructor" title="<?= htmlspecialchars($oInst['name']) ?>"><?= htmlspecialchars($oInst['code']) ?></span>
+                                                <span class="code-badge code-badge--staff" title="<?= htmlspecialchars($oInst['name']) ?>"><?= htmlspecialchars($oInst['code']) ?></span>
                                             <?php endforeach; ?>
                                         <?php else: ?>
                                             <span style="color: #94a3b8; font-size: 13px;">—</span>
@@ -529,7 +529,7 @@ $coverRequests = [
                                     <div style="font-size: 11px; color: #64748b;"><?= htmlspecialchars($h['week']) ?> &middot; <?= htmlspecialchars($h['semester']) ?></div>
                                 </td>
                                 <td>
-                                    <span class="pill pill-muted" style="font-weight: 700;"><?= htmlspecialchars($h['course_code']) ?></span>
+                                    <?= \app\core\ViewHelpers::codeBadge($h['course_code'], 'course', $h['course_name'] ?? '') ?>
                                 </td>
                                 <td>
                                     <div style="font-weight: 600; color: #0f1c2e;"><?= htmlspecialchars($h['course_name']) ?></div>
@@ -544,7 +544,7 @@ $coverRequests = [
                                 <td>
                                     <?php if ($isEval && !empty($h['rating'])): ?>
                                         <span class="rating-badge rating-badge-active">
-                                            <i class="fa-solid fa-star"></i> <?= number_format((float)$h['rating'], 1) ?> / 5.0
+                                            <i class="fa-solid fa-star"></i> <?= (int)round((float)$h['rating']) ?> / 5
                                         </span>
                                     <?php else: ?>
                                         <span style="color: #94a3b8; font-weight: 500;">—</span>

@@ -1,0 +1,801 @@
+/* ==============================================================
+   audit.css — the Activity Log (/audit and /audit/me).
+
+   Loaded next to directory.css, which already provides the page
+   header, the card shell, the search box and the side drawer this
+   screen reuses. Everything here is prefixed `aud-` so the file
+   can be read on its own and cannot collide with the workload or
+   evaluation screens, which are not loaded alongside it.
+
+   Two things drove the sizing: the readers include lecturers who
+   would rather not be using a computer at all, and the page has to
+   work on a phone. So rows are tall and tappable (44px+ targets),
+   every control carries a visible label, and nothing is revealed
+   only on hover.
+   ============================================================== */
+
+.aud-page {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.page-head-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+/* ---- Buttons (this screen is not loaded with workload_matrix.css,
+        which is where the same two shapes live for those pages) ---- */
+.aud-btn-outline {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    height: 40px;
+    padding: 0 15px;
+    border: 1px solid #dde3ee;
+    border-radius: 9px;
+    background: #fff;
+    color: #1e293b;
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    text-decoration: none;
+    white-space: nowrap;
+    transition: background 0.15s ease, border-color 0.15s ease;
+}
+
+.aud-btn-outline:hover {
+    background: #f4f6f9;
+    border-color: #cbd5e1;
+}
+
+.aud-btn-ghost {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    border: none;
+    background: none;
+    color: #2563eb;
+    font-family: inherit;
+    font-size: 12.5px;
+    font-weight: 600;
+    cursor: pointer;
+    padding: 6px 8px;
+    border-radius: 7px;
+}
+
+.aud-btn-ghost:hover {
+    background: #eff6ff;
+}
+
+/* An author `display` beats the browser's own [hidden] rule whatever the
+   specificity, so anything this page hides with the attribute has to say so
+   again here. Without this the "Clear all filters" button would never go away
+   and the feed would stay on screen behind its own empty state. */
+.aud-btn-ghost[hidden] {
+    display: none;
+}
+
+/* ---- "This cannot be changed" strip -------------------------------------
+   The single most important sentence on the page, so it sits above the data
+   and is styled as information rather than as a warning. */
+.aud-seal-strip {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 13px 16px;
+    background: #f8fafc;
+    border: 1px solid #dde3ee;
+    border-left: 4px solid #1a3a6b;
+    border-radius: 12px;
+}
+
+.aud-seal-strip i {
+    color: #1a3a6b;
+    font-size: 14px;
+    margin-top: 2px;
+}
+
+.aud-seal-strip p {
+    font-size: 12.5px;
+    line-height: 1.6;
+    color: #475569;
+}
+
+.aud-seal-strip strong {
+    color: #0f1c2e;
+}
+
+/* ---- Counts ---- */
+.aud-kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+}
+
+.aud-kpi {
+    display: flex;
+    align-items: center;
+    gap: 13px;
+    padding: 15px 17px;
+    background: #fff;
+    border: 1px solid #dde3ee;
+    border-radius: 14px;
+    text-align: left;
+}
+
+.aud-kpi-btn {
+    font-family: inherit;
+    cursor: pointer;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.aud-kpi-btn:hover {
+    border-color: #cbd5e1;
+}
+
+.aud-kpi-btn.is-active {
+    border-color: #fb2c36;
+    box-shadow: 0 0 0 3px rgba(251, 44, 54, 0.12);
+}
+
+.aud-kpi-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 11px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 15px;
+    flex-shrink: 0;
+}
+
+.icon-blue   { background: #eff6ff; color: #1447e6; }
+.icon-green  { background: #ecfdf5; color: #007a55; }
+.icon-purple { background: #f5f3ff; color: #7008e7; }
+.icon-red    { background: #fef2f2; color: #c10007; }
+
+.aud-kpi-num {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 20px;
+    font-weight: 700;
+    color: #0f1c2e;
+    line-height: 1.2;
+}
+
+.aud-kpi-label {
+    font-size: 11.5px;
+    color: #6b7c96;
+    margin-top: 2px;
+}
+
+.aud-kpi-hint {
+    font-size: 10.5px;
+    font-weight: 600;
+    color: #2563eb;
+    margin-top: 4px;
+}
+
+.aud-kpi-btn.is-active .aud-kpi-hint {
+    color: #b91c1c;
+}
+
+/* ---- Filter card ---- */
+.aud-filters {
+    padding: 16px 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+.aud-filter-row {
+    display: flex;
+    align-items: flex-end;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.aud-search {
+    flex: 1 1 260px;
+    max-width: none;
+}
+
+/* The search box sits next to labelled dropdowns, so it needs the same
+   bottom edge — .search-box from directory.css has no label above it. */
+.aud-search input {
+    height: 42px;
+}
+
+.aud-field {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    min-width: 0;
+    flex: 0 1 220px;
+}
+
+.aud-label {
+    font-size: 10.5px;
+    font-weight: 700;
+    letter-spacing: 0.6px;
+    text-transform: uppercase;
+    color: #6b7c96;
+}
+
+.aud-select {
+    width: 100%;
+    height: 42px;
+    border: 1px solid #dde3ee;
+    border-radius: 9px;
+    padding: 0 12px;
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 500;
+    color: #0f1c2e;
+    background: #fff;
+}
+
+.aud-select:focus {
+    outline: none;
+    border-color: #2563eb;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+}
+
+.aud-dates .aud-field {
+    flex: 0 1 180px;
+}
+
+.aud-dates[hidden] {
+    display: none;
+}
+
+/* ---- Category chips ---- */
+.aud-chip-block {
+    display: flex;
+    flex-direction: column;
+    gap: 9px;
+}
+
+.aud-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.aud-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    min-height: 38px;
+    padding: 0 13px;
+    border: 1px solid #dde3ee;
+    border-radius: 999px;
+    background: #fff;
+    font-family: inherit;
+    font-size: 12.5px;
+    font-weight: 600;
+    color: #475569;
+    cursor: pointer;
+    transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+}
+
+.aud-chip i {
+    font-size: 12px;
+    color: #94a3b8;
+}
+
+.aud-chip:hover {
+    background: #f4f6f9;
+    border-color: #cbd5e1;
+}
+
+.aud-chip.is-active {
+    background: #1a3a6b;
+    border-color: #1a3a6b;
+    color: #fff;
+}
+
+.aud-chip.is-active i {
+    color: rgba(255, 255, 255, 0.8);
+}
+
+.aud-chip-count {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    font-weight: 700;
+    color: #94a3b8;
+}
+
+.aud-chip.is-active .aud-chip-count {
+    color: rgba(255, 255, 255, 0.75);
+}
+
+.aud-chip.is-empty {
+    opacity: 0.55;
+}
+
+/* ---- "You are looking at…" ---- */
+.aud-summary {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    flex-wrap: wrap;
+    padding-top: 12px;
+    border-top: 1px solid #eef1f6;
+}
+
+.aud-summary-text {
+    font-size: 12.5px;
+    color: #475569;
+}
+
+.aud-summary-text strong {
+    color: #0f1c2e;
+    font-weight: 700;
+}
+
+.aud-restriction {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    font-size: 12px;
+    color: #6b7c96;
+    padding: 0 2px;
+}
+
+.aud-restriction i {
+    color: #94a3b8;
+    margin-top: 2px;
+}
+
+/* ---- The feed ----------------------------------------------------------
+   Grouped by day rather than laid out as a table: a table wide enough for
+   time + person + action + target needs a horizontal scrollbar on a laptop,
+   and horizontal scrolling is the first thing that loses a reader. */
+.aud-feed {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+}
+
+.aud-feed[hidden] {
+    display: none;
+}
+
+.aud-day-head {
+    display: flex;
+    align-items: baseline;
+    gap: 9px;
+    margin-bottom: 8px;
+    padding: 0 2px;
+}
+
+.aud-day-title {
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-size: 13.5px;
+    font-weight: 800;
+    color: #0f1c2e;
+}
+
+.aud-day-count {
+    font-size: 11.5px;
+    color: #94a3b8;
+}
+
+.aud-day-list {
+    background: #fff;
+    border: 1px solid #dde3ee;
+    border-radius: 14px;
+    overflow: hidden;
+}
+
+.aud-entry {
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+    width: 100%;
+    padding: 14px 16px;
+    border: none;
+    border-top: 1px solid #eef1f6;
+    background: #fff;
+    font-family: inherit;
+    text-align: left;
+    cursor: pointer;
+}
+
+.aud-entry:first-child {
+    border-top: none;
+}
+
+.aud-entry:hover {
+    background: #f9fafc;
+}
+
+.aud-entry:focus-visible {
+    outline: 2px solid #2563eb;
+    outline-offset: -2px;
+}
+
+.aud-entry-time {
+    display: block;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11.5px;
+    font-weight: 700;
+    color: #6b7c96;
+    width: 62px;
+    flex-shrink: 0;
+    padding-top: 9px;
+}
+
+.aud-icon {
+    width: 32px;
+    height: 32px;
+    border-radius: 9px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12.5px;
+    flex-shrink: 0;
+    margin-top: 2px;
+}
+
+/* One colour per kind of activity, so a run of the same thing is obvious
+   without reading every line. */
+.cat-leave      { background: #eff6ff; color: #1447e6; }
+.cat-timetable  { background: #f0f9ff; color: #0369a1; }
+.cat-workload   { background: #f5f3ff; color: #7008e7; }
+.cat-duty       { background: #ecfeff; color: #0e7490; }
+.cat-evaluation { background: #fdf4ff; color: #a21caf; }
+.cat-staff      { background: #ecfdf5; color: #007a55; }
+.cat-auth       { background: #f1f5f9; color: #475569; }
+.cat-message    { background: #fff7ed; color: #c2410c; }
+.cat-system     { background: #fefce8; color: #a16207; }
+
+/* The row is a <button>, so its parts are spans and each one that should own a
+   line needs saying so explicitly. */
+.aud-entry-main {
+    display: block;
+    flex: 1;
+    min-width: 0;
+}
+
+.aud-entry-line {
+    display: block;
+    font-size: 13.5px;
+    line-height: 1.5;
+    color: #1e293b;
+}
+
+.aud-entry-line strong {
+    color: #0f1c2e;
+    font-weight: 700;
+}
+
+.aud-entry-target {
+    display: block;
+    font-size: 12.5px;
+    color: #475569;
+    margin-top: 3px;
+    word-break: break-word;
+}
+
+.aud-entry-detail {
+    display: block;
+    font-size: 12px;
+    color: #6b7c96;
+    margin-top: 2px;
+}
+
+.aud-entry-meta {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    flex-wrap: wrap;
+    margin-top: 7px;
+}
+
+.aud-code {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10.5px;
+    font-weight: 700;
+    letter-spacing: 0.3px;
+    background: #0f1c2e;
+    color: #fff;
+    padding: 2px 6px;
+    border-radius: 5px;
+}
+
+.aud-ref {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10.5px;
+    color: #94a3b8;
+}
+
+.aud-flag {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 10.5px;
+    font-weight: 700;
+    padding: 2px 8px;
+    border-radius: 999px;
+}
+
+.aud-flag-failed {
+    background: #fef2f2;
+    color: #b91c1c;
+    border: 1px solid #fecaca;
+}
+
+.aud-flag-refused {
+    background: #fff7ed;
+    color: #c2410c;
+    border: 1px solid #fed7aa;
+}
+
+.aud-flag-you {
+    background: #eff6ff;
+    color: #1447e6;
+    border: 1px solid #bfdbfe;
+}
+
+.aud-entry-chevron {
+    display: block;
+    color: #cbd5e1;
+    font-size: 12px;
+    padding-top: 10px;
+    flex-shrink: 0;
+}
+
+.aud-entry.is-problem {
+    background: #fffbfb;
+}
+
+.aud-entry.is-problem:hover {
+    background: #fff5f5;
+}
+
+/* ---- Empty state + paging ---- */
+.aud-empty {
+    background: #fff;
+    border: 1px solid #dde3ee;
+    border-radius: 14px;
+    padding: 44px 20px;
+    text-align: center;
+}
+
+.aud-empty[hidden] {
+    display: none;
+}
+
+.aud-empty i {
+    font-size: 26px;
+    color: #cbd5e1;
+}
+
+.aud-empty-title {
+    font-size: 14px;
+    font-weight: 700;
+    color: #0f1c2e;
+    margin: 12px 0 4px;
+}
+
+.aud-empty-sub {
+    font-size: 12.5px;
+    color: #6b7c96;
+    margin-bottom: 16px;
+}
+
+.aud-more {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    padding: 4px 0 8px;
+}
+
+.aud-more[hidden] {
+    display: none;
+}
+
+.aud-more-btn {
+    min-width: 200px;
+    justify-content: center;
+}
+
+.aud-more-note {
+    font-size: 11.5px;
+    color: #94a3b8;
+}
+
+/* ---- Detail drawer (shell comes from directory.css) ---- */
+.aud-drawer-tag {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    color: #2563eb;
+    margin-bottom: 3px;
+}
+
+.aud-drawer-body {
+    gap: 18px;
+}
+
+.aud-drawer-lead {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 15px;
+    background: #f8fafc;
+    border: 1px solid #dde3ee;
+    border-radius: 12px;
+}
+
+.aud-drawer-lead .aud-icon {
+    width: 38px;
+    height: 38px;
+    font-size: 14px;
+    margin-top: 0;
+}
+
+.aud-drawer-lead-text p:first-child {
+    font-size: 13.5px;
+    font-weight: 700;
+    color: #0f1c2e;
+}
+
+.aud-drawer-lead-text p:last-child {
+    font-size: 12px;
+    color: #6b7c96;
+    margin-top: 2px;
+}
+
+.aud-kv {
+    display: grid;
+    grid-template-columns: 116px 1fr;
+    gap: 4px 12px;
+    align-items: start;
+}
+
+.aud-kv dt {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.4px;
+    text-transform: uppercase;
+    color: #94a3b8;
+    padding-top: 2px;
+}
+
+.aud-kv dd {
+    font-size: 12.5px;
+    color: #374151;
+    line-height: 1.55;
+    word-break: break-word;
+}
+
+.aud-kv dd.mono {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11.5px;
+    color: #0f1c2e;
+}
+
+.aud-section-label {
+    font-size: 10.5px;
+    font-weight: 700;
+    letter-spacing: 0.6px;
+    text-transform: uppercase;
+    color: #94a3b8;
+    margin-bottom: 8px;
+}
+
+.aud-seal-box {
+    background: #f8fafc;
+    border: 1px dashed #cbd5e1;
+    border-radius: 10px;
+    padding: 12px 14px;
+}
+
+.aud-seal-value {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    color: #0f1c2e;
+    word-break: break-all;
+}
+
+.aud-seal-note {
+    font-size: 11.5px;
+    color: #6b7c96;
+    line-height: 1.55;
+    margin-top: 7px;
+}
+
+.aud-drawer-foot {
+    justify-content: center;
+}
+
+.aud-drawer-locked {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 12px;
+    font-weight: 600;
+    color: #475569;
+    text-align: center;
+}
+
+.aud-drawer-locked i {
+    color: #1a3a6b;
+}
+
+/* ---- Responsive ------------------------------------------------------
+   The tablet step drops the counts to two columns and lets every filter
+   control take a full row; the phone step turns each entry into a stacked
+   block so nothing has to scroll sideways. */
+@media (max-width: 1024px) {
+    .aud-kpi-grid { grid-template-columns: repeat(2, 1fr); }
+    .aud-field { flex: 1 1 200px; }
+}
+
+@media (max-width: 768px) {
+    .page-head-actions { width: 100%; }
+    .page-head-actions > * { flex: 1; justify-content: center; }
+
+    .aud-filter-row { gap: 10px; }
+    .aud-search,
+    .aud-field { flex: 1 1 100%; }
+    .aud-dates .aud-field { flex: 1 1 calc(50% - 5px); }
+
+    .aud-kpi { padding: 13px 14px; gap: 11px; }
+    .aud-kpi-icon { width: 36px; height: 36px; font-size: 14px; }
+    .aud-kpi-num { font-size: 18px; }
+
+    .aud-summary { flex-direction: column; align-items: flex-start; }
+}
+
+@media (max-width: 560px) {
+    .aud-entry {
+        flex-wrap: wrap;
+        gap: 10px;
+        padding: 13px 14px;
+    }
+    /* Time moves onto the same line as the icon, and the sentence takes the
+       full width underneath — no truncation, no sideways scroll. */
+    .aud-entry-time {
+        order: 2;
+        width: auto;
+        padding-top: 8px;
+    }
+    .aud-icon { order: 1; }
+    .aud-entry-chevron { order: 3; margin-left: auto; }
+    .aud-entry-main { order: 4; flex: 1 1 100%; }
+
+    .aud-kpi-grid { grid-template-columns: 1fr; }
+    .aud-kv { grid-template-columns: 1fr; gap: 2px; }
+    .aud-kv dd { margin-bottom: 8px; }
+    .aud-chip { min-height: 40px; }
+}
+
+/* "Back" on /audit/me — the page is opened from the profile menu, so no
+   sidebar item leads back out of it. */
+.aud-back {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    margin-bottom: 8px;
+    padding: 5px 10px 5px 8px;
+    border-radius: 7px;
+    color: #475569;
+    font-size: 12.5px;
+    font-weight: 600;
+    text-decoration: none;
+    transition: background 0.15s ease, color 0.15s ease;
+}
+.aud-back:hover { background: #eef2f7; color: #0f1c2e; }

@@ -62,6 +62,38 @@ class StaffModel
         ]);
     }
 
+    /**
+     * Create an ACTIVE academic-staff account on a Coordinator's/In-Charge's
+     * behalf (the "Add staff" button). Only the email and rank are known, so:
+     *   - `name` is derived from the email, as in create(); the member
+     *     corrects it from Settings;
+     *   - the password is a random value nobody knows, so the account cannot
+     *     be signed into until the member sets their own via Forgot Password
+     *     (the invite email tells them to).
+     *
+     * @return array|null ['code' => ..., 'name' => ...], or null on failure
+     */
+    public function createByAdmin(string $email, string $academicRank): ?array
+    {
+        $pdo = Database::getConnection();
+        $localPart = strstr($email, '@', true) ?: $email;
+        $name = ucwords(str_replace(['.', '_', '-'], ' ', $localPart));
+        $code = $this->generateUniqueCode($localPart);
+
+        $stmt = $pdo->prepare(
+            "INSERT INTO staff (code, email, password, name, role, academic_rank, position, status)
+             VALUES (:code, :email, :password, :name, 'academic_staff', :rank, NULL, 'active')"
+        );
+        $ok = $stmt->execute([
+            'code' => $code,
+            'email' => $email,
+            'password' => password_hash(bin2hex(random_bytes(32)), PASSWORD_DEFAULT),
+            'name' => $name,
+            'rank' => $academicRank,
+        ]);
+        return $ok ? ['code' => $code, 'name' => $name] : null;
+    }
+
     /** Update a staff member's password by email. */
     public function updatePassword(string $email, string $newPassword): bool
     {
@@ -194,7 +226,7 @@ class StaffModel
     {
         $pdo = Database::getConnection();
         $stmt = $pdo->prepare(
-            "SELECT code, name, email, position
+            "SELECT code, name, email, academic_rank, position
              FROM staff
              WHERE status = 'active' AND role = 'academic_staff' AND academic_rank = :rank
              ORDER BY name"
@@ -226,6 +258,42 @@ class StaffModel
             $pdo->rollBack();
             return false;
         }
+    }
+
+    /** How many active staff hold a `position` seat (coordinator / in_charge). */
+    public function countByPosition(string $position): int
+    {
+        $pdo = Database::getConnection();
+        $stmt = $pdo->prepare("SELECT COUNT(*) FROM staff WHERE status = 'active' AND position = :position");
+        $stmt->execute(['position' => $position]);
+        return (int)$stmt->fetchColumn();
+    }
+
+    /**
+     * Give an ADDITIONAL `position` seat to someone who holds none — the
+     * In-Charge's "Add coordinator", where nobody is being replaced. The WHERE
+     * clause is the eligibility rule (active academic staff of the matching
+     * rank, no seat yet), so a stale or forged code simply updates nothing.
+     */
+    public function assignPosition(string $code, string $position): bool
+    {
+        $rank = $position === 'coordinator' ? 'junior' : 'senior';
+        $pdo = Database::getConnection();
+        $stmt = $pdo->prepare(
+            "UPDATE staff SET position = :position
+             WHERE code = :code AND status = 'active' AND role = 'academic_staff'
+               AND academic_rank = :rank AND position IS NULL"
+        );
+        return $stmt->execute(['position' => $position, 'code' => $code, 'rank' => $rank])
+            && $stmt->rowCount() > 0;
+    }
+
+    /** Take a `position` seat away; the member stays on staff at their rank. */
+    public function revokePosition(string $code, string $position): bool
+    {
+        $pdo = Database::getConnection();
+        $stmt = $pdo->prepare("UPDATE staff SET position = NULL WHERE code = :code AND position = :position");
+        return $stmt->execute(['code' => $code, 'position' => $position]) && $stmt->rowCount() > 0;
     }
 
     /**

@@ -48,6 +48,7 @@
 .icon-purple { background: #f5f3ff; color: #7c3aed; }
 .icon-yellow { background: #fefce8; color: #ca8a04; }
 .icon-red { background: #fef2f2; color: #dc2626; }
+.icon-green { background: #f0fdf4; color: #16a34a; }
 
 .wm-kpi-num {
     font-family: var(--font-display, 'Plus Jakarta Sans', sans-serif);
@@ -139,18 +140,6 @@
     background: #f8fafc;
 }
 
-.wm-course-code {
-    font-family: var(--font-mono, 'JetBrains Mono', monospace);
-    font-size: 13px;
-    font-weight: 700;
-    color: #1e293b;
-    background: #f1f5f9;
-    border: 1px solid #e2e8f0;
-    padding: 4px 8px;
-    border-radius: 6px;
-    display: inline-block;
-}
-
 .wm-course-title {
     color: #0f1c2e;
     font-size: 13px;
@@ -186,36 +175,6 @@
     border-radius: 4px;
 }
 
-/* Lecturer in-charge chip */
-.wm-lecturer-chip {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    background: #ffffff;
-    border: 1px solid #cbd5e1;
-    padding: 3px 8px;
-    border-radius: 6px;
-    font-size: 12px;
-}
-
-.wm-lec-avatar {
-    width: 20px;
-    height: 20px;
-    border-radius: 50%;
-    background: #e2e8f0;
-    color: #334155;
-    font-size: 10px;
-    font-weight: 700;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.wm-lec-name {
-    font-weight: 700;
-    color: #1e293b;
-}
-
 /* Duty Type Badges */
 .wm-duty-type {
     display: inline-block;
@@ -230,51 +189,12 @@
 .duty-tag-marking { background: #ede9fe; color: #7c3aed; }
 .duty-tag-coordination { background: #dcfce7; color: #16a34a; }
 
-/* Instructor Chips */
+/* Assigned staff list (course view) and course list (staff view) */
 .wm-instructors-list {
     display: flex;
     flex-wrap: wrap;
     align-items: center;
     gap: 6px;
-}
-
-.wm-inst-chip {
-    display: inline-flex;
-    align-items: center;
-    gap: 5px;
-    background: #0f1c2e;
-    color: #ffffff;
-    padding: 4px 9px;
-    border-radius: 6px;
-    font-size: 11px;
-    font-weight: 700;
-    font-family: var(--font-mono, monospace);
-    transition: transform 0.15s ease, box-shadow 0.15s ease;
-    cursor: default;
-}
-
-.wm-inst-chip:hover {
-    transform: translateY(-1px);
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
-}
-
-.wm-inst-conflict {
-    background: #dc2626 !important;
-}
-
-.wm-inst-note {
-    background: #1e293b;
-    border-bottom: 2px solid #f59e0b;
-}
-
-.conflict-icon {
-    color: #fecaca;
-    font-size: 10px;
-}
-
-.note-icon {
-    color: #fef08a;
-    font-size: 10px;
 }
 
 /* ---- Allocation Summary Drawer ---- */
@@ -376,4 +296,437 @@
     .wm-filter-group {
         justify-content: space-between;
     }
+}
+
+/* ==============================================================
+   Workload Matrix — rebuilt screen (js/workload_matrix.js)
+   Everything below serves the rendered table, the load rail, the
+   assign drawer and the rebalance modal. Shared primitives
+   (.btn-outline, .pill-*, .lec-avatar, .dot-*) are defined here
+   because this page loads only directory.css + this file, and
+   those lived in stylesheets it never pulls in.
+   ============================================================== */
+
+.wm-page {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+/* ---- Shared primitives this page needs ---- */
+.btn-outline {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: #fff;
+    color: #374151;
+    border: 1px solid #dde3ee;
+    border-radius: 8px;
+    padding: 9px 16px;
+    font-size: 13px;
+    font-weight: 600;
+    font-family: inherit;
+    cursor: pointer;
+    text-decoration: none;
+    transition: background 0.15s ease, border-color 0.15s ease;
+}
+.btn-outline:hover { background: #f4f6f9; border-color: #cbd5e1; }
+
+.btn-ghost {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: none;
+    border: none;
+    color: #6b7c96;
+    font-family: inherit;
+    font-size: 12.5px;
+    font-weight: 600;
+    cursor: pointer;
+    padding: 6px 10px;
+    border-radius: 7px;
+}
+.btn-ghost:hover { background: #f1f5f9; color: #0f1c2e; }
+/* An author `display` beats the browser's [hidden] rule, so the "Clear"
+   buttons (hidden until a filter is set) have to say it again. */
+.btn-ghost[hidden] { display: none; }
+
+.pill-active { background: #d0fae5; color: #036b4f; border: 1px solid #a7f3d0; }
+.pill-danger { background: #fee2e2; color: #b91c1c; border: 1px solid #fecaca; }
+.pill-warn   { background: #fef3c7; color: #92400e; border: 1px solid #fde68a; }
+
+.lec-identity { display: flex; align-items: center; gap: 10px; }
+.lec-identity > div { display: flex; flex-direction: column; }
+.lec-name { font-size: 13px; font-weight: 600; color: #0f1c2e; }
+.lec-avatar {
+    width: 30px;
+    height: 30px;
+    border-radius: 9px;
+    background: #1a3a6b;
+    color: #fff;
+    font-size: 10.5px;
+    font-weight: 700;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+.dot-grey { background: #cbd5e1; }
+
+.wm-select {
+    border: 1px solid #dde3ee;
+    border-radius: 8px;
+    padding: 7px 10px;
+    font-size: 12.5px;
+    font-family: inherit;
+    color: #0f1c2e;
+    background: #fff;
+    cursor: pointer;
+}
+.wm-select:focus { outline: none; border-color: #2563eb; box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12); }
+
+/* ---- KPI: the issues card doubles as a filter ---- */
+.wm-kpi-clickable { cursor: pointer; }
+.wm-kpi-clickable:focus-visible { outline: 2px solid #2563eb; outline-offset: 2px; }
+.wm-kpi-clickable.is-active {
+    border-color: #2563eb;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+}
+.wm-kpi-clickable.has-issues .wm-kpi-num { color: #b91c1c; }
+
+/* ---- Toolbar ---- */
+.wm-toolbar {
+    background: #fff;
+    border: 1px solid #e2e8f0;
+    border-radius: 14px;
+    padding: 12px 14px;
+}
+.wm-toolbar .wm-toolbar-inner {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+.wm-view-seg { flex-shrink: 0; }
+.wm-search { flex: 1 1 240px; min-width: 200px; }
+.wm-toolbar .wm-filter-group {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+}
+.wm-toolbar .wm-filter-label {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.3px;
+    text-transform: uppercase;
+    color: #94a3b8;
+}
+
+/* ---- Staff load trigger (toolbar) ----
+   Replaces the always-on rail of bars, which stopped scaling once every
+   junior member was on it. Opens #wmLoadDrawer. */
+.wm-staff-filter { display: inline-flex; align-items: center; gap: 4px; }
+.wm-staff-trigger {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    height: 36px;
+    padding: 0 12px;
+    border: 1px solid #e2e8f0;
+    border-radius: 9px;
+    background: #fff;
+    color: #334155;
+    font-family: inherit;
+    font-size: 12.5px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: border-color 0.15s ease, background 0.15s ease;
+}
+.wm-staff-trigger:hover { border-color: #cbd5e1; background: #f8fafc; }
+.wm-staff-trigger > .fa-scale-balanced { color: #2563eb; }
+.wm-staff-trigger.is-filtered { border-color: #bfdbfe; background: #eff6ff; color: #1e3a8a; }
+.wm-staff-trigger .code-badge { padding: 2px 7px; min-width: 0; font-size: 10.5px; }
+.wm-staff-caret { font-size: 10px; color: #94a3b8; }
+.wm-staff-clear {
+    width: 28px;
+    height: 28px;
+    border: none;
+    border-radius: 7px;
+    background: none;
+    color: #94a3b8;
+    cursor: pointer;
+}
+.wm-staff-clear:hover { background: #fef2f2; color: #dc2626; }
+.wm-staff-clear[hidden] { display: none; }
+
+/* ---- Matrix table ---- */
+.wm-table-head-note {
+    padding: 12px 18px 0;
+    font-size: 12px;
+    color: #94a3b8;
+    font-weight: 500;
+}
+.wm-data-row.has-issue td:first-child { box-shadow: inset 3px 0 0 #ef4444; }
+.wm-hours-note {
+    display: block;
+    margin-top: 4px;
+    font-size: 10.5px;
+    color: #94a3b8;
+    font-weight: 500;
+}
+.wm-none { font-size: 12px; color: #cbd5e1; font-style: italic; }
+
+/* The × on a chip only appears for the Coordinator, and only on hover,
+   so a read of the table is not littered with delete affordances. */
+.wm-chip-x {
+    background: none;
+    border: none;
+    color: inherit;
+    font-size: 14px;
+    line-height: 1;
+    cursor: pointer;
+    padding: 0 0 0 2px;
+    opacity: 0;
+    transition: opacity 0.12s ease, color 0.12s ease;
+}
+.code-badge:hover .wm-chip-x,
+.wm-chip-x:focus-visible { opacity: 1; }
+.wm-chip-x:hover { color: #fca5a5; }
+.code-badge--course .wm-chip-x:hover { color: #dc2626; }
+
+.wm-add-chip {
+    width: 24px;
+    height: 24px;
+    border-radius: 7px;
+    border: 1px dashed #cbd5e1;
+    background: #fff;
+    color: #64748b;
+    font-size: 10px;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.15s ease;
+}
+.wm-add-chip:hover { border-color: #2563eb; color: #2563eb; background: #eff6ff; }
+
+/* Staff view identity cell: badge + full name */
+.wm-staff-identity { display: flex; align-items: center; gap: 10px; }
+.wm-staff-name { font-size: 13px; font-weight: 600; color: #0f1c2e; }
+
+.wm-staff-load { display: flex; flex-direction: column; gap: 1px; }
+.wm-staff-load strong { font-size: 15px; color: #0f1c2e; }
+.wm-staff-load span { font-size: 11px; color: #94a3b8; }
+.wm-staff-load.band-over strong  { color: #dc2626; }
+.wm-staff-load.band-heavy strong { color: #b45309; }
+.wm-staff-load.band-under strong { color: #94a3b8; }
+
+/* ---- Drawers (assign + staff load) ---- */
+.wm-drawer-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(15, 28, 46, 0.35);
+    z-index: 1400;
+}
+.wm-drawer-backdrop[hidden] { display: none; }
+
+.wm-drawer {
+    position: fixed;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    width: 400px;
+    max-width: 100%;
+    background: #fff;
+    border-left: 1px solid #e2e8f0;
+    box-shadow: -12px 0 32px rgba(15, 28, 46, 0.12);
+    z-index: 1450;
+    display: flex;
+    flex-direction: column;
+    animation: wmSlideIn 0.2s ease-out;
+}
+.wm-drawer[hidden] { display: none; }
+
+@keyframes wmSlideIn {
+    from { transform: translateX(24px); opacity: 0; }
+    to   { transform: translateX(0); opacity: 1; }
+}
+
+.wm-drawer-head {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 18px 20px 14px;
+    border-bottom: 1px solid #eef1f6;
+}
+.wm-drawer-tag {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    color: #2563eb;
+}
+.wm-drawer-title { font-size: 15px; font-weight: 700; color: #0f1c2e; margin-top: 4px; }
+.wm-drawer-sub { font-size: 11.5px; color: #6b7c96; margin-top: 3px; }
+
+/* Own class, not the shared .modal-close: that one is white-on-navy
+   (directory.css) and vanished against this white head. */
+.wm-drawer-close {
+    flex-shrink: 0;
+    width: 32px;
+    height: 32px;
+    border: none;
+    border-radius: 8px;
+    background: #f1f5f9;
+    color: #475569;
+    font-size: 15px;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.15s ease, color 0.15s ease;
+}
+.wm-drawer-close:hover { background: #e2e8f0; color: #0f1c2e; }
+
+/* Load-band filter in the staff load drawer */
+.wm-band-filter { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+.wm-band-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 10px;
+    border: 1px solid #e2e8f0;
+    border-radius: 999px;
+    background: #fff;
+    color: #475569;
+    font-family: inherit;
+    font-size: 11.5px;
+    font-weight: 600;
+    cursor: pointer;
+}
+.wm-band-btn:hover { border-color: #cbd5e1; }
+.wm-band-btn.is-active { background: #0f1c2e; border-color: #0f1c2e; color: #fff; }
+.wm-band-dot { width: 7px; height: 7px; border-radius: 50%; background: #22c55e; }
+.wm-band-dot.band-heavy { background: #f59e0b; }
+.wm-band-dot.band-over  { background: #ef4444; }
+.wm-band-dot.band-under { background: #cbd5e1; }
+
+.wm-drawer-search { padding: 14px 20px 10px; border-bottom: 1px solid #eef1f6; }
+.wm-drawer-hint { margin-top: 8px; font-size: 11px; color: #94a3b8; }
+
+.wm-drawer-body { flex: 1; overflow-y: auto; padding: 8px 12px 20px; }
+
+.wm-cand {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 9px 8px;
+    border-radius: 9px;
+}
+.wm-cand:hover { background: #f8fafc; }
+.wm-cand.is-assigned { background: #f0fdf4; }
+.wm-cand.is-blocked { opacity: 0.55; }
+.wm-cand-id { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.wm-cand-name { font-size: 12.5px; font-weight: 600; color: #0f1c2e; }
+.wm-cand-meta { font-size: 10.5px; color: #94a3b8; }
+.wm-cand-band { width: 6px; height: 26px; border-radius: 3px; background: #22c55e; flex-shrink: 0; }
+.wm-cand-band.band-heavy { background: #f59e0b; }
+.wm-cand-band.band-over  { background: #ef4444; }
+.wm-cand-band.band-under { background: #cbd5e1; }
+/* Load drawer rows are whole-row buttons */
+.wm-cand-pick {
+    width: 100%;
+    border: 1px solid transparent;
+    background: none;
+    font-family: inherit;
+    text-align: left;
+    cursor: pointer;
+}
+.wm-cand-pick.is-selected { background: #eff6ff; border-color: #bfdbfe; }
+.wm-cand-tick { color: #2563eb; font-size: 13px; flex-shrink: 0; }
+
+/* Row actions. Assign is a soft-blue pill; Remove is quiet until hovered. */
+.wm-cand-btn {
+    flex-shrink: 0;
+    min-width: 72px;
+    padding: 6px 12px;
+    border: 1px solid #bfdbfe;
+    border-radius: 8px;
+    background: #eff6ff;
+    color: #1d4ed8;
+    font-family: inherit;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+}
+.wm-cand-btn:hover:not(:disabled) { background: #dbeafe; border-color: #93c5fd; }
+.wm-cand-btn:disabled { background: #f8fafc; border-color: #e2e8f0; color: #94a3b8; cursor: not-allowed; }
+.wm-cand-btn.is-remove { background: none; border-color: transparent; color: #64748b; }
+.wm-cand-btn.is-remove:hover { background: #fef2f2; border-color: #fecaca; color: #dc2626; }
+
+/* ---- Rebalance modal ---- */
+.wm-balance-modal { max-width: 560px; width: 100%; }
+.wm-balance-intro { font-size: 12.5px; color: #6b7c96; padding: 4px 4px 14px; }
+.wm-balance-row {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 11px 4px;
+    border-top: 1px solid #eef1f6;
+}
+.wm-balance-course { flex: 1; display: flex; flex-direction: column; gap: 3px; }
+.wm-balance-eng { font-size: 10.5px; color: #94a3b8; }
+.wm-balance-move {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11.5px;
+    font-weight: 700;
+}
+.wm-balance-move i { color: #94a3b8; font-size: 10px; }
+
+/* ---- Toast ---- */
+.wm-toast {
+    position: fixed;
+    left: 50%;
+    bottom: 26px;
+    transform: translate(-50%, 16px);
+    background: #0f1c2e;
+    color: #fff;
+    font-size: 12.5px;
+    font-weight: 600;
+    padding: 10px 18px;
+    border-radius: 9px;
+    box-shadow: 0 10px 24px rgba(15, 28, 46, 0.25);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s ease, transform 0.2s ease;
+    z-index: 2100;
+}
+.wm-toast.show { opacity: 1; transform: translate(-50%, 0); }
+
+/* ---- Responsive ---- */
+@media (max-width: 900px) {
+    .wm-search { flex-basis: 100%; }
+    .wm-drawer { width: 100%; }
+}
+
+@media (max-width: 600px) {
+    .page-head { flex-direction: column; align-items: stretch; gap: 12px; }
+    .page-head-actions { display: flex; gap: 8px; }
+    .page-head-actions > * { flex: 1; justify-content: center; }
+    .wm-toolbar .wm-filter-group { flex: 1 1 45%; justify-content: space-between; }
+    .wm-view-seg { width: 100%; }
+    .wm-view-seg .seg-btn { flex: 1; justify-content: center; }
+    .wm-staff-filter { flex: 1 1 100%; }
+    .wm-staff-trigger { flex: 1; }
+
+    /* The full-width drawer covers the backdrop, so the close control reads as
+       "back" — and the phone's back gesture closes it too (history entry
+       pushed in workload_matrix.js). The head never scrolls: only
+       .wm-drawer-body does. */
+    .wm-drawer-close .fa-xmark::before { content: "\f060"; }
 }

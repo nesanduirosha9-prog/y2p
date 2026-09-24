@@ -83,6 +83,8 @@ body {
 
 .sidebar-nav {
     flex: 1;
+    min-height: 0;
+    overflow-y: auto;   /* grouped nav is taller; keep Sign Out reachable on short screens */
     padding: 8px 11px 0;
 }
 
@@ -93,6 +95,15 @@ body {
     text-transform: uppercase;
     color: rgba(81, 162, 255, 0.6);
     padding: 11px 11px 8px;
+}
+
+.nav-group + .nav-group { margin-top: 8px; }
+
+/* Messages / Settings: no heading, just a hairline so they read as "general". */
+.nav-group-tail {
+    margin-top: 12px;
+    padding-top: 10px;
+    border-top: 1px solid rgba(190, 219, 255, 0.12);
 }
 
 .nav-item {

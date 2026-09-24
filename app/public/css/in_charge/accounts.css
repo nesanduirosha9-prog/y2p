@@ -114,3 +114,55 @@
     font-size: 20px;
     color: #0f1c2e;
 }
+
+/* ---- Account Handover tab (Settings) ---- */
+.handover-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    flex-wrap: wrap;
+    padding: 16px 18px;
+    border-bottom: 1px solid #eef1f6;
+}
+.handover-head h3 {
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-size: 14px;
+    font-weight: 700;
+    color: #0f1c2e;
+}
+.handover-add-btn { font-size: 13px; padding: 8px 14px; }
+
+#settings-panel-handover .lec-identity { display: flex; align-items: center; gap: 10px; }
+#settings-panel-handover .lec-name { font-size: 13px; font-weight: 600; color: #0f1c2e; }
+
+.handover-row-actions {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 6px;
+}
+.handover-row-actions .btn-secondary { text-decoration: none; }
+
+/* Outlined rather than filled red: it is reversible (the In-Charge can add the
+   person back), so it should not look as final as a delete. */
+.btn-revoke {
+    padding: 6px 12px;
+    font-family: inherit;
+    font-size: 12px;
+    font-weight: 600;
+    color: #b91c1c;
+    background: #fff;
+    border: 1px solid #fecaca;
+    border-radius: var(--radius-sm, 6px);
+    cursor: pointer;
+    transition: background 0.15s ease, border-color 0.15s ease;
+}
+.btn-revoke:hover:not(:disabled) { background: #fef2f2; border-color: #fca5a5; }
+.btn-revoke:disabled { color: #94a3b8; border-color: #e2e8f0; cursor: not-allowed; }
+
+/* Candidate rows (Change / Add coordinator): badge, then name over email. */
+.candidate-id { display: flex; flex-direction: column; gap: 1px; min-width: 0; }
+.candidate-name { font-size: 13px; font-weight: 600; color: #0f1c2e; }
+.candidate-email { font-size: 11.5px; color: #6b7c96; }
+.candidate-row:has(input:checked) { background: #f5f8fd; }

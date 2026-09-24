@@ -65,6 +65,64 @@
     cursor: pointer;
 }
 
+/* Lived in evaluations.css, so the Workload Matrix and Duty Scheduler — which
+   use it but do not load that file — rendered it as a bare browser button. */
+.btn-secondary-sm {
+    background: #f1f5f9;
+    border: 1px solid #cbd5e1;
+    color: #1e293b;
+    padding: 5px 10px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 600;
+    font-family: inherit;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.btn-secondary-sm:hover {
+    background: #e2e8f0;
+}
+
+/* ---------- Code badges ----------
+ * The one way the system prints a code. Rendered by
+ * ViewHelpers::codeBadge() (PHP) and window.codeBadge() (js/code_badge.js) —
+ * keep the markup of the two in sync.
+ *   --course    SCS 1308  light slate
+ *   --lecturer  DKF       white, outlined (lecturer in-charge)
+ *   --staff     TSR       navy (instructors / junior staff)
+ * States: .has-note (amber underline), .is-flagged (red — an integrity error
+ * the allocator should have prevented, e.g. an inactive member still assigned).
+ */
+.code-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    padding: 4px 9px;
+    border-radius: 6px;
+    border: 1px solid transparent;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11.5px;
+    font-weight: 700;
+    letter-spacing: 0.3px;
+    line-height: 1.2;
+    white-space: nowrap;
+    width: fit-content;   /* never stretch inside a column flex container */
+}
+
+.code-badge--course  { background: #f1f5f9; border-color: #e2e8f0; color: #1e293b; }
+.code-badge--lecturer { background: #fff;    border-color: #cbd5e1; color: #1e293b; }
+.code-badge--staff    { background: #0f1c2e; border-color: #0f1c2e; color: #fff; min-width: 46px; }
+
+.code-badge.has-note   { box-shadow: inset 0 -2px 0 #f59e0b; }
+.code-badge.is-flagged { background: #dc2626; border-color: #dc2626; color: #fff; }
+
+.code-badge > i { font-size: 10px; }
+.code-badge.has-note > .fa-circle-info { color: #fde68a; }
+
 /* ---------- Icon button (header actions, dropdown triggers) ---------- */
 
 .icon-btn {
@@ -128,4 +186,168 @@
 
 .badge-desc::before {
     content: "— ";
+}
+
+/* ---------- Side panel ----------
+ * The right-hand slide-in panel. Same look as the Workload Matrix's assign
+ * drawer (.wm-drawer): white head, soft grey close button that reads as "←"
+ * on phones, where the panel is full-width and covers its backdrop.
+ *
+ *   <div class="side-panel-backdrop" hidden></div>
+ *   <aside class="side-panel" hidden>
+ *     <div class="side-panel-head">…<button class="side-panel-close">…</button></div>
+ *     <div class="side-panel-body">…</div>
+ *     <div class="side-panel-foot">…</div>
+ *   </aside>
+ */
+.side-panel-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(15, 28, 46, 0.35);
+    z-index: 1400;
+}
+
+.side-panel {
+    position: fixed;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    width: 420px;
+    max-width: 100%;
+    background: #fff;
+    border-left: 1px solid #e2e8f0;
+    box-shadow: -12px 0 32px rgba(15, 28, 46, 0.12);
+    z-index: 1450;
+    display: flex;
+    flex-direction: column;
+    animation: sidePanelIn 0.2s ease-out;
+}
+
+.side-panel-backdrop[hidden],
+.side-panel[hidden] { display: none; }
+
+@keyframes sidePanelIn {
+    from { transform: translateX(24px); opacity: 0; }
+    to   { transform: translateX(0); opacity: 1; }
+}
+
+.side-panel-head {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 18px 20px 14px;
+    border-bottom: 1px solid #eef1f6;
+}
+
+.side-panel-tag {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    color: #2563eb;
+}
+
+.side-panel-title { font-size: 15px; font-weight: 700; color: #0f1c2e; margin-top: 4px; }
+.side-panel-sub { font-size: 11.5px; color: #6b7c96; margin-top: 3px; }
+
+.side-panel-close {
+    flex-shrink: 0;
+    width: 32px;
+    height: 32px;
+    border: none;
+    border-radius: 8px;
+    background: #f1f5f9;
+    color: #475569;
+    font-size: 15px;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.15s ease, color 0.15s ease;
+}
+
+.side-panel-close:hover { background: #e2e8f0; color: #0f1c2e; }
+
+.side-panel-body { flex: 1; overflow-y: auto; padding: 18px 20px; }
+
+.side-panel-foot {
+    display: flex;
+    gap: 10px;
+    padding: 14px 20px;
+    border-top: 1px solid #eef1f6;
+}
+
+@media (max-width: 600px) {
+    .side-panel { width: 100%; border-left: none; }
+    .side-panel-close .fa-xmark::before { content: "\f060"; }
+}
+
+/* ---------- Period navigator ----------
+ * Week / Month / Semester / Year with previous-next arrows. Rendered by
+ * js/period_nav.js; used by Evaluations and the lecturers' Evaluation History.
+ * The unit switch reuses the .seg / .seg-btn segmented control.
+ */
+.period-nav {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 10px 14px;
+}
+
+.period-step {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.period-arrow {
+    width: 34px;
+    height: 34px;
+    border: 1px solid #dde3ee;
+    border-radius: 9px;
+    background: #fff;
+    color: #334155;
+    font-size: 12px;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.15s ease, border-color 0.15s ease;
+}
+.period-arrow:hover:not(:disabled) { background: #f1f5f9; border-color: #cbd5e1; }
+.period-arrow:disabled { color: #cbd5e1; cursor: not-allowed; }
+
+.period-label {
+    min-width: 190px;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    line-height: 1.25;
+}
+.period-label strong { font-size: 13.5px; font-weight: 700; color: #0f1c2e; }
+.period-label span { font-size: 11.5px; color: #6b7c96; }
+
+.period-today {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    border: none;
+    background: none;
+    color: #2563eb;
+    font-family: inherit;
+    font-size: 12.5px;
+    font-weight: 600;
+    cursor: pointer;
+    padding: 6px 8px;
+    border-radius: 7px;
+}
+.period-today:hover { background: #eff6ff; }
+.period-today[hidden] { display: none; }
+
+@media (max-width: 600px) {
+    .period-units { width: 100%; }
+    .period-units .seg-btn { flex: 1; justify-content: center; }
+    .period-step { width: 100%; justify-content: space-between; }
+    .period-label { min-width: 0; flex: 1; }
 }

@@ -14,6 +14,18 @@ class ViewHelpers
         return "{$display} {$suffix}";
     }
 
+    /**
+     * The one way to print a code (see .code-badge in components.css).
+     * $kind: 'course' | 'lecturer' | 'staff'. Returns escaped HTML — echo it
+     * directly. js/code_badge.js renders the same markup client-side.
+     */
+    public static function codeBadge(string $code, string $kind, string $title = '', string $extraClass = ''): string
+    {
+        $cls = trim("code-badge code-badge--{$kind} {$extraClass}");
+        $t   = $title !== '' ? ' title="' . htmlspecialchars($title) . '"' : '';
+        return '<span class="' . htmlspecialchars($cls) . '"' . $t . '>' . htmlspecialchars($code) . '</span>';
+    }
+
     public static function staffInitials(string $name): string
     {
         $parts   = preg_split('/\s+/', trim($name));
@@ -31,13 +43,16 @@ class ViewHelpers
         return ($h['position'] ?? '') === 'in_charge' ? 'In-Charge' : 'Coordinator';
     }
 
-    // Role and rank label for staff cards/tables (e.g. Senior Lecturer · Coordinator)
+    // Role and rank label for staff cards/tables (e.g. Lecturer · In-Charge).
+    // The UI says "Lecturer", never "Senior Lecturer": the only other academic
+    // rank is Junior Staff, so "Senior" implied a "Junior Lecturer" that does
+    // not exist. The stored rank value is still 'senior'.
     public static function staffRoleLabel(array $s): string
     {
         if (($s['role'] ?? '') === 'timetable_officer') {
             return 'Timetable Officer';
         }
-        $rank = ($s['academic_rank'] ?? '') === 'senior' ? 'Senior Lecturer' : 'Junior Staff Member';
+        $rank = ($s['academic_rank'] ?? '') === 'senior' ? 'Lecturer' : 'Junior Staff Member';
         if (($s['position'] ?? '') === 'coordinator') {
             return $rank . ' · Coordinator';
         }

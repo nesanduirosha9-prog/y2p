@@ -73,7 +73,7 @@ $total = count($courses);
                             data-lecturers="<?= htmlspecialchars(implode(',', $c['lecturers'])) ?>"
                             data-instructors="<?= htmlspecialchars(implode(',', $c['instructors'])) ?>"
                             data-search="<?= htmlspecialchars(strtolower($c['code'] . ' ' . $c['name'] . ' ' . implode(' ', $c['lecturers']) . ' ' . implode(' ', $c['instructors']))) ?>">
-                            <td class="cell-code"><?= htmlspecialchars($c['code']) ?></td>
+                            <td><?= \app\core\ViewHelpers::codeBadge($c['code'], 'course', $c['name']) ?></td>
                             <td><?= htmlspecialchars($c['name']) ?></td>
                             <td><?= (int)$c['credits'] ?></td>
                             <td><span class="pill pill-year-<?= (int)$c['year'] ?>">Year <?= (int)$c['year'] ?></span></td>
@@ -81,14 +81,14 @@ $total = count($courses);
                             <td>
                                 <div class="tag-row">
                                     <?php foreach ($c['lecturers'] as $code): ?>
-                                        <span class="tag tag-lecturer"><?= htmlspecialchars($code) ?></span>
+                                        <span class="code-badge code-badge--lecturer"><?= htmlspecialchars($code) ?></span>
                                     <?php endforeach; ?>
                                 </div>
                             </td>
                             <td>
                                 <div class="tag-row">
                                     <?php foreach ($c['instructors'] as $code): ?>
-                                        <span class="tag tag-instructor"><?= htmlspecialchars($code) ?></span>
+                                        <span class="code-badge code-badge--staff"><?= htmlspecialchars($code) ?></span>
                                     <?php endforeach; ?>
                                 </div>
                             </td>

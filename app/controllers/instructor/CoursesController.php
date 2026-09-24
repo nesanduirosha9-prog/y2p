@@ -4,6 +4,7 @@ namespace app\controllers\instructor;
 
 use app\core\Controller;
 use app\core\Request;
+use app\core\WorkloadPrototypeData;
 
 class CoursesController extends Controller
 {
@@ -266,79 +267,76 @@ class CoursesController extends Controller
         $evaluationHistory = [
             [
                 'id' => 'eval-01',
-                'week' => 'Week 5',
-                'month' => 'March 2026',
-                'semester' => 'Semester 1 - 2026',
-                'date' => '2026-03-18',
+                'date' => '2026-03-25',
                 'course_code' => 'CS1101',
                 'course_name' => 'Introduction to Programming',
                 'instructor_code' => 'TMF',
                 'instructor_name' => 'Ms. Thilini Fernando',
                 'rating' => 4.8,
                 'comment' => 'Very active during lab hours and assisted students in debugging recursion problems.',
-                'status' => 'Submitted',
+                'status' => 'Evaluated',
             ],
             [
                 'id' => 'eval-02',
-                'week' => 'Week 4',
-                'month' => 'March 2026',
-                'semester' => 'Semester 1 - 2026',
-                'date' => '2026-03-12',
+                'date' => '2026-03-18',
                 'course_code' => 'CS1101',
                 'course_name' => 'Introduction to Programming',
                 'instructor_code' => 'MKA',
                 'instructor_name' => 'Mr. Kwame Addo',
                 'rating' => 4.5,
                 'comment' => 'Punctual, well-prepared with lab worksheets, and clear explanations on pointer arithmetic.',
-                'status' => 'Submitted',
+                'status' => 'Evaluated',
             ],
             [
                 'id' => 'eval-03',
-                'week' => 'Week 3',
-                'month' => 'March 2026',
-                'semester' => 'Semester 1 - 2026',
-                'date' => '2026-03-05',
+                'date' => '2026-03-11',
                 'course_code' => 'CS3301',
                 'course_name' => 'Software Engineering',
                 'instructor_code' => 'MNA',
                 'instructor_name' => 'Ms. Nana Ama',
                 'rating' => 4.2,
                 'comment' => 'Guided the agile sprint reviews effectively. Good feedback given to students on Jira boards.',
-                'status' => 'Submitted',
+                'status' => 'Evaluated',
             ],
             [
                 'id' => 'eval-04',
-                'week' => 'Week 2',
-                'month' => 'February 2026',
-                'semester' => 'Semester 1 - 2026',
-                'date' => '2026-02-26',
+                'date' => '2026-03-04',
                 'course_code' => 'CS4401',
                 'course_name' => 'Final Year Project',
                 'instructor_code' => 'MAB',
                 'instructor_name' => 'Mr. Ato Baidoo',
                 'rating' => 5.0,
                 'comment' => 'Thorough review of architecture deliverables. Kept detailed scoring notes for project viva.',
-                'status' => 'Submitted',
+                'status' => 'Evaluated',
             ],
             [
                 'id' => 'eval-05',
-                'week' => 'Week 1',
-                'month' => 'February 2026',
-                'semester' => 'Semester 1 - 2026',
-                'date' => '2026-02-19',
+                'date' => '2026-02-25',
                 'course_code' => 'CS4401',
                 'course_name' => 'Final Year Project',
                 'instructor_code' => 'MKO',
                 'instructor_name' => 'Mr. Kojo Amoah',
                 'rating' => 4.6,
                 'comment' => 'Dependable and communicative. Facilitated demonstration setups smoothly.',
-                'status' => 'Submitted',
+                'status' => 'Evaluated',
             ],
         ];
 
-        // Check which instructors are already evaluated in the current week (Week 5)
+        // The week, month and semester of each record come from the shared
+        // teaching calendar (the same one the Coordinator's Evaluations page
+        // navigates), not from hand-typed labels that could disagree with it.
+        $calendar = WorkloadPrototypeData::calendar();
+        foreach ($evaluationHistory as &$eh) {
+            $info = WorkloadPrototypeData::weekInfo($eh['date']);
+            $eh['week_start'] = $info['start'] ?? '';
+            $eh['week_label'] = $info['label'] ?? 'Outside term';
+        }
+        unset($eh);
+        $evaluationHistory = $this->weeklyHistory($assignedCourses, $evaluationHistory, $calendar['current']);
+
+        // Which instructors are already evaluated in the current week
         foreach ($evaluationHistory as $eh) {
-            if ($eh['week'] === 'Week 5' && isset($instructorMap[$eh['instructor_code']])) {
+            if ($eh['week_start'] === $calendar['current'] && isset($instructorMap[$eh['instructor_code']])) {
                 $instructorMap[$eh['instructor_code']]['status'] = 'Evaluated';
                 $instructorMap[$eh['instructor_code']]['rating'] = $eh['rating'];
                 $instructorMap[$eh['instructor_code']]['evaluated_this_week'] = true;
@@ -355,8 +353,84 @@ class CoursesController extends Controller
             'assignedCourses' => $assignedCourses,
             'assignedInstructors' => $assignedInstructors,
             'evaluationHistory' => $evaluationHistory,
+            'calendar' => $calendar,
             'isLecturer' => $isLecturer,
             'staffCode' => $staffCode,
         ]);
+    }
+
+    /**
+     * The lecturer's history as one row per instructor, per course, per past
+     * teaching week — Evaluated, or Not evaluated when the week went by
+     * without one. A forgotten week used to simply not appear, so a lecturer
+     * had no way to see it.
+     *
+     * The current week is left out unless already evaluated: it is still
+     * open, and its pending evaluations live on the "Evaluate by Instructor"
+     * tab. It turns into a Not evaluated row once the week has passed.
+     *
+     * $written are the evaluations with comments; the other weeks come from
+     * WorkloadPrototypeData::simulatedEvaluation(), the same rule the
+     * Coordinator's Evaluations page uses. Newest week first.
+     */
+    private function weeklyHistory(array $courses, array $written, string $currentWeek): array
+    {
+        $byKey = [];
+        foreach ($written as $w) {
+            $byKey[$w['instructor_code'] . '|' . $w['course_code'] . '|' . $w['week_start']] = $w;
+        }
+
+        $rows = [];
+        foreach (WorkloadPrototypeData::teachingWeeks() as $week) {
+            foreach ($courses as $c) {
+                foreach ($c['instructor_details'] ?? [] as $inst) {
+                    $key = $inst['code'] . '|' . $c['code'] . '|' . $week['start'];
+                    $base = [
+                        'id'              => 'hist-' . substr(md5($key), 0, 10),
+                        'week_start'      => $week['start'],
+                        'week_label'      => $week['label'],
+                        'course_code'     => $c['code'],
+                        'course_name'     => $c['name'],
+                        'instructor_code' => $inst['code'],
+                        'instructor_name' => $inst['name'],
+                    ];
+
+                    if (isset($byKey[$key])) {
+                        $rows[] = $byKey[$key];
+                        unset($byKey[$key]);
+                        continue;
+                    }
+
+                    $sim = WorkloadPrototypeData::simulatedEvaluation($c['code'], $inst['code'], $week['start']);
+                    $isCurrent = $week['start'] === $currentWeek;
+                    if ($sim !== null && !$isCurrent) {
+                        $rows[] = $base + [
+                            'date'    => $sim['date'],
+                            'rating'  => $sim['rating'],
+                            'comment' => '',
+                            'status'  => 'Evaluated',
+                        ];
+                    } elseif ($sim === null && !$isCurrent) {
+                        $rows[] = $base + [
+                            'date'    => '',
+                            'rating'  => null,
+                            'comment' => '',
+                            'status'  => 'Not evaluated',
+                        ];
+                    }
+                }
+            }
+        }
+
+        // Written evaluations for a course no longer on this lecturer's list
+        // are still their history.
+        foreach ($byKey as $w) {
+            $rows[] = $w;
+        }
+
+        usort($rows, fn($a, $b) => strcmp($b['week_start'], $a['week_start'])
+            ?: strcmp($a['course_code'], $b['course_code'])
+            ?: strcmp($a['instructor_name'], $b['instructor_name']));
+        return $rows;
     }
 }

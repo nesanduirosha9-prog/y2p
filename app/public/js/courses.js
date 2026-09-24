@@ -215,8 +215,8 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 
     // ---- Save (add or update a row, DOM-only) ----
-    function tagRow(codes, cls) {
-        return codes.map(function (c) { return '<span class="tag ' + cls + '">' + esc(c) + '</span>'; }).join('');
+    function tagRow(codes, kind) {
+        return codes.map(function (c) { return codeBadge(c, kind); }).join('');
     }
 
     form.addEventListener('submit', function (e) {
@@ -255,13 +255,13 @@ document.addEventListener('DOMContentLoaded', function () {
         row.dataset.instructors = instructors.join(',');
         row.dataset.search = searchStr;
         row.innerHTML =
-            '<td class="cell-code">' + esc(code) + '</td>' +
+            '<td>' + codeBadge(code, 'course') + '</td>' +
             '<td>' + esc(name) + '</td>' +
             '<td>' + credits + '</td>' +
             '<td><span class="pill pill-year-' + year + '">Year ' + year + '</span></td>' +
             '<td><span class="pill pill-muted">' + program + '</span></td>' +
-            '<td><div class="tag-row">' + tagRow(lecturers, 'tag-lecturer') + '</div></td>' +
-            '<td><div class="tag-row">' + tagRow(instructors, 'tag-instructor') + '</div></td>' +
+            '<td><div class="tag-row">' + tagRow(lecturers, 'lecturer') + '</div></td>' +
+            '<td><div class="tag-row">' + tagRow(instructors, 'staff') + '</div></td>' +
             '<td><div class="tag-row">' +
                 '<button type="button" class="icon-action" data-act="edit" title="Edit course"><i class="fa-solid fa-pen"></i></button>' +
                 '<button type="button" class="icon-action danger" data-act="delete" title="Delete course"><i class="fa-regular fa-trash-can"></i></button>' +

@@ -34,8 +34,18 @@ use app\services\EmailService;
 // 7. verifySubmit()   — POST, step 3 submit: checks the OTP + expiry, then
 //    performs the actual reassignment.
 // 8. updatedView()    — GET, step 4: confirmation screen.
+// 9. add()            — GET, "Add coordinator": the same select/verify steps,
+//    with nobody being replaced. The department may have any number of
+//    Coordinators; the In-Charge and Timetable Officer seats stay single.
+// 10. revoke()        — POST, takes the Coordinator seat away from someone
+//    (they stay on staff as Junior Staff). Never the last Coordinator.
+//
+// DEMO_AUTH (config.php) simulates the OTP exactly as AuthController does: no
+// email is sent and any 6-digit code is accepted.
 class AccountsController extends Controller
 {
+    /** Seats that can be held by more than one person at once. */
+    private const MULTI_SEATS = ['coordinator'];
     public function __construct()
     {
         $this->setLayout('dashboard');
@@ -120,25 +130,85 @@ class AccountsController extends Controller
             return;
         }
 
-        // Coordinator needs a junior lecturer, In-Charge needs a senior one;
-        // a Timetable Officer replacement can be any active academic staff.
-        $staffModel = new StaffModel();
-        $rank = $position === 'coordinator' ? 'junior' : ($position === 'in_charge' ? 'senior' : null);
-        $candidates = $rank
-            ? $staffModel->activeByRank($rank)
-            : array_merge($staffModel->activeByRank('junior'), $staffModel->activeByRank('senior'));
-
-        // Can't hand a role to yourself.
-        $candidates = array_values(array_filter($candidates, fn($c) => $c['code'] !== $code));
-
         return $this->render('in_charge/accounts_select', array_merge($this->commonViewData(), [
             'title' => 'Select Replacement',
             'pageTitle' => 'Role Assignment',
             'pageSubtitle' => 'Search lecturer by name.',
             'position' => $position,
             'holder' => $holder,
-            'candidates' => $candidates,
+            'candidates' => $this->candidatesFor($position, $code),
         ]));
+    }
+
+    /** GET /settings/handover/add/{position} — add one more holder of a multi-seat role. */
+    public function add(Request $request, Response $response, array $params = [])
+    {
+        $denied = $this->requirePosition('in_charge');
+        if ($denied !== null) {
+            return $denied;
+        }
+
+        $position = $params['position'] ?? '';
+        if (!in_array($position, self::MULTI_SEATS, true)) {
+            $this->redirect('/settings/handover');
+            return;
+        }
+
+        return $this->render('in_charge/accounts_select', array_merge($this->commonViewData(), [
+            'title' => 'Add Coordinator',
+            'pageTitle' => 'Role Assignment',
+            'pageSubtitle' => 'Choose who to add.',
+            'position' => $position,
+            'holder' => null,
+            'candidates' => $this->candidatesFor($position, ''),
+        ]));
+    }
+
+    /**
+     * Who may receive a seat. Coordinator needs Junior Staff, In-Charge needs a
+     * Lecturer — and in both cases someone with no seat already, so a seat is
+     * never silently taken from another holder. A Timetable Officer replacement
+     * can be any active academic staff. The outgoing holder is excluded.
+     */
+    private function candidatesFor(string $position, string $excludeCode): array
+    {
+        $staffModel = new StaffModel();
+        $rank = $position === 'coordinator' ? 'junior' : ($position === 'in_charge' ? 'senior' : null);
+        $candidates = $rank
+            ? $staffModel->activeByRank($rank)
+            : array_merge($staffModel->activeByRank('junior'), $staffModel->activeByRank('senior'));
+
+        return array_values(array_filter($candidates, fn($c) =>
+            $c['code'] !== $excludeCode && ($rank === null || empty($c['position']))
+        ));
+    }
+
+    /** POST /settings/handover/revoke — body: { code }. Coordinator seat only. */
+    public function revoke(Request $request, Response $response)
+    {
+        if (!$this->guardJson($response, 'position', 'in_charge')) {
+            return;
+        }
+
+        $code = (string)($request->getBody()['code'] ?? '');
+        $staffModel = new StaffModel();
+        $holder = $staffModel->findByCode($code);
+
+        if (!$holder || ($holder['position'] ?? '') !== 'coordinator') {
+            $response->json(['success' => false, 'message' => 'That person is not a Coordinator.'], 404);
+            return;
+        }
+        // Someone has to run the Duty Scheduler and the Workload Matrix.
+        if ($staffModel->countByPosition('coordinator') <= 1) {
+            $response->json(['success' => false, 'message' => 'The department needs at least one Coordinator. Add another before revoking this one.'], 409);
+            return;
+        }
+        if (!$staffModel->revokePosition($code, 'coordinator')) {
+            $response->json(['success' => false, 'message' => 'Could not revoke the role. Please try again.'], 500);
+            return;
+        }
+
+        $response->json(['success' => true]);
     }
 
     /** POST /settings/handover/select — starts the OTP challenge. */
@@ -155,8 +225,17 @@ class AccountsController extends Controller
         $toCode = $body['toCode'] ?? '';
         $newRankForOutgoingOfficer = $body['fromNewRank'] ?? null;
 
-        if (!in_array($position, ['coordinator', 'in_charge', 'timetable_officer'], true) || $fromCode === '' || $toCode === '') {
+        // An empty fromCode means "add another holder" — only for multi seats.
+        $isAdd = $fromCode === '';
+        if (!in_array($position, ['coordinator', 'in_charge', 'timetable_officer'], true) || $toCode === ''
+            || ($isAdd && !in_array($position, self::MULTI_SEATS, true))) {
             $response->json(['success' => false, 'message' => 'Please choose a replacement.'], 400);
+            return;
+        }
+        // The list on screen is only a suggestion; check eligibility here too.
+        $eligible = array_column($this->candidatesFor($position, $fromCode), 'code');
+        if (!in_array($toCode, $eligible, true)) {
+            $response->json(['success' => false, 'message' => 'That person cannot take this role.'], 400);
             return;
         }
         if ($position === 'timetable_officer' && !in_array($newRankForOutgoingOfficer, ['junior', 'senior'], true)) {
@@ -173,8 +252,9 @@ class AccountsController extends Controller
         }
 
         $otp = str_pad((string) random_int(0, 999999), 6, '0', STR_PAD_LEFT);
+        $demo = defined('DEMO_AUTH') && DEMO_AUTH;
 
-        if (!EmailService::sendOtpEmail($toStaff['email'], $otp, 'role_handover')) {
+        if (!$demo && !EmailService::sendOtpEmail($toStaff['email'], $otp, 'role_handover')) {
             $response->json(['success' => false, 'message' => 'Could not send the verification code. Please try again.'], 500);
             return;
         }
@@ -185,6 +265,7 @@ class AccountsController extends Controller
             'to_code' => $toCode,
             'from_new_rank' => $newRankForOutgoingOfficer,
             'otp' => $otp,
+            'demo' => $demo,
             'expires_at' => time() + 300, // 5 minutes
         ];
 
@@ -240,13 +321,16 @@ class AccountsController extends Controller
             $response->json(['success' => false, 'message' => 'This code has expired. Please start again.'], 400);
             return;
         }
-        if ($otp === '' || $otp !== $handover['otp']) {
+        $demoOk = !empty($handover['demo']) && preg_match('/^\d{6}$/', $otp);
+        if (!$demoOk && ($otp === '' || !hash_equals($handover['otp'], $otp))) {
             $response->json(['success' => false, 'message' => 'Incorrect verification code.'], 400);
             return;
         }
 
         $staffModel = new StaffModel();
-        if ($handover['position'] === 'timetable_officer') {
+        if ($handover['from_code'] === '') {
+            $ok = $staffModel->assignPosition($handover['to_code'], $handover['position']);
+        } elseif ($handover['position'] === 'timetable_officer') {
             $ok = $staffModel->reassignTimetableOfficer($handover['from_code'], $handover['to_code'], $handover['from_new_rank']);
         } else {
             $ok = $staffModel->reassignPosition($handover['from_code'], $handover['to_code'], $handover['position']);

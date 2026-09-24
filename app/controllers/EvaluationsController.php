@@ -4,6 +4,7 @@ namespace app\controllers;
 
 use app\core\Controller;
 use app\core\Request;
+use app\core\WorkloadPrototypeData;
 
 // EvaluationsController: junior staff evaluations, for every academic role.
 //
@@ -23,26 +24,21 @@ use app\core\Request;
 //                  would otherwise have rendered was never reachable.
 class EvaluationsController extends Controller
 {
-    // Page copy for the review dashboard, keyed by $_SESSION['position'].
-    // Kept verbatim from the controllers and views this replaces, including
-    // the wrapper CSS class, which evaluations.css styles per position.
+    // The Coordinator and the In-Charge get the SAME screen. They previously
+    // had two sets of copy — "Evaluations Dashboard" versus "Appraisal Center" —
+    // which implied two different tools over one dataset and one workflow. They
+    // read the same submissions, use the same rating scale and reach the same
+    // kinds of decision; the only real difference is the word their sidebar
+    // uses, which layouts/dashboard.php still sets per position.
+    private const POSITIONS = ['coordinator', 'in_charge'];
+
     private const COPY = [
-        'coordinator' => [
-            'title'        => 'Junior Staff Evaluations — StaffSync',
-            'pageTitle'    => 'Staff Performance & Evaluations',
-            'pageSubtitle' => 'Review evaluations submitted by lecturers for junior staff across all course modules',
-            'viewClass'    => 'coordinator-eval-view',
-            'heading'      => 'Junior Staff Evaluations Dashboard',
-            'subheading'   => 'Comprehensive overview of performance ratings, strengths, and recommendations across all faculty modules',
-        ],
-        'in_charge' => [
-            'title'        => 'Staff Performance Appraisal — StaffSync',
-            'pageTitle'    => 'Junior Staff Appraisals & Reviews',
-            'pageSubtitle' => 'Executive review of lecturer evaluations for contract extensions, promotions, and commendations',
-            'viewClass'    => 'in-charge-eval-view',
-            'heading'      => 'Staff Performance & Appraisal Center',
-            'subheading'   => 'Review academic performance metrics, student feedback reports, and coordinator recommendations',
-        ],
+        'title'        => 'Staff Evaluations — StaffSync',
+        'pageTitle'    => 'Staff Evaluations',
+        'pageSubtitle' => 'Lecturer evaluations of junior staff, across every course module',
+        'viewClass'    => 'eval-view',
+        'heading'      => 'Junior staff evaluations',
+        'subheading'   => 'Each lecturer evaluates their junior staff once a week. See who was evaluated, and which weeks were missed.',
     ];
 
     public function __construct()
@@ -63,12 +59,12 @@ class EvaluationsController extends Controller
 
         // A lecturer with no position evaluates per course module, so there is
         // no dashboard to show them — send them where the work actually is.
-        if (!isset(self::COPY[$position])) {
+        if (!in_array($position, self::POSITIONS, true)) {
             $this->redirect('/courses');
             return '';
         }
 
-        $copy = self::COPY[$position];
+        $copy = self::COPY;
 
         return $this->render('evaluations', [
             'title' => $copy['title'],
@@ -79,6 +75,16 @@ class EvaluationsController extends Controller
             'viewClass' => $copy['viewClass'],
             'heading' => $copy['heading'],
             'subheading' => $copy['subheading'],
+            // Same seam as the workload screens — see
+            // app/core/WorkloadPrototypeData.php.
+            // `assignments` is who is due an evaluation each teaching week;
+            // `evaluations` is what was actually submitted. A due week with no
+            // submission shows as "Not evaluated".
+            'evalData' => [
+                'calendar'    => WorkloadPrototypeData::calendar(),
+                'assignments' => WorkloadPrototypeData::evaluationAssignments(),
+                'evaluations' => WorkloadPrototypeData::evaluations(),
+            ],
         ]);
     }
 }

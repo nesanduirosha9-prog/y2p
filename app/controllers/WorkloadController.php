@@ -4,6 +4,7 @@ namespace app\controllers;
 
 use app\core\Controller;
 use app\core\Request;
+use app\core\WorkloadPrototypeData;
 
 // WorkloadController: the department-wide workload screens.
 //
@@ -74,6 +75,20 @@ class WorkloadController extends Controller
             'subheading' => $copy['subheading'],
             // Only the Coordinator has a scheduler to open.
             'showSchedulerLink' => $position === 'coordinator',
+            // The Coordinator allocates; the In-Charge oversees. Same matrix,
+            // but only one of them gets the assign/unassign controls.
+            'canEdit' => $position === 'coordinator',
+            // One payload, rendered client-side by js/workload_matrix.js. The
+            // views carry no data of their own any more — swapping
+            // WorkloadPrototypeData for real models is a change to this method
+            // alone. See app/core/WorkloadPrototypeData.php.
+            'matrixData' => [
+                'courses'     => WorkloadPrototypeData::courses(),
+                'staff'       => WorkloadPrototypeData::staff(),
+                'load'        => WorkloadPrototypeData::staffLoad(),
+                'engagements' => WorkloadPrototypeData::ENGAGEMENTS,
+                'canEdit'     => $position === 'coordinator',
+            ],
         ]);
     }
 
@@ -85,11 +100,27 @@ class WorkloadController extends Controller
         }
 
         return $this->render('workload_scheduler', [
-            'title' => 'Workload Scheduler — StaffSync',
+            'title' => 'Duty Scheduler — StaffSync',
             'css_file' => ['/css/directory.css', '/css/workload_matrix.css', '/css/scheduler.css'],
             'active' => 'workload-sched',
-            'pageTitle' => 'Workload Scheduler & Allocator',
-            'pageSubtitle' => 'Duty allocation, lowest-workload assignment, and invitation dispatch',
+            'pageTitle' => 'Duty Scheduler',
+            'pageSubtitle' => 'Triage duty requests, auto-allocate the least-loaded available staff, and send invites',
+            // Same seam as distribution(). js/scheduler.js runs the real
+            // allocation rules from CurrentViews/script.js against this payload,
+            // so the algorithm is written and testable before the backend
+            // exists — the port becomes a translation, not a design exercise.
+            'schedulerData' => [
+                'week'         => WorkloadPrototypeData::week(),
+                'requests'     => WorkloadPrototypeData::requests(),
+                'duties'       => WorkloadPrototypeData::duties(),
+                'staff'        => WorkloadPrototypeData::staff(),
+                'load'         => WorkloadPrototypeData::staffLoad(),
+                'availability' => WorkloadPrototypeData::availability(),
+                'leave'        => WorkloadPrototypeData::leave(),
+                'slots'        => WorkloadPrototypeData::SLOTS,
+                'slotHours'    => WorkloadPrototypeData::SLOT_HOURS,
+                'weekdays'     => WorkloadPrototypeData::WEEKDAYS,
+            ],
         ]);
     }
 }

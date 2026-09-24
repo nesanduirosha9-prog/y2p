@@ -477,3 +477,238 @@
         justify-content: space-between;
     }
 }
+
+/* ==============================================================
+   Duty Scheduler — rebuilt screen (js/scheduler.js)
+   Adds the three-step layout (week / requests / who's free), the
+   allocation explanation, the manual swap picker and the invite
+   preview. Card styling reuses .duty-session-card above.
+   ============================================================== */
+
+.sched-page { display: flex; flex-direction: column; gap: 16px; }
+
+.sched-view-panel[hidden] { display: none; }
+
+/* ---- Cards: the middle block and per-card actions ---- */
+.session-card-middle {
+    padding: 12px 16px 4px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+.session-card-middle .session-title {
+    font-size: 13.5px;
+    font-weight: 700;
+    color: #0f1c2e;
+    line-height: 1.35;
+}
+.session-card-middle .session-course-sub {
+    font-size: 11.5px;
+    color: #6b7c96;
+}
+
+.session-card-actions {
+    display: flex;
+    gap: 8px;
+    margin-top: 12px;
+    padding-top: 11px;
+    border-top: 1px solid #eef1f6;
+}
+.session-card-actions > * { flex: 1; justify-content: center; }
+.session-card-actions button:disabled { opacity: 0.45; cursor: not-allowed; }
+
+/* ---- Request rows ---- */
+.duty-item-slots { display: flex; flex-wrap: wrap; gap: 4px; }
+.slot-tag {
+    display: inline-flex;
+    align-items: center;
+    background: #eef2f7;
+    color: #475569;
+    border-radius: 5px;
+    padding: 2px 7px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10.5px;
+    font-weight: 600;
+}
+.sched-req-note {
+    margin: 4px 0 0;
+    font-size: 11px;
+    color: #b45309;
+    font-style: italic;
+}
+
+/* ---- "Who's free" grid ---- */
+.sched-avail-controls { display: flex; align-items: center; gap: 10px; }
+
+.avail-table th.avail-slot-head {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    text-align: center;
+    padding: 8px 2px;
+}
+.avail-cell {
+    width: 34px;
+    padding: 0;
+    border-left: 1px solid #f1f5f9;
+}
+.avail-cell::after {
+    content: '';
+    display: block;
+    width: 18px;
+    height: 18px;
+    margin: 0 auto;
+    border-radius: 5px;
+}
+.avail-cell.is-free::after   { background: #d0fae5; box-shadow: inset 0 0 0 1px #a7f3d0; }
+.avail-cell.is-busy::after   { background: #f1f5f9; }
+.avail-cell.is-booked::after { background: #bfdbfe; box-shadow: inset 0 0 0 1px #93c5fd; }
+.avail-blocked { opacity: 0.5; }
+.avail-blocked .avail-cell.is-free::after { background: #f1f5f9; box-shadow: none; }
+
+/* ---- Modals ---- */
+.sched-modal { max-width: 560px; width: 100%; }
+.sched-modal-wide { max-width: 680px; }
+.sched-modal .modal-body { max-height: 62vh; overflow-y: auto; }
+
+/* Allocation explanation */
+.alloc-result {
+    border: 1px solid #e2e8f0;
+    border-radius: 11px;
+    padding: 13px 15px;
+    margin-bottom: 10px;
+}
+.alloc-result.is-ok { border-left: 3px solid #22c55e; }
+.alloc-result.is-short { border-left: 3px solid #f59e0b; }
+
+.alloc-result-head {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    flex-wrap: wrap;
+    margin-bottom: 7px;
+}
+.alloc-result-head strong { font-size: 13px; color: #0f1c2e; }
+.alloc-result-when { font-size: 11px; color: #94a3b8; margin-left: auto; }
+
+.alloc-line { font-size: 12.5px; color: #374151; line-height: 1.6; }
+.alloc-short { color: #b45309; font-weight: 600; margin-left: 5px; }
+.alloc-fatal { font-size: 12.5px; color: #b91c1c; display: flex; align-items: center; gap: 7px; }
+
+/* Collapsed by default: the reasons matter when a duty cannot be filled,
+   and are noise when it can. */
+.alloc-why { margin-top: 9px; }
+.alloc-why summary {
+    font-size: 11.5px;
+    font-weight: 600;
+    color: #2563eb;
+    cursor: pointer;
+    list-style: none;
+}
+.alloc-why summary::-webkit-details-marker { display: none; }
+.alloc-why summary::before { content: '▸ '; }
+.alloc-why[open] summary::before { content: '▾ '; }
+.alloc-why ul { margin: 8px 0 0; padding-left: 4px; list-style: none; }
+.alloc-why li {
+    font-size: 11.5px;
+    color: #6b7c96;
+    padding: 3px 0;
+    font-family: 'JetBrains Mono', monospace;
+}
+.alloc-why-reason {
+    display: inline-block;
+    min-width: 150px;
+    color: #94a3b8;
+    font-family: 'Inter', sans-serif;
+}
+
+/* Manual swap picker */
+.swap-intro { font-size: 12px; color: #6b7c96; padding-bottom: 12px; line-height: 1.55; }
+.swap-row {
+    display: flex;
+    align-items: center;
+    gap: 11px;
+    padding: 9px 6px;
+    border-top: 1px solid #f1f5f9;
+}
+.swap-row.is-assigned { background: #f0fdf4; }
+.swap-row.is-warned .swap-meta b { color: #b45309; }
+.swap-id { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.swap-name { font-size: 12.5px; font-weight: 600; color: #0f1c2e; }
+.swap-meta { font-size: 10.5px; color: #94a3b8; }
+
+/* Invite preview */
+.invite-meta {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    padding-bottom: 13px;
+    margin-bottom: 14px;
+    border-bottom: 1px solid #eef1f6;
+}
+.invite-meta > div { display: flex; gap: 10px; font-size: 12px; color: #374151; }
+.invite-label {
+    width: 62px;
+    flex-shrink: 0;
+    font-size: 10.5px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    color: #94a3b8;
+    padding-top: 1px;
+}
+.invite-preview {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    padding: 16px 18px;
+    font-size: 12.5px;
+    color: #374151;
+    line-height: 1.65;
+}
+.invite-preview p { margin-bottom: 9px; }
+.invite-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 12px 0;
+    background: #fff;
+    border-radius: 7px;
+    overflow: hidden;
+}
+.invite-table th,
+.invite-table td {
+    border: 1px solid #e2e8f0;
+    padding: 6px 10px;
+    font-size: 11.5px;
+    text-align: left;
+}
+.invite-table th { background: #eef2f7; font-weight: 700; color: #0f1c2e; }
+.invite-detail { font-size: 12px; }
+.invite-sign { font-style: italic; color: #6b7c96; margin-top: 12px; }
+
+.sched-invite-foot {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 14px;
+    flex-wrap: wrap;
+}
+.sched-invite-note {
+    font-size: 11.5px;
+    color: #b45309;
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    margin: 0;
+}
+
+/* ---- Responsive ---- */
+@media (max-width: 768px) {
+    .sched-panel-header { flex-direction: column; align-items: flex-start; gap: 10px; }
+    .sched-avail-controls { width: 100%; }
+    .sched-avail-controls .seg { width: 100%; }
+    .sched-avail-controls .seg-btn { flex: 1; justify-content: center; }
+    .session-card-actions { flex-direction: column; }
+    .alloc-result-when { margin-left: 0; width: 100%; }
+    .alloc-why-reason { min-width: 0; display: block; }
+    .sched-invite-foot { flex-direction: column-reverse; align-items: stretch; }
+}

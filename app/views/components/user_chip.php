@@ -49,6 +49,13 @@ $chipEmail = $userEmail ?? '';
         <a href="/settings" class="user-menu-item" role="menuitem">
             <i class="fa-solid fa-gear"></i> Account Settings
         </a>
+        <!-- Every role can read its own activity record, so this lives in the
+             profile menu rather than the sidebar: it is about the person, and
+             only the Coordinator and the In-Charge have a department-wide
+             Activity Log item in the navigation. -->
+        <a href="/audit/me" class="user-menu-item" role="menuitem">
+            <i class="fa-solid fa-clock-rotate-left"></i> View My Activity Log
+        </a>
         <a href="/logout" class="user-menu-item user-menu-item-danger" role="menuitem">
             <i class="fa-solid fa-right-from-bracket"></i> Sign Out
         </a>

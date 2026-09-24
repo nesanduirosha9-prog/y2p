@@ -27,6 +27,7 @@ use app\controllers\EvaluationsController;
 use app\controllers\TimetableController;
 use app\controllers\MessagesController;
 use app\controllers\NotificationsController;
+use app\controllers\AuditController;
 
 // Several resources have one controller per role, so the class names collide
 // (there are two TimetableControllers, three EvaluationsControllers, ...).
@@ -154,8 +155,12 @@ $router->get('/staff', function (Request $request, Response $response) {
     }
     return (new StaffController())->index($request);
 });
-// These two are POST-only and /staff is GET-only, so they cannot collide with
-// it however the router orders its {param} loop.
+// These are POST-only and /staff is GET-only, so they cannot collide with it
+// however the router orders its {param} loop. /staff/create is two segments
+// and the {code} routes are three, so those cannot collide either.
+$router->post('/staff/create', function (Request $request, Response $response) {
+    return (new StaffController())->create($request, $response);
+});
 $router->post('/staff/{code}/approve', function (Request $request, Response $response, array $params) {
     return (new StaffController())->approve($request, $response, $params);
 });
@@ -196,6 +201,26 @@ $router->get('/workload/scheduler', function (Request $request, Response $respon
 // or junior academic staff) evaluates per course and is sent to /courses.
 $router->get('/evaluations', function (Request $request, Response $response) {
     return (new EvaluationsController())->index($request);
+});
+
+// --- Activity log ----------------------------------------------------------
+// GET /audit    the department-wide log — Coordinator and In-Charge only, and
+//               the two of them do NOT see the same rows (the Coordinator is
+//               not shown the In-Charge's entries or those of another
+//               coordinator). That filtering is done server-side inside
+//               AuditPrototypeData::feed, not in the browser.
+// GET /audit/me your own record — every signed-in role, reached from the
+//               profile menu rather than the sidebar.
+//
+// ORDERING: /audit is one segment and /audit/me is two, so neither can shadow
+// the other however the router loops. Both are GET-only; there is deliberately
+// no POST, PUT or DELETE route here, because nothing may write to the log
+// except the application itself, as a side effect of the action being recorded.
+$router->get('/audit', function (Request $request, Response $response) {
+    return (new AuditController())->index($request);
+});
+$router->get('/audit/me', function (Request $request, Response $response) {
+    return (new AuditController())->mine($request);
 });
 
 // --- Messages --------------------------------------------------------------
@@ -254,6 +279,13 @@ $router->get('/settings/handover', function (Request $request, Response $respons
 });
 $router->get('/settings/handover/change/{position}/{code}', function (Request $request, Response $response, array $params) {
     return (new AccountsController())->change($request, $response, $params);
+});
+// "Add coordinator" — the same select/verify steps with nobody replaced.
+$router->get('/settings/handover/add/{position}', function (Request $request, Response $response, array $params) {
+    return (new AccountsController())->add($request, $response, $params);
+});
+$router->post('/settings/handover/revoke', function (Request $request, Response $response) {
+    return (new AccountsController())->revoke($request, $response);
 });
 $router->get('/settings/handover/select/{position}/{code}', function (Request $request, Response $response, array $params) {
     return (new AccountsController())->selectView($request, $response, $params);

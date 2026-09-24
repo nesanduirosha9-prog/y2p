@@ -12,7 +12,43 @@ document.addEventListener('DOMContentLoaded', () => {
     initAvatarUpload();
     initThemeSelection();
     initSaveButton();
+    initRevokeCoordinator();
 });
+
+// Account Handover (In-Charge only): "Revoke" takes the Coordinator seat away.
+// The server refuses the last Coordinator; the button is disabled for it too.
+function initRevokeCoordinator() {
+    const body = document.getElementById('handoverBody');
+    if (!body) return;
+
+    body.addEventListener('click', (e) => {
+        const btn = e.target.closest('[data-revoke]');
+        if (!btn || btn.disabled) return;
+        const name = btn.dataset.name || 'this person';
+        if (!confirm('Revoke the Coordinator role from ' + name + '?\n\nThey stay on staff as Junior Staff. You can add them back later.')) return;
+
+        btn.disabled = true;
+        fetch('/settings/handover/revoke', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ code: btn.dataset.revoke })
+        })
+            .then(r => r.json())
+            .then(data => {
+                if (data.success) {
+                    window.location.hash = 'handover';
+                    window.location.reload();
+                } else {
+                    alert(data.message || 'Could not revoke the role.');
+                    btn.disabled = false;
+                }
+            })
+            .catch(() => {
+                alert('Something went wrong. Please try again.');
+                btn.disabled = false;
+            });
+    });
+}
 
 function initSettingsTabs() {
     const tabsContainer = document.getElementById('settingsTabs');

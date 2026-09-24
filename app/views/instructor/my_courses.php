@@ -4,13 +4,17 @@
 // Divided into 3 tabs:
 // 1. Course Details & Evaluations — Master course list with session filters and master-detail sliding evaluation flow.
 // 2. Evaluate by Instructor — Roster of junior instructors assigned to the lecturer's own courses, with right-side slide drawer.
-// 3. Evaluation History — Searchable, filterable audit trail by time (week, month, semester), course, and instructor.
+// 3. Evaluation History — Searchable audit trail, navigated by week, month or
+//    semester (js/period_nav.js, the same calendar as the Coordinator's
+//    Evaluations page), and filterable by course and instructor.
 
 use app\core\ViewHelpers;
 
 $totalCourses = count($assignedCourses ?? []);
 $totalInstructors = count($assignedInstructors ?? []);
-$totalHistory = count($evaluationHistory ?? []);
+// The history tab's badge counts the weeks the lecturer missed, not every row:
+// the history holds a row per instructor per week, so a total is just noise.
+$missedHistory = count(array_filter($evaluationHistory ?? [], fn($h) => ($h['status'] ?? '') === 'Not evaluated'));
 ?>
 
 <div class="courses-hub-container">
@@ -30,7 +34,9 @@ $totalHistory = count($evaluationHistory ?? []);
         <button type="button" class="course-tab" data-tab="history" role="tab" aria-selected="false" id="tab-history">
             <i class="fa-solid fa-clock-rotate-left"></i>
             <span>Evaluation History</span>
-            <span class="course-tab-badge" id="historyCountBadge"><?= $totalHistory ?></span>
+            <?php if ($missedHistory > 0): ?>
+                <span class="course-tab-badge course-tab-badge-warn" id="historyCountBadge" title="Evaluations you missed"><?= $missedHistory ?> missed</span>
+            <?php endif; ?>
         </button>
     </div>
 
@@ -109,7 +115,7 @@ $totalHistory = count($evaluationHistory ?? []);
                                         data-instructors="<?= htmlspecialchars(implode(',', $c['instructors'])) ?>"
                                         data-search="<?= htmlspecialchars(strtolower($c['code'] . ' ' . $c['name'] . ' ' . implode(' ', $c['lecturers']) . ' ' . implode(' ', $c['instructors']) . ' ' . implode(' ', $c['sessions'] ?? []))) ?>">
                                         
-                                        <td class="cell-code"><span class="pill pill-muted"><?= htmlspecialchars($c['code']) ?></span></td>
+                                        <td><?= ViewHelpers::codeBadge($c['code'], 'course', $c['name']) ?></td>
                                         <td>
                                             <strong><?= htmlspecialchars($c['name']) ?></strong>
                                             <?php if (!empty($c['sessions'])): ?>
@@ -124,7 +130,7 @@ $totalHistory = count($evaluationHistory ?? []);
                                         <td>
                                             <div class="tag-row">
                                                 <?php foreach ($c['lecturers'] as $lCode): ?>
-                                                    <span class="tag tag-lecturer" title="<?= htmlspecialchars($c['lecturer_names'][$lCode] ?? $lCode) ?>">
+                                                    <span class="code-badge code-badge--lecturer" title="<?= htmlspecialchars($c['lecturer_names'][$lCode] ?? $lCode) ?>">
                                                         <?= htmlspecialchars($lCode) ?>
                                                     </span>
                                                 <?php endforeach; ?>
@@ -139,7 +145,7 @@ $totalHistory = count($evaluationHistory ?? []);
                                                 }
                                                 ?>
                                                 <?php foreach ($c['instructors'] as $iCode): ?>
-                                                    <span class="tag tag-instructor" title="<?= htmlspecialchars($instNameMap[$iCode] ?? $iCode) ?>"><?= htmlspecialchars($iCode) ?></span>
+                                                    <span class="code-badge code-badge--staff" title="<?= htmlspecialchars($instNameMap[$iCode] ?? $iCode) ?>"><?= htmlspecialchars($iCode) ?></span>
                                                 <?php endforeach; ?>
                                             </div>
                                         </td>
@@ -219,7 +225,7 @@ $totalHistory = count($evaluationHistory ?? []);
                                 data-dept="<?= htmlspecialchars($inst['department'] ?? 'Computer Science') ?>"
                                 data-courses='<?= htmlspecialchars(json_encode($inst['courses'] ?? []), ENT_QUOTES) ?>'
                                 data-search="<?= htmlspecialchars($searchKey) ?>">
-                                <td><span class="pill pill-muted"><?= htmlspecialchars($inst['code']) ?></span></td>
+                                <td><?= ViewHelpers::codeBadge($inst['code'], 'staff') ?></td>
                                 <td>
                                     <div class="lec-identity">
                                         <span class="lec-avatar"><?= htmlspecialchars(ViewHelpers::staffInitials($inst['name'])) ?></span>
@@ -233,7 +239,7 @@ $totalHistory = count($evaluationHistory ?? []);
                                 <td>
                                     <div class="tag-row">
                                         <?php foreach ($inst['courses'] as $cCode): ?>
-                                            <span class="tag tag-course"><?= htmlspecialchars($cCode) ?></span>
+                                            <span class="code-badge code-badge--course"><?= htmlspecialchars($cCode) ?></span>
                                         <?php endforeach; ?>
                                     </div>
                                 </td>
@@ -241,7 +247,7 @@ $totalHistory = count($evaluationHistory ?? []);
                                     <?php $isEval = !empty($inst['evaluated_this_week']) || ($inst['status'] ?? '') === 'Evaluated'; ?>
                                     <?php if ($isEval): ?>
                                         <span class="pill pill-active status-pill" id="instStatus_<?= htmlspecialchars($inst['code']) ?>">
-                                            <i class="fa-solid fa-check"></i> Evaluated (<?= number_format((float)($inst['rating'] ?? 4.0), 1) ?>)
+                                            <i class="fa-solid fa-check"></i> Evaluated (<?= (int)round((float)($inst['rating'] ?? 4)) ?>)
                                         </span>
                                     <?php else: ?>
                                         <span class="pill pill-pending status-pill" id="instStatus_<?= htmlspecialchars($inst['code']) ?>">
@@ -278,6 +284,11 @@ $totalHistory = count($evaluationHistory ?? []);
 
     <!-- TAB PANEL 3: EVALUATION HISTORY -->
     <div class="courses-panel" id="courses-panel-history" role="tabpanel" aria-labelledby="tab-history" hidden>
+        <!-- Which week / month / semester is shown; this week by default -->
+        <div class="dir-card history-period-card">
+            <div id="historyPeriodNav"></div>
+        </div>
+
         <!-- Filter Controls for History -->
         <div class="dir-controls">
             <div class="search-box">
@@ -285,12 +296,10 @@ $totalHistory = count($evaluationHistory ?? []);
                 <input type="text" id="historySearch" placeholder="Search evaluation comments, course, instructor..." autocomplete="off">
             </div>
 
-            <!-- Time Period Segment Filter -->
-            <div class="seg" id="historyTimeFilter" role="group" aria-label="Filter by time period">
-                <button type="button" class="seg-btn active" data-value="">All Periods</button>
-                <button type="button" class="seg-btn" data-value="week">Week</button>
-                <button type="button" class="seg-btn" data-value="month">Month</button>
-                <button type="button" class="seg-btn" data-value="sem">Semester</button>
+            <div class="seg" id="historyStatusFilter" role="group" aria-label="Status">
+                <button type="button" class="seg-btn active" data-status="">All</button>
+                <button type="button" class="seg-btn" data-status="evaluated">Evaluated</button>
+                <button type="button" class="seg-btn" data-status="missing">Not evaluated</button>
             </div>
 
             <!-- Filter by Course -->
@@ -336,57 +345,68 @@ $totalHistory = count($evaluationHistory ?? []);
                             <th style="min-width: 200px;">Instructor</th>
                             <th style="width: 140px;">Performance Rating</th>
                             <th style="min-width: 280px;">Observations &amp; Comments</th>
-                            <th style="width: 110px; text-align: right;">Status</th>
+                            <th style="width: 130px; text-align: right;">Status</th>
                         </tr>
                     </thead>
                     <tbody id="evaluationHistoryTbody">
                         <?php foreach (($evaluationHistory ?? []) as $h): ?>
                             <?php
-                            $histSearch = strtolower($h['course_code'] . ' ' . $h['course_name'] . ' ' . $h['instructor_code'] . ' ' . $h['instructor_name'] . ' ' . $h['comment'] . ' ' . $h['week'] . ' ' . $h['month'] . ' ' . $h['semester']);
+                            $histSearch = strtolower($h['course_code'] . ' ' . $h['course_name'] . ' ' . $h['instructor_code'] . ' ' . $h['instructor_name'] . ' ' . $h['comment']);
+                            $missed = ($h['status'] ?? '') === 'Not evaluated';
                             ?>
-                            <tr class="history-row"
+                            <tr class="history-row <?= $missed ? 'is-missing' : '' ?>"
                                 data-id="<?= htmlspecialchars($h['id']) ?>"
-                                data-week="<?= htmlspecialchars($h['week']) ?>"
-                                data-month="<?= htmlspecialchars($h['month']) ?>"
-                                data-sem="<?= htmlspecialchars($h['semester']) ?>"
+                                data-status="<?= $missed ? 'missing' : 'evaluated' ?>"
+                                data-week-start="<?= htmlspecialchars($h['week_start']) ?>"
                                 data-course="<?= htmlspecialchars($h['course_code']) ?>"
                                 data-instructor="<?= htmlspecialchars($h['instructor_code']) ?>"
                                 data-search="<?= htmlspecialchars($histSearch) ?>">
                                 <td>
-                                    <div style="font-weight: 600; color: #0f1c2e;"><?= htmlspecialchars($h['date']) ?></div>
-                                    <div style="font-size: 11px; color: #64748b;"><?= htmlspecialchars($h['week']) ?> &middot; <?= htmlspecialchars($h['semester']) ?></div>
+                                    <div style="font-weight: 600; color: #0f1c2e;"><?= $missed ? 'No evaluation' : htmlspecialchars($h['date']) ?></div>
+                                    <div style="font-size: 11px; color: #64748b;"><?= htmlspecialchars($h['week_label']) ?></div>
                                 </td>
                                 <td>
-                                    <strong><?= htmlspecialchars($h['course_code']) ?></strong>
+                                    <?= ViewHelpers::codeBadge($h['course_code'], 'course') ?>
                                     <div style="font-size: 11.5px; color: #64748b;"><?= htmlspecialchars($h['course_name']) ?></div>
                                 </td>
                                 <td>
                                     <div class="lec-identity">
-                                        <span class="lec-avatar" style="width: 32px; height: 32px; font-size: 11px;"><?= htmlspecialchars(ViewHelpers::staffInitials($h['instructor_name'])) ?></span>
-                                        <span>
-                                            <span class="lec-name" style="font-size: 13px;"><?= htmlspecialchars($h['instructor_name']) ?></span>
-                                            <span class="pill pill-muted" style="font-size: 10px; padding: 1px 5px;"><?= htmlspecialchars($h['instructor_code']) ?></span>
-                                        </span>
+                                        <?= ViewHelpers::codeBadge($h['instructor_code'], 'staff', $h['instructor_name']) ?>
+                                        <span class="lec-name" style="font-size: 13px;"><?= htmlspecialchars($h['instructor_name']) ?></span>
                                     </div>
                                 </td>
                                 <td>
-                                    <span class="rating-badge rating-badge-active">
-                                        <i class="fa-solid fa-star"></i> <?= number_format((float)$h['rating'], 1) ?> / 5.0
-                                    </span>
+                                    <?php if ($missed): ?>
+                                        <span class="text-muted">&mdash;</span>
+                                    <?php else: ?>
+                                        <span class="rating-badge rating-badge-active">
+                                            <i class="fa-solid fa-star"></i> <?= (int)round((float)$h['rating']) ?> / 5
+                                        </span>
+                                    <?php endif; ?>
                                 </td>
                                 <td style="font-size: 12.5px; color: #334155; line-height: 1.45;">
-                                    <?= htmlspecialchars($h['comment']) ?>
+                                    <?php if ($missed): ?>
+                                        <span class="history-missed-note">This week passed without an evaluation of <?= htmlspecialchars($h['instructor_name']) ?>.</span>
+                                    <?php elseif ($h['comment'] !== ''): ?>
+                                        <?= htmlspecialchars($h['comment']) ?>
+                                    <?php else: ?>
+                                        <span class="text-muted">No observations recorded.</span>
+                                    <?php endif; ?>
                                 </td>
-                                <td style="text-align: right;">
-                                    <span class="pill pill-active" style="background: #e6f9ed; color: #166534; font-size: 11px;">
-                                        <i class="fa-solid fa-check"></i> <?= htmlspecialchars($h['status'] ?? 'Submitted') ?>
-                                    </span>
+                                <td style="text-align: right; white-space: nowrap;">
+                                    <?php if ($missed): ?>
+                                        <span class="pill history-pill-missing"><i class="fa-regular fa-clock"></i> Not evaluated</span>
+                                    <?php else: ?>
+                                        <span class="pill pill-active" style="background: #e6f9ed; color: #166534; font-size: 11px;">
+                                            <i class="fa-solid fa-check"></i> Evaluated
+                                        </span>
+                                    <?php endif; ?>
                                 </td>
                             </tr>
                         <?php endforeach; ?>
                     </tbody>
                 </table>
-                <p class="dir-empty" id="historyEmptyMsg" style="display: none;">No evaluation records match your filter criteria.</p>
+                <p class="dir-empty" id="historyEmptyMsg" style="display: none;">No evaluations in this period match your filters.</p>
             </div>
         </div>
     </div>
@@ -464,4 +484,6 @@ $totalHistory = count($evaluationHistory ?? []);
     </div>
 </div>
 
+<script type="application/json" id="historyCalendar"><?= json_encode($calendar) ?></script>
+<script src="/js/period_nav.js"></script>
 <script src="/js/instructor/courses.js"></script>
