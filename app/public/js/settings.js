@@ -13,7 +13,182 @@ document.addEventListener('DOMContentLoaded', () => {
     initThemeSelection();
     initSaveButton();
     initRevokeCoordinator();
+    initHandoverPanel();
 });
+
+// Account Handover (In-Charge only): Change and Add coordinator open the side
+// panel instead of a separate page. Step 1 picks the new holder and asks the
+// server to send them a code (POST /settings/handover/select); step 2 checks
+// that code (POST /settings/handover/verify) and reloads onto this tab. The
+// server re-checks everything, so the panel only ever offers, never decides.
+function initHandoverPanel() {
+    const tab = document.getElementById('settings-panel-handover');
+    const panel = document.getElementById('hoPanel');
+    if (!tab || !panel) return;
+
+    const $ = id => document.getElementById(id);
+    const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, m => (
+        { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[m]
+    ));
+    const personHtml = p => codeBadge(p.code, p.kind || 'staff') +
+        `<span class="candidate-id"><span class="candidate-name">${esc(p.name)}</span>` +
+        `<span class="candidate-email">${esc(p.email)}</span></span>`;
+
+    const next = $('hoNext');
+    const back = $('hoBack');
+    let state = null;        // { position, label, from, candidates, toCode, step }
+
+    function showError(id, msg) {
+        $(id).textContent = msg;
+        $(id).hidden = !msg;
+    }
+
+    function picked() {
+        return state.candidates.find(c => c.code === state.toCode) || null;
+    }
+
+    function updateNext() {
+        if (state.step === 'pick') {
+            next.disabled = !picked();
+        } else {
+            next.disabled = false;
+        }
+    }
+
+    function renderCandidates() {
+        const q = $('hoSearch').value.trim().toLowerCase();
+        const list = state.candidates.filter(c => !q || (c.name + ' ' + c.email).toLowerCase().includes(q));
+        const chosen = picked();
+        $('hoCandidates').innerHTML = list.map(c => `
+            <label class="candidate-row">
+                <input type="radio" name="hoCandidate" value="${esc(c.code)}" ${chosen && chosen.code === c.code ? 'checked' : ''}>
+                ${personHtml(c)}
+            </label>`).join('');
+        $('hoCandidatesEmpty').hidden = list.length > 0;
+        updateNext();
+    }
+
+    function showStep(step) {
+        state.step = step;
+        $('hoStepPick').hidden = step !== 'pick';
+        $('hoStepVerify').hidden = step !== 'verify';
+        back.textContent = step === 'pick' ? 'Cancel' : 'Back';
+        next.textContent = step === 'pick' ? 'Send code' : 'Confirm change';
+        updateNext();
+    }
+
+    function open(btn) {
+        const d = btn.dataset;
+        const from = d.code ? { code: d.code, name: d.name, email: d.email, kind: d.kind } : null;
+        state = { position: d.handover, label: d.label, from: from, candidates: [], toCode: '', step: 'pick' };
+
+        $('hoPanelTitle').textContent = (from ? 'Change ' : 'Add ') + d.label;
+        $('hoCurrentRow').hidden = !from;
+        $('hoCurrent').innerHTML = from ? personHtml(from) : '';
+        $('hoSearch').value = '';
+        $('hoOtp').value = '';
+        showError('hoPickError', '');
+        showError('hoOtpError', '');
+        $('hoCandidates').innerHTML = '';
+        $('hoCandidatesEmpty').hidden = true;
+        showStep('pick');
+
+        panel.hidden = false;
+        document.body.classList.add('ho-panel-open');
+
+        const url = '/settings/handover/candidates/' + encodeURIComponent(d.handover) +
+            '?exclude=' + encodeURIComponent(from ? from.code : '');
+        fetch(url)
+            .then(r => r.json())
+            .then(data => {
+                if (!data.success) throw new Error(data.message);
+                state.candidates = data.candidates;
+                renderCandidates();
+                $('hoSearch').focus();
+            })
+            .catch(err => showError('hoPickError', (err && err.message) || 'Could not load the list. Please try again.'));
+    }
+
+    function close() {
+        panel.hidden = true;
+        document.body.classList.remove('ho-panel-open');
+        state = null;
+    }
+
+    function sendCode() {
+        const to = picked();
+        if (!to) return;
+        next.disabled = true;
+        next.textContent = 'Sending…';
+        showError('hoPickError', '');
+
+        fetch('/settings/handover/select', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                position: state.position,
+                fromCode: state.from ? state.from.code : '',
+                toCode: to.code,
+            }),
+        })
+            .then(r => r.json())
+            .then(data => {
+                if (!data.success) throw new Error(data.message);
+                $('hoTarget').innerHTML = personHtml(to);
+                showStep('verify');
+                $('hoOtp').focus();
+            })
+            .catch(err => {
+                showError('hoPickError', (err && err.message) || 'Could not send the code. Please try again.');
+                showStep('pick');
+            });
+    }
+
+    function confirmChange() {
+        const otp = $('hoOtp').value.trim();
+        if (otp.length !== 6) {
+            showError('hoOtpError', 'Enter the full 6-digit code.');
+            return;
+        }
+        next.disabled = true;
+        showError('hoOtpError', '');
+
+        fetch('/settings/handover/verify', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ otp: otp }),
+        })
+            .then(r => r.json())
+            .then(data => {
+                if (!data.success) throw new Error(data.message);
+                window.location.hash = 'handover';
+                window.location.reload();
+            })
+            .catch(err => {
+                showError('hoOtpError', (err && err.message) || 'Verification failed.');
+                next.disabled = false;
+            });
+    }
+
+    tab.addEventListener('click', e => {
+        const btn = e.target.closest('[data-handover]');
+        if (btn) open(btn);
+    });
+    $('hoPanelClose').addEventListener('click', close);
+    back.addEventListener('click', () => (state && state.step === 'verify' ? showStep('pick') : close()));
+    next.addEventListener('click', () => (state.step === 'pick' ? sendCode() : confirmChange()));
+    $('hoSearch').addEventListener('input', renderCandidates);
+    $('hoCandidates').addEventListener('change', e => {
+        state.toCode = e.target.value;
+        updateNext();
+    });
+    $('hoOtp').addEventListener('input', function () {
+        this.value = this.value.replace(/\D/g, '').slice(0, 6);
+    });
+    document.addEventListener('keydown', e => {
+        if (e.key === 'Escape' && !panel.hidden) close();
+    });
+}
 
 // Account Handover (In-Charge only): "Revoke" takes the Coordinator seat away.
 // The server refuses the last Coordinator; the button is disabled for it too.

@@ -27,7 +27,7 @@ class LeaveController extends Controller
 
         return $this->render('instructor/leave', [
             'title' => 'Leave Management',
-            'css_file' => ['/css/instructor/leave.css'],
+            'css_file' => ['/css/directory.css', '/css/instructor/leave.css'],
             'active' => 'leave',
             'pageTitle' => 'Leave',
             'notificationCount' => (new NotificationModel())->unreadCount($_SESSION['staff_code']),

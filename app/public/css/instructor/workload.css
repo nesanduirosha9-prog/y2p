@@ -359,141 +359,6 @@
 }
 
 /* ==============================
-   Cover Staff Requests
-   ============================== */
-.wk-cover-card {
-    background: #fefce8;
-    border: 1px solid #fde68a;
-    border-radius: 12px;
-    overflow: hidden;
-}
-
-.wk-cover-header {
-    padding: 12px 20px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 12px;
-    flex-wrap: wrap;
-    border-bottom: 1px solid #fde68a;
-}
-
-.wk-cover-header i {
-    color: #ca8a04;
-    margin-right: 8px;
-}
-
-.wk-cover-header strong {
-    font-size: 13px;
-    color: #0f1c2e;
-}
-
-.wk-pending-pill {
-    background: #fde68a;
-    color: #854d0e;
-    font-size: 10.5px;
-    font-weight: 700;
-    padding: 2px 8px;
-    border-radius: 999px;
-    margin-left: 8px;
-}
-
-.wk-cover-hint {
-    font-size: 11.5px;
-    color: #92702c;
-}
-
-.wk-cover-list {
-    display: flex;
-    flex-direction: column;
-}
-
-.wk-cover-item {
-    display: flex;
-    align-items: center;
-    gap: 14px;
-    padding: 14px 20px;
-    border-top: 1px solid #fde68a;
-    background: #fff;
-}
-
-.wk-cover-item:first-child {
-    border-top: none;
-}
-
-.wk-cover-icon {
-    width: 34px;
-    height: 34px;
-    border-radius: 9px;
-    background: #fef3c7;
-    color: #ca8a04;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-shrink: 0;
-}
-
-.wk-cover-info {
-    flex: 1;
-    min-width: 0;
-}
-
-.wk-cover-title {
-    font-size: 13px;
-    font-weight: 600;
-    color: #0f1c2e;
-}
-
-.wk-inline-code { margin-right: 6px; }
-
-.wk-cover-meta {
-    font-size: 11.5px;
-    color: #6b7c96;
-    margin-top: 2px;
-}
-
-.wk-cover-actions {
-    display: flex;
-    gap: 8px;
-    flex-shrink: 0;
-}
-
-.wk-btn-accept, .wk-btn-reject {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    border: none;
-    border-radius: 7px;
-    padding: 7px 12px;
-    font-size: 12px;
-    font-weight: 600;
-    cursor: pointer;
-}
-
-.wk-btn-accept {
-    background: #d0fae5;
-    color: #004f3b;
-}
-
-.wk-btn-accept:hover {
-    background: #a7f3cf;
-}
-
-.wk-btn-reject {
-    background: #fee2e2;
-    color: #991b1b;
-}
-
-.wk-btn-reject:hover {
-    background: #fecaca;
-}
-
-.wk-cover-item.resolved {
-    opacity: 0.5;
-    pointer-events: none;
-}
-
-/* ==============================
    Assigned Work list
    ============================== */
 .wk-assigned-list {
@@ -632,14 +497,8 @@
         grid-template-columns: 1fr;
     }
 
-    .wk-cover-item,
     .wk-assigned-item {
         flex-wrap: wrap;
-    }
-
-    .wk-cover-actions {
-        width: 100%;
-        justify-content: flex-end;
     }
 
     .wk-assigned-hours {

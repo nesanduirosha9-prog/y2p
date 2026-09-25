@@ -6,24 +6,16 @@
 $positionLabels = [
     'coordinator' => 'Coordinator',
     'in_charge' => 'In-Charge',
-    'timetable_officer' => 'Timetable Officer',
 ];
 $isAdd = $holder === null;
 $candidateNoun = $position === 'coordinator' ? 'junior staff member' : 'lecturer';
+
+// The top bar's title depends on add vs change, so it is set here rather
+// than in the controller; the layout reads it after this view.
+$pageTitle = ($isAdd ? 'Add ' : 'Change ') . $positionLabels[$position];
 ?>
 
 <div class="accounts-view" data-position="<?= htmlspecialchars($position) ?>" data-from-code="<?= $isAdd ? '' : htmlspecialchars($holder['code']) ?>">
-    <div class="page-head">
-        <div>
-            <h2><?= $isAdd ? 'Add' : 'Change' ?> <?= htmlspecialchars($positionLabels[$position]) ?></h2>
-            <p class="page-head-sub">
-                <?= $isAdd
-                    ? 'Choose the ' . $candidateNoun . ' who will join the current Coordinators. Only Junior Staff without a role are listed.'
-                    : 'Search ' . $candidateNoun . ' by name.' ?>
-            </p>
-        </div>
-    </div>
-
     <div class="dir-card handover-card">
         <div class="search-box handover-search">
             <i class="fa-solid fa-magnifying-glass"></i>
@@ -43,17 +35,6 @@ $candidateNoun = $position === 'coordinator' ? 'junior staff member' : 'lecturer
             <?php endforeach; ?>
             <p class="dir-empty" id="candidateEmpty" <?= count($candidates) ? 'hidden' : '' ?>>No eligible <?= htmlspecialchars($candidateNoun) ?>s found.</p>
         </div>
-
-        <?php if ($position === 'timetable_officer'): ?>
-            <div class="form-row handover-rank-row">
-                <label for="fromNewRank"><?= htmlspecialchars($holder['name']) ?>'s new rank after stepping down</label>
-                <select id="fromNewRank">
-                    <option value="">Select rank&hellip;</option>
-                    <option value="junior">Junior Staff Member</option>
-                    <option value="senior">Lecturer</option>
-                </select>
-            </div>
-        <?php endif; ?>
 
         <div class="modal-foot handover-actions">
             <a class="btn-cancel" href="<?= $isAdd ? '/settings#handover' : '/settings/handover/change/' . urlencode($position) . '/' . urlencode($holder['code']) ?>">Back</a>

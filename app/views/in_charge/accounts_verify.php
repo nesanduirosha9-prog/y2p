@@ -5,13 +5,6 @@
 ?>
 
 <div class="accounts-view">
-    <div class="page-head">
-        <div>
-            <h2>Enter Verification OTP</h2>
-            <p class="page-head-sub">An OTP has been sent to your registered email address.</p>
-        </div>
-    </div>
-
     <div class="dir-card handover-card">
         <div class="handover-current">
             <span class="lec-avatar"><?= htmlspecialchars(strtoupper(substr($toStaff['name'], 0, 2))) ?></span>

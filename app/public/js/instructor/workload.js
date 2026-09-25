@@ -70,12 +70,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (pendingPill) pendingPill.textContent = `${remaining} pending`;
         if (assignedDot) assignedDot.classList.toggle('show', remaining > 0);
         if (remaining === 0 && coverList && !document.getElementById('wkCoverEmptyMsg')) {
-            const emptyMsg = document.createElement('div');
-            emptyMsg.id = 'wkCoverEmptyMsg';
-            emptyMsg.className = 'wk-cover-empty';
-            emptyMsg.style.cssText = 'padding: 24px 20px; text-align: center; color: #64748b; font-size: 13px; background: #fff; border-top: 1px solid #fde68a;';
-            emptyMsg.innerHTML = '<i class="fa-solid fa-circle-check" style="color: #10b981; margin-right: 6px;"></i>No pending cover requests. You are all caught up!';
-            coverList.appendChild(emptyMsg);
+            coverList.innerHTML = '<tr id="wkCoverEmptyMsg"><td colspan="8" class="dir-empty">No pending cover requests.</td></tr>';
         }
     }
 
@@ -168,7 +163,6 @@ document.addEventListener('DOMContentLoaded', () => {
         // Animate and remove from the cover requests list
         item.style.transition = 'all 0.25s ease';
         item.style.opacity = '0';
-        item.style.transform = 'translateX(20px)';
         setTimeout(() => {
             item.remove();
             refreshPendingCount();

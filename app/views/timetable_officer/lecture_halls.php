@@ -2,9 +2,9 @@
 
 // Lecture Halls: directory of teaching spaces. $rooms comes straight from
 // RoomModel (an empty database renders an empty table). Search runs
-// client-side; editing a hall's capacity/type persists via PUT
-// /lecture-halls/{code} (LectureHallsController::update), handled in
-// lecture_halls.js.
+// client-side; Add / Edit / Delete all persist through LectureHallsController
+// (POST /lecture-halls, PUT and DELETE /lecture-halls/{code}), called from
+// lecture_halls.js. The same side drawer serves Add and Edit.
 
 $typeLabels = [
     'lab' => 'Laboratory',
@@ -18,15 +18,14 @@ $total = count($rooms);
 
 <div class="halls-view">
 
-    <div class="page-head">
-        <p class="page-head-sub">Manage teaching spaces by name, capacity and type.</p>
-    </div>
-
     <div class="dir-controls">
         <div class="search-box">
             <i class="fa-solid fa-magnifying-glass"></i>
             <input type="text" id="hallSearch" placeholder="Search halls&hellip;" autocomplete="off">
         </div>
+        <button type="button" class="btn-primary" id="addHallBtn" style="margin-left: auto;">
+            <i class="fa-solid fa-plus"></i> Add Hall
+        </button>
     </div>
 
     <div class="dir-card">
@@ -54,7 +53,10 @@ $total = count($rooms);
                             <td class="hall-capacity"><?= (int) $r['capacity'] ?></td>
                             <td><span class="pill pill-muted hall-type"><?= htmlspecialchars($typeLabel) ?></span></td>
                             <td>
-                                <button type="button" class="link-action" data-edit-hall>Edit</button>
+                                <div class="tag-row">
+                                    <button type="button" class="link-action" data-edit-hall>Edit</button>
+                                    <button type="button" class="icon-action danger" data-delete-hall title="Delete hall"><i class="fa-regular fa-trash-can"></i></button>
+                                </div>
                             </td>
                         </tr>
                     <?php endforeach; ?>
@@ -67,13 +69,14 @@ $total = count($rooms);
     </div>
 </div>
 
-<!-- Edit Lecture Hall Side Drawer (Slide-out panel matching media_1790082539024.png) -->
+<!-- Add / Edit Lecture Hall Side Drawer — lecture_halls.js switches the title,
+     subtitle, button text and whether the code field is editable. -->
 <div class="side-drawer-overlay" id="hallModal" hidden>
     <div class="side-drawer" role="dialog" aria-modal="true" aria-labelledby="hallModalTitle">
         <div class="side-drawer-header">
             <div>
                 <h3 class="side-drawer-title" id="hallModalTitle">Edit Lecture Hall</h3>
-                <p class="side-drawer-subtitle">Update capacity and venue type configuration</p>
+                <p class="side-drawer-subtitle" id="hallModalSubtitle">Update capacity and venue type configuration</p>
             </div>
             <button type="button" class="side-drawer-close" data-close aria-label="Close drawer"><i class="fa-solid fa-xmark"></i></button>
         </div>
@@ -83,7 +86,7 @@ $total = count($rooms);
 
             <div class="form-row">
                 <label for="hallFieldName">Venue Code / Name</label>
-                <input type="text" id="hallFieldName" disabled>
+                <input type="text" id="hallFieldName" maxlength="20" placeholder="LT-501" disabled>
             </div>
 
             <div class="field-grid">

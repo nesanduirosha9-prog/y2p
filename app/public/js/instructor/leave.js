@@ -1,5 +1,5 @@
-// Instructor Leave JS: stat cards, Upcoming Leaves, Leave History (with
-// date-range filtering) and the Request Leave modal (multi-date calendar
+// Instructor Leave JS: the Upcoming Leave and Leave History tables (history
+// with date-range filtering) and the Request Leave panel (multi-date calendar
 // picker + partial-day toggle) all render from the `leaveData` JSON payload
 // embedded by the view — same JSON-payload + client-render approach as
 // messages.js. DOM-only demo — nothing persists past a reload.
@@ -17,17 +17,10 @@ document.addEventListener('DOMContentLoaded', () => {
     // Only junior instructors, excluding the logged-in user
     const availableInstructors = INSTRUCTORS.filter(i => i.code !== CURRENT_USER);
 
-    const ANNUAL_ALLOWANCE = 21;
-
     function isUpcoming(l) { return !l.cancelled && l.dates.some(d => d >= TODAY); }
     function isHistory(l) { return l.cancelled || l.dates.every(d => d < TODAY); }
 
     function sortedDates(l) { return [...l.dates].sort(); }
-
-    function fmtDates(dates) {
-        if (!dates.length) return '—';
-        return dates.length === 1 ? dates[0] : `${dates[0]} – ${dates[dates.length - 1]}`;
-    }
 
     function fmtTime(t) {
         if (!t) return '';
@@ -45,7 +38,35 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function isPartial(l) { return !!(l.timeFrom && l.timeTo); }
 
-    function renderCoverBadges(l) {
+    const DAY = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+    const MON = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+
+    /** "Mon 12 Oct 2026" from an ISO date, read as a local calendar day. */
+    function longDate(iso) {
+        const [y, m, d] = iso.split('-').map(Number);
+        const dt = new Date(y, m - 1, d);
+        return `${DAY[dt.getDay()]} ${d} ${MON[m - 1]} ${y}`;
+    }
+
+    function dateCell(l) {
+        const sorted = sortedDates(l);
+        if (sorted.length === 1) return esc(longDate(sorted[0]));
+        return `${esc(longDate(sorted[0]))}<div class="lv-cell-sub">to ${esc(longDate(sorted[sorted.length - 1]))}</div>`;
+    }
+
+    function durationCell(l) {
+        if (isPartial(l)) {
+            const [fh, fm] = l.timeFrom.split(':').map(Number);
+            const [th, tm] = l.timeTo.split(':').map(Number);
+            const hrs = Math.round(((th * 60 + tm) - (fh * 60 + fm)) / 6) / 10;
+            return `${fmtTime(l.timeFrom)} – ${fmtTime(l.timeTo)}<div class="lv-cell-sub">Part day · ${hrs} hrs</div>`;
+        }
+        const n = l.dates.length;
+        return `${n} full day${n === 1 ? '' : 's'}`;
+    }
+
+    /** Who covers which day: one line per date, code badge plus name. */
+    function coverCell(l) {
         let staffList = [];
         if (Array.isArray(l.cover_staff) && l.cover_staff.length > 0) {
             staffList = l.cover_staff;
@@ -53,95 +74,52 @@ document.addEventListener('DOMContentLoaded', () => {
             staffList = Object.entries(l.perDayCover).map(([d, c]) => ({ date: d, code: c.code, name: c.name }));
         } else if (l.cover) {
             const matched = INSTRUCTORS.find(i => i.name === l.cover || i.code === l.cover);
-            if (matched) {
-                staffList = [{ code: matched.code, name: matched.name, date: '' }];
-            } else {
-                return `<span class="lv-cover-label">${esc(l.cover)}</span>`;
-            }
+            if (!matched) return esc(l.cover);
+            staffList = [{ code: matched.code, name: matched.name, date: '' }];
         }
+        staffList = staffList.filter(item => item && item.code);
+        if (!staffList.length) return '<span class="lv-cell-sub">—</span>';
 
-        if (!staffList.length) {
-            return '<span style="color:#94a3b8;">&mdash;</span>';
-        }
-
-        // Group by instructor code preserving order of appearance
-        const map = new Map();
-        staffList.forEach(item => {
-            if (!item || !item.code) return;
-            if (!map.has(item.code)) {
-                map.set(item.code, {
-                    code: item.code,
-                    name: item.name || item.code,
-                    dates: []
-                });
-            }
-            if (item.date) {
-                map.get(item.code).dates.push(item.date);
-            }
-        });
-
-        if (map.size === 0) {
-            return '<span style="color:#94a3b8;">&mdash;</span>';
-        }
-
-        const badges = Array.from(map.values()).map(info => {
-            let title = info.name;
-            if (info.dates.length > 0) {
-                title += ` (${info.dates.join(', ')})`;
-            }
-            return `<span class="code-badge code-badge--staff" title="${esc(title)}">${esc(info.code)}</span>`;
-        });
-
-        return `<div class="tag-row">${badges.join('')}</div>`;
+        return [...staffList]
+            .sort((x, y) => (x.date || '').localeCompare(y.date || ''))
+            .map(item => `
+                <div class="lv-cover-line">
+                    ${item.date ? `<span class="lv-cover-date">${esc(longDate(item.date).slice(0, -5))}</span>` : ''}
+                    ${codeBadge(item.code, 'staff', { title: item.name || item.code })}
+                    <span>${esc(item.name || item.code)}</span>
+                </div>`).join('');
     }
 
-    // ---- Stats / Upcoming / History rendering ----
-
-    function renderStats() {
-        const upcoming = leaves.filter(isUpcoming);
-        const hist = leaves.filter(isHistory);
-        const daysUsed = hist.filter(l => !l.cancelled).reduce((sum, l) => sum + l.dates.length, 0);
-        const upcomingDays = upcoming.reduce((sum, l) => sum + l.dates.length, 0);
-        const totalRequests = leaves.filter(l => !l.cancelled).length;
-
-        document.getElementById('lvStatBalance').textContent = ANNUAL_ALLOWANCE - daysUsed;
-        document.getElementById('lvStatUsed').textContent = daysUsed;
-        document.getElementById('lvStatUpcoming').textContent = upcomingDays;
-        document.getElementById('lvStatTotal').textContent = totalRequests;
+    function reasonCell(l) {
+        return l.reason && l.reason !== '—' ? esc(l.reason) : '<span class="lv-cell-sub">—</span>';
     }
+
+    // ---- Upcoming / History rendering ----
 
     function renderUpcoming() {
-        const list = document.getElementById('lvUpcomingList');
+        const tbody = document.getElementById('lvUpcomingList');
         const upcoming = leaves.filter(isUpcoming);
+        document.getElementById('lvUpcomingCount').textContent =
+            upcoming.length + (upcoming.length === 1 ? ' request' : ' requests');
 
         if (!upcoming.length) {
-            list.innerHTML = '<div class="lv-empty-state">No upcoming leave scheduled.</div>';
+            tbody.innerHTML = '<tr><td colspan="6" class="dir-empty">No upcoming leave.</td></tr>';
             return;
         }
 
-        list.innerHTML = upcoming.map(l => {
-            const sorted = sortedDates(l);
-            const partial = isPartial(l);
-            const canCancel = sorted[0] >= TODAY;
-            const metaReason = (l.reason && l.reason !== '—') ? ` &middot; ${esc(l.reason)}` : '';
-            const meta = partial
-                ? `${fmtDates(sorted)} &middot; ${fmtTime(l.timeFrom)} &ndash; ${fmtTime(l.timeTo)}${metaReason}`
-                : `${fmtDates(sorted)} &middot; ${l.dates.length} day${l.dates.length !== 1 ? 's' : ''}${metaReason}`;
-
+        tbody.innerHTML = upcoming.map(l => {
+            const canCancel = sortedDates(l)[0] >= TODAY;
             return `
-                <div class="lv-row">
-                    <span class="lv-row-dot ${partial ? 'lv-dot-purple' : 'lv-dot-amber'}"></span>
-                    <div class="lv-row-info">
-                        <div class="lv-row-type">${esc(l.type)}${partial ? ' <span class="lv-badge-partial">PARTIAL DAY</span>' : ''}</div>
-                        <div class="lv-row-meta">${meta}</div>
-                    </div>
-                    <div class="lv-cover-badges-wrap">
-                        <span class="lv-cover-hint-text">Cover:</span>
-                        ${renderCoverBadges(l)}
-                    </div>
-                    ${canCancel ? `<button type="button" class="lv-btn-cancel" data-cancel-id="${l.id}">Cancel Leave</button>` : ''}
-                </div>
-            `;
+                <tr>
+                    <td><strong>${esc(l.type)}</strong></td>
+                    <td>${dateCell(l)}</td>
+                    <td>${durationCell(l)}</td>
+                    <td>${reasonCell(l)}</td>
+                    <td>${coverCell(l)}</td>
+                    <td style="text-align: right;">
+                        ${canCancel ? `<button type="button" class="btn-secondary-sm" data-cancel-id="${l.id}">Cancel</button>` : ''}
+                    </td>
+                </tr>`;
         }).join('');
     }
 
@@ -166,37 +144,28 @@ document.addEventListener('DOMContentLoaded', () => {
             if (to && first > to) return false;
             return true;
         });
+        document.getElementById('lvHistoryCount').textContent =
+            hist.length + (hist.length === 1 ? ' request' : ' requests');
 
         const tbody = document.getElementById('lvHistoryBody');
         if (!hist.length) {
-            tbody.innerHTML = '<tr><td colspan="6" class="lv-empty-state">No leave history found.</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="6" class="dir-empty">No leave in this range.</td></tr>';
             return;
         }
 
-        tbody.innerHTML = hist.map(l => {
-            const sorted = sortedDates(l);
-            const partial = isPartial(l);
-            const daysCell = partial
-                ? '<span class="lv-badge-partial">Partial</span>'
-                : `<strong style="color:#0f1c2e">${l.dates.length}</strong>`;
-            const noteCell = l.cancelled
-                ? '<span class="lv-status status-cancelled">Cancelled</span>'
-                : '<span class="lv-status status-approved">Completed</span>';
-
-            return `
-                <tr>
-                    <td class="lv-td-type">${esc(l.type)}</td>
-                    <td>
-                        ${fmtDates(sorted)}
-                        ${partial ? `<div class="lv-td-time">${fmtTime(l.timeFrom)} &ndash; ${fmtTime(l.timeTo)}</div>` : ''}
-                    </td>
-                    <td>${daysCell}</td>
-                    <td>${esc(l.reason)}</td>
-                    <td>${renderCoverBadges(l)}</td>
-                    <td>${noteCell}</td>
-                </tr>
-            `;
-        }).join('');
+        tbody.innerHTML = hist.map(l => `
+            <tr>
+                <td><strong>${esc(l.type)}</strong></td>
+                <td>${dateCell(l)}</td>
+                <td>${durationCell(l)}</td>
+                <td>${reasonCell(l)}</td>
+                <td>${coverCell(l)}</td>
+                <td style="text-align: right;">
+                    ${l.cancelled
+                        ? '<span class="pill pill-muted">Cancelled</span>'
+                        : '<span class="pill pill-active">Taken</span>'}
+                </td>
+            </tr>`).join('');
     }
 
     document.getElementById('lvFilterFrom').addEventListener('input', renderHistory);
@@ -208,7 +177,6 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     function renderAll() {
-        renderStats();
         renderUpcoming();
         renderHistory();
     }
@@ -563,42 +531,8 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('lvType')?.addEventListener('input', validateForm);
     document.getElementById('lvReason')?.addEventListener('input', validateForm);
 
-    // The docked panel's height was a fixed calc() guess in CSS, and the guess
-    // was short by the page's own padding — so its footer, the one holding
-    // Submit, sat below the fold and the whole page had to be scrolled to reach
-    // it. Measure instead: once the panel is on screen its own top edge says
-    // exactly how much room is left, whatever the header is doing.
-    //
-    // Skipped in the two layouts where a height would be wrong: the fixed
-    // full-screen overlay at <=768px (inset:0 already fills the viewport) and
-    // the stacked column at <=1024px, where the panel sits below the main
-    // column and is meant to grow with its content.
-    const lvBody = document.querySelector('.lv-body');
-    const PANEL_BOTTOM_GUTTER = 46; // .lv-body's 24px bottom padding + .dash-main's 22px
-
-    function sizePanel() {
-        if (!panel || panel.hidden) return;
-
-        const isOverlay = getComputedStyle(panel).position === 'fixed';
-        const isStacked = !lvBody || getComputedStyle(lvBody).flexDirection !== 'row';
-        if (isOverlay || isStacked) {
-            panel.style.height = '';
-            panel.style.maxHeight = '';
-            return;
-        }
-
-        const top = panel.getBoundingClientRect().top;
-        const available = Math.max(360, window.innerHeight - top - PANEL_BOTTOM_GUTTER);
-        panel.style.height = available + 'px';
-        panel.style.maxHeight = available + 'px';
-    }
-
-    let panelResizeTimer = null;
-    window.addEventListener('resize', () => {
-        clearTimeout(panelResizeTimer);
-        panelResizeTimer = setTimeout(sizePanel, 100);
-    });
-
+    // The panel floats over the page (.floating-panel in components.css),
+    // pinned top/right/bottom — it sizes itself, nothing to measure here.
     function openPanel() {
         selectedDates = [];
         isPartialDay = false;
@@ -623,16 +557,11 @@ document.addEventListener('DOMContentLoaded', () => {
         updateTimePreview();
         validateForm();
         panel.hidden = false;
-        // Hides .lv-header (see leave.css), so the class goes on before
-        // sizePanel() measures — otherwise it measures the old position.
         document.body.classList.add('lv-panel-open');
-        sizePanel();
     }
     function closePanel() {
         panel.hidden = true;
         document.body.classList.remove('lv-panel-open');
-        panel.style.height = '';
-        panel.style.maxHeight = '';
     }
 
     const backBtn = document.getElementById('lvBackBtn');
@@ -646,6 +575,11 @@ document.addEventListener('DOMContentLoaded', () => {
         if (e.key === 'Escape' && panel && !panel.hidden) {
             closePanel();
         }
+    });
+    // The panel floats over the page (.floating-panel): a click on its
+    // backdrop (body::after) targets <body> itself.
+    document.body.addEventListener('click', (e) => {
+        if (e.target === document.body && panel && !panel.hidden) closePanel();
     });
 
     document.getElementById('submitLeaveRequest')?.addEventListener('click', () => {

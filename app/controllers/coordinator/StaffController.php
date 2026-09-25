@@ -57,7 +57,6 @@ class StaffController extends Controller
             'css_file' => ['/css/directory.css', '/css/coordinator/staff.css'],
             'active' => 'staff',
             'pageTitle' => 'Staff Details',
-            'pageSubtitle' => 'Approve new registrations and manage active staff.',
             'notificationCount' => (new NotificationModel())->unreadCount($_SESSION['staff_code']),
             'pending' => $staffModel->pendingRegistrations(),
             'activeStaff' => $staffModel->activeStaff(),

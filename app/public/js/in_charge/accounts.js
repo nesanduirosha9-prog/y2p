@@ -10,7 +10,6 @@ document.addEventListener('DOMContentLoaded', function () {
         const list = document.getElementById('candidateList');
         const emptyMsg = document.getElementById('candidateEmpty');
         const confirmBtn = document.getElementById('btnConfirmCandidate');
-        const rankSelect = document.getElementById('fromNewRank');
 
         function applySearch() {
             const q = (searchInput.value || '').trim().toLowerCase();
@@ -26,14 +25,10 @@ document.addEventListener('DOMContentLoaded', function () {
 
         function updateConfirmState() {
             const picked = list.querySelector('input[name="candidate"]:checked');
-            const rankOk = !rankSelect || rankSelect.value !== '';
-            confirmBtn.disabled = !picked || !rankOk;
+            confirmBtn.disabled = !picked;
         }
         if (list) {
             list.addEventListener('change', updateConfirmState);
-        }
-        if (rankSelect) {
-            rankSelect.addEventListener('change', updateConfirmState);
         }
 
         if (confirmBtn) {
@@ -50,8 +45,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     body: JSON.stringify({
                         position: view.dataset.position,
                         fromCode: view.dataset.fromCode,
-                        toCode: picked.value,
-                        fromNewRank: rankSelect ? rankSelect.value : null
+                        toCode: picked.value
                     })
                 })
                     .then(function (r) { return r.json(); })

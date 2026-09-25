@@ -11,8 +11,10 @@ use app\services\EmailService;
 
 // In-Charge "Accounts" / Role Assignment screen — pulled from Figma node
 // 34:5044 (canvas "In_Charge"): a 4-step handover flow (pick seat -> search
-// replacement -> OTP verify -> success) to reassign the Coordinator(s),
-// In-Charge and Timetable Officer seats. Only `position = 'in_charge'` may
+// replacement -> OTP verify -> success) to reassign the Coordinator(s) and
+// In-Charge seats. The Timetable Officer is not a seat: it is its own account,
+// and when the officer changes it is that account's details that change, so
+// there is no handover for it. Only `position = 'in_charge'` may
 // open this screen (confirmed with the user — not shared with Timetable
 // Officer, even though the Figma mockup's sidebar profile card said "TO").
 //
@@ -36,7 +38,7 @@ use app\services\EmailService;
 // 8. updatedView()    — GET, step 4: confirmation screen.
 // 9. add()            — GET, "Add coordinator": the same select/verify steps,
 //    with nobody being replaced. The department may have any number of
-//    Coordinators; the In-Charge and Timetable Officer seats stay single.
+//    Coordinators; the In-Charge seat stays single.
 // 10. revoke()        — POST, takes the Coordinator seat away from someone
 //    (they stay on staff as Junior Staff). Never the last Coordinator.
 //
@@ -44,6 +46,8 @@ use app\services\EmailService;
 // email is sent and any 6-digit code is accepted.
 class AccountsController extends Controller
 {
+    /** Seats that can be handed from one staff member to another. */
+    private const SEATS = ['coordinator', 'in_charge'];
     /** Seats that can be held by more than one person at once. */
     private const MULTI_SEATS = ['coordinator'];
     public function __construct()
@@ -80,7 +84,6 @@ class AccountsController extends Controller
         return $this->render('in_charge/accounts', array_merge($this->commonViewData(), [
             'title' => 'Accounts',
             'pageTitle' => 'Role Assignment',
-            'pageSubtitle' => 'Manage key academic role holders for the department.',
             'holders' => (new StaffModel())->roleHolders(),
         ]));
     }
@@ -98,15 +101,14 @@ class AccountsController extends Controller
         $code = $params['code'] ?? '';
         $holder = (new StaffModel())->findByCode($code);
 
-        if (!in_array($position, ['coordinator', 'in_charge', 'timetable_officer'], true) || !$holder) {
+        if (!in_array($position, self::SEATS, true) || !$holder) {
             $this->redirect('/settings/handover');
             return;
         }
 
         return $this->render('in_charge/accounts_change', array_merge($this->commonViewData(), [
             'title' => 'Change Role',
-            'pageTitle' => 'Role Assignment',
-            'pageSubtitle' => 'Select which role you want to reassign.',
+            'pageTitle' => 'Change Role',
             'position' => $position,
             'holder' => $holder,
         ]));
@@ -125,15 +127,13 @@ class AccountsController extends Controller
         $code = $params['code'] ?? '';
         $holder = (new StaffModel())->findByCode($code);
 
-        if (!in_array($position, ['coordinator', 'in_charge', 'timetable_officer'], true) || !$holder) {
+        if (!in_array($position, self::SEATS, true) || !$holder) {
             $this->redirect('/settings/handover');
             return;
         }
 
         return $this->render('in_charge/accounts_select', array_merge($this->commonViewData(), [
             'title' => 'Select Replacement',
-            'pageTitle' => 'Role Assignment',
-            'pageSubtitle' => 'Search lecturer by name.',
             'position' => $position,
             'holder' => $holder,
             'candidates' => $this->candidatesFor($position, $code),
@@ -156,8 +156,6 @@ class AccountsController extends Controller
 
         return $this->render('in_charge/accounts_select', array_merge($this->commonViewData(), [
             'title' => 'Add Coordinator',
-            'pageTitle' => 'Role Assignment',
-            'pageSubtitle' => 'Choose who to add.',
             'position' => $position,
             'holder' => null,
             'candidates' => $this->candidatesFor($position, ''),
@@ -167,20 +165,43 @@ class AccountsController extends Controller
     /**
      * Who may receive a seat. Coordinator needs Junior Staff, In-Charge needs a
      * Lecturer — and in both cases someone with no seat already, so a seat is
-     * never silently taken from another holder. A Timetable Officer replacement
-     * can be any active academic staff. The outgoing holder is excluded.
+     * never silently taken from another holder. The outgoing holder is excluded.
      */
     private function candidatesFor(string $position, string $excludeCode): array
     {
-        $staffModel = new StaffModel();
-        $rank = $position === 'coordinator' ? 'junior' : ($position === 'in_charge' ? 'senior' : null);
-        $candidates = $rank
-            ? $staffModel->activeByRank($rank)
-            : array_merge($staffModel->activeByRank('junior'), $staffModel->activeByRank('senior'));
+        $rank = $position === 'coordinator' ? 'junior' : 'senior';
 
-        return array_values(array_filter($candidates, fn($c) =>
-            $c['code'] !== $excludeCode && ($rank === null || empty($c['position']))
+        return array_values(array_filter((new StaffModel())->activeByRank($rank), fn($c) =>
+            $c['code'] !== $excludeCode && empty($c['position'])
         ));
+    }
+
+    /**
+     * GET /settings/handover/candidates/{position}?exclude=CODE — who may take
+     * the seat, as JSON, for the Change / Add panel on the Settings handover
+     * tab. `exclude` is the outgoing holder (empty when adding a Coordinator).
+     */
+    public function candidates(Request $request, Response $response, array $params = [])
+    {
+        if (!$this->guardJson($response, 'position', 'in_charge')) {
+            return;
+        }
+
+        $position = $params['position'] ?? '';
+        if (!in_array($position, self::SEATS, true)) {
+            $response->json(['success' => false, 'message' => 'Unknown role.'], 400);
+            return;
+        }
+
+        $exclude = (string)($request->getQueryParams()['exclude'] ?? '');
+        $candidates = array_map(fn($c) => [
+            'code'  => $c['code'],
+            'name'  => $c['name'],
+            'email' => $c['email'],
+            'kind'  => ($c['academic_rank'] ?? '') === 'senior' ? 'lecturer' : 'staff',
+        ], $this->candidatesFor($position, $exclude));
+
+        $response->json(['success' => true, 'candidates' => $candidates]);
     }
 
     /** POST /settings/handover/revoke — body: { code }. Coordinator seat only. */
@@ -223,11 +244,10 @@ class AccountsController extends Controller
         $position = $body['position'] ?? '';
         $fromCode = $body['fromCode'] ?? '';
         $toCode = $body['toCode'] ?? '';
-        $newRankForOutgoingOfficer = $body['fromNewRank'] ?? null;
 
         // An empty fromCode means "add another holder" — only for multi seats.
         $isAdd = $fromCode === '';
-        if (!in_array($position, ['coordinator', 'in_charge', 'timetable_officer'], true) || $toCode === ''
+        if (!in_array($position, self::SEATS, true) || $toCode === ''
             || ($isAdd && !in_array($position, self::MULTI_SEATS, true))) {
             $response->json(['success' => false, 'message' => 'Please choose a replacement.'], 400);
             return;
@@ -236,10 +256,6 @@ class AccountsController extends Controller
         $eligible = array_column($this->candidatesFor($position, $fromCode), 'code');
         if (!in_array($toCode, $eligible, true)) {
             $response->json(['success' => false, 'message' => 'That person cannot take this role.'], 400);
-            return;
-        }
-        if ($position === 'timetable_officer' && !in_array($newRankForOutgoingOfficer, ['junior', 'senior'], true)) {
-            $response->json(['success' => false, 'message' => 'Please choose the outgoing officer\'s new rank.'], 400);
             return;
         }
 
@@ -263,7 +279,6 @@ class AccountsController extends Controller
             'position' => $position,
             'from_code' => $fromCode,
             'to_code' => $toCode,
-            'from_new_rank' => $newRankForOutgoingOfficer,
             'otp' => $otp,
             'demo' => $demo,
             'expires_at' => time() + 300, // 5 minutes
@@ -292,8 +307,7 @@ class AccountsController extends Controller
 
         return $this->render('in_charge/accounts_verify', array_merge($this->commonViewData(), [
             'title' => 'Verify OTP',
-            'pageTitle' => 'Role Assignment',
-            'pageSubtitle' => 'Enter the verification code to confirm this change.',
+            'pageTitle' => 'Verify Role Change',
             'toStaff' => $staffModel->findByCode($handover['to_code']),
         ]));
     }
@@ -330,8 +344,6 @@ class AccountsController extends Controller
         $staffModel = new StaffModel();
         if ($handover['from_code'] === '') {
             $ok = $staffModel->assignPosition($handover['to_code'], $handover['position']);
-        } elseif ($handover['position'] === 'timetable_officer') {
-            $ok = $staffModel->reassignTimetableOfficer($handover['from_code'], $handover['to_code'], $handover['from_new_rank']);
         } else {
             $ok = $staffModel->reassignPosition($handover['from_code'], $handover['to_code'], $handover['position']);
         }
@@ -358,7 +370,6 @@ class AccountsController extends Controller
         return $this->render('in_charge/accounts_updated', array_merge($this->commonViewData(), [
             'title' => 'Role Updated',
             'pageTitle' => 'Role Assignment',
-            'pageSubtitle' => 'Manage key academic role holders for the department.',
             'holders' => (new StaffModel())->roleHolders(),
         ]));
     }

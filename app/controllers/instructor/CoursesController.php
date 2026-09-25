@@ -221,7 +221,6 @@ class CoursesController extends Controller
         }
 
         $pageTitle = 'My Courses';
-        $pageSubtitle = 'Manage assigned course modules, evaluate supportive instructors, and review evaluation history';
 
         // Extract unique instructors assisting in this lecturer's assigned courses
         $instructorMap = [];
@@ -350,7 +349,6 @@ class CoursesController extends Controller
             'css_file' => ['/css/directory.css', '/css/courses.css', '/css/evaluations.css'],
             'active' => 'courses',
             'pageTitle' => $pageTitle,
-            'pageSubtitle' => $pageSubtitle,
             'assignedCourses' => $assignedCourses,
             'assignedInstructors' => $assignedInstructors,
             'evaluationHistory' => $evaluationHistory,

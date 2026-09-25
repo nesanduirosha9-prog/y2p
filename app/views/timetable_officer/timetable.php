@@ -23,12 +23,14 @@ foreach ($sessions as $s) {
     }
 }
 
+// Filter options come from the database, not from what happens to be on the
+// grid: every hall/lab in `rooms` (so one added under Lecture Halls shows up
+// at once), and every lecturer assigned to this grid's courses, one entry per
+// person even when a course has several.
 $allRooms = $rooms ?? [];
-$locations = array_values(array_unique(array_filter(array_map(fn($s) => $s['location'], $sessions))));
-if (empty($locations) && !empty($allRooms)) {
-    $locations = array_column($allRooms, 'code');
-}
-$lecturers = array_values(array_unique(array_filter(array_map(fn($c) => $c['lecturer'], $courses))));
+$locations = array_column($allRooms, 'code');
+$lecturers = array_values(array_unique(array_merge([], ...array_map(fn($c) => $c['lecturers'], array_values($courses)))));
+sort($lecturers);
 ?>
 
 <div class="tt-view" data-dept="<?= htmlspecialchars($dept) ?>" data-sem="<?= $sem ?>" data-year="<?= $year ?>">
@@ -87,13 +89,15 @@ $lecturers = array_values(array_unique(array_filter(array_map(fn($c) => $c['lect
         </div>
 
         <div class="tt-actions">
-            <select class="tt-select" id="lecturerFilter" style="width: 180px; flex-shrink: 0; min-width: 180px;">
+            <select class="tt-select" id="lecturerFilter" style="width: 180px; flex-shrink: 0; min-width: 180px;"
+                    data-searchable data-search-placeholder="Search lecturers…">
                 <option value="">All Lecturers</option>
                 <?php foreach ($lecturers as $l): ?>
                     <option value="<?= htmlspecialchars($l) ?>"><?= htmlspecialchars($l) ?></option>
                 <?php endforeach; ?>
             </select>
-            <select class="tt-select" id="roomFilter" style="width: 160px; flex-shrink: 0; min-width: 160px;">
+            <select class="tt-select" id="roomFilter" style="width: 160px; flex-shrink: 0; min-width: 160px;"
+                    data-searchable data-search-placeholder="Search rooms…">
                 <option value="">All Rooms</option>
                 <?php foreach ($locations as $loc): ?>
                     <option value="<?= htmlspecialchars($loc) ?>"><?= htmlspecialchars($loc) ?></option>
@@ -175,8 +179,9 @@ $lecturers = array_values(array_unique(array_filter(array_map(fn($c) => $c['lect
                 </div>
             </div>
 
-            <!-- Slide-out Side Panel for Session Details (View / Edit / Delete / Schedule) -->
-            <aside class="tt-side-panel" id="ttSidePanel" hidden>
+            <!-- Slide-out Side Panel for Session Details (View / Edit / Delete / Schedule).
+                 .floating-panel (components.css) opens it over the page like the Add Course drawer. -->
+            <aside class="tt-side-panel floating-panel" id="ttSidePanel" hidden>
                 <div class="tsp-header">
                     <div class="tsp-header-left">
                         <button type="button" class="tsp-btn-back" id="tspBack" aria-label="Back"><i class="fa-solid fa-arrow-left"></i></button>
@@ -240,7 +245,7 @@ $lecturers = array_values(array_unique(array_filter(array_map(fn($c) => $c['lect
                 <label for="courseModule">Course Module</label>
                 <div class="select-wrap">
                     <i class="fa-solid fa-book"></i>
-                    <select id="courseModule">
+                    <select id="courseModule" data-searchable data-search-placeholder="Search by code or title…">
                         <option value="">Select a course&hellip;</option>
                         <?php foreach ($courses as $code => $c): ?>
                             <option value="<?= htmlspecialchars($code) ?>" data-lecturer="<?= htmlspecialchars($c['lecturer']) ?>">
@@ -248,7 +253,6 @@ $lecturers = array_values(array_unique(array_filter(array_map(fn($c) => $c['lect
                             </option>
                         <?php endforeach; ?>
                     </select>
-                    <i class="fa-solid fa-chevron-down chevron"></i>
                 </div>
                 <p class="field-hint" id="lecturerHint">&nbsp;</p>
             </div>
@@ -267,7 +271,7 @@ $lecturers = array_values(array_unique(array_filter(array_map(fn($c) => $c['lect
                 <label for="venueInput">Venue</label>
                 <div class="select-wrap">
                     <i class="fa-solid fa-location-dot"></i>
-                    <select id="venueInput">
+                    <select id="venueInput" data-searchable data-search-placeholder="Search halls / labs…">
                         <option value="">Select a hall / lab&hellip;</option>
                         <?php foreach ($allRooms as $r): ?>
                             <option value="<?= htmlspecialchars($r['code']) ?>">
@@ -275,7 +279,6 @@ $lecturers = array_values(array_unique(array_filter(array_map(fn($c) => $c['lect
                             </option>
                         <?php endforeach; ?>
                     </select>
-                    <i class="fa-solid fa-chevron-down chevron"></i>
                 </div>
             </div>
         </div>
@@ -334,4 +337,5 @@ $lecturers = array_values(array_unique(array_filter(array_map(fn($c) => $c['lect
     window.__ttYear = <?= json_encode($year) ?>;
     window.__ttInitialSessions = <?= json_encode($sessions) ?>;
 </script>
+<script src="/js/searchable_select.js"></script>
 <script src="/js/timetable.js"></script>

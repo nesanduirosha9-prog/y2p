@@ -86,6 +86,28 @@
     background: #e2e8f0;
 }
 
+/* ---------- Password field show/hide (js/password_toggle.js) ---------- */
+.pw-field { position: relative; }
+.pw-field .pw-input { padding-right: 42px; }
+.pw-toggle {
+    position: absolute;
+    top: 50%;
+    right: 6px;
+    transform: translateY(-50%);
+    width: 30px;
+    height: 30px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: none;
+    background: none;
+    color: #6b7c96;
+    cursor: pointer;
+    border-radius: 6px;
+}
+.pw-toggle:hover { color: #0f1c2e; background: #f4f6f9; }
+.pw-toggle:focus-visible { outline: 2px solid #2563eb; outline-offset: 1px; }
+
 /* ---------- Code badges ----------
  * The one way the system prints a code. Rendered by
  * ViewHelpers::codeBadge() (PHP) and window.codeBadge() (js/code_badge.js) —
@@ -346,4 +368,173 @@
     .period-units .seg-btn { flex: 1; justify-content: center; }
     .period-step { width: 100%; justify-content: space-between; }
     .period-label { min-width: 0; flex: 1; }
+}
+
+/* ==========================================================================
+   Floating panel — opens a docked page panel ON TOP of the page, in the same
+   place as the .side-drawer (Add Course): pinned right, inset 16px, over a
+   dimmed + blurred backdrop. Only placement changes; the panel keeps its own
+   styling. Add `floating-panel` next to the panel's own class.
+
+   :not([hidden]) out-ranks the page stylesheets' plain .xxx-side-panel rules,
+   while their own <=768px `.xxx-side-panel:not([hidden])` full-screen rules
+   load later and still win on mobile.
+   ========================================================================== */
+.floating-panel:not([hidden]) {
+    position: fixed;
+    top: 16px;
+    right: 16px;
+    bottom: 16px;
+    width: 420px;
+    max-width: calc(100vw - 32px);
+    height: auto;
+    max-height: none;
+    border-radius: 18px;
+    box-shadow: 0 16px 40px rgba(15, 28, 46, 0.16), 0 2px 10px rgba(0, 0, 0, 0.06);
+    z-index: 1001;
+    animation: floatingPanelIn 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Backdrop. A click on it targets <body> — page JS closes the panel then. */
+body:has(.floating-panel:not([hidden]))::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background: rgba(15, 28, 46, 0.45);
+    backdrop-filter: blur(2px);
+    z-index: 1000;
+    animation: floatingBackdropIn 0.22s ease-out;
+}
+
+/* Phones: the page's own full-screen panel rules take over — just lift the
+   desktop 16px-gutter cap so they can reach the edges. */
+@media (max-width: 768px) {
+    .floating-panel:not([hidden]) { max-width: none; }
+}
+
+@keyframes floatingPanelIn {
+    from { transform: translateX(100%); opacity: 0.7; }
+    to   { transform: translateX(0); opacity: 1; }
+}
+
+@keyframes floatingBackdropIn {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+}
+
+/* ==========================================================================
+   Searchable select (js/searchable_select.js) — the Workload staff picker's
+   searchable dropdown (.sched-combo) as a drop-in for any <select
+   data-searchable>. The trigger keeps the select's own classes, so its box
+   (height, border, padding) comes from the page; only the popover is styled
+   here. .ss is deliberately NOT positioned, so absolutely-placed icons in a
+   wrapper (.select-wrap) still paint above the trigger.
+   ========================================================================== */
+select.ss-native { display: none !important; }
+
+.ss { min-width: 0; }
+
+.ss > .ss-trigger {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    width: 100%;
+    font-family: inherit;
+    text-align: left;
+    cursor: pointer;
+}
+.ss > .ss-trigger:disabled { cursor: not-allowed; opacity: 0.6; }
+
+.ss-label {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+.ss-trigger.is-placeholder .ss-label { color: #9ca3af; }
+
+.ss-caret {
+    flex-shrink: 0;
+    font-size: 11px;
+    color: #64748b;
+    transition: transform 0.15s ease;
+}
+.ss.is-open .ss-caret { transform: rotate(180deg); }
+
+.ss.is-open > .ss-trigger {
+    border-color: #2563eb;
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+}
+
+.ss-pop {
+    position: fixed;
+    z-index: 1200; /* above floating panels (1001) and modals (1000-1500) */
+    padding: 8px;
+    background: var(--color-surface, #ffffff);
+    border: 1px solid var(--color-border, #e2e8f0);
+    border-radius: 10px;
+    box-shadow: 0 12px 32px rgba(15, 28, 46, 0.14);
+}
+.ss-pop[hidden] { display: none; }
+
+.ss-search { position: relative; }
+.ss-search i {
+    position: absolute;
+    left: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 12px;
+    color: #94a3b8;
+    pointer-events: none;
+}
+.ss-search .ss-search-input[type="text"] { /* out-ranks page rules like .side-drawer-body input[type="text"] */
+    width: 100%;
+    height: 34px;
+    padding: 0 10px 0 30px;
+    border: 1px solid var(--color-border, #e2e8f0);
+    border-radius: 8px;
+    font: inherit;
+    font-size: 13px;
+    color: var(--color-text, #0f1c2e);
+    background: #fff;
+    box-sizing: border-box;
+    box-shadow: none;
+    appearance: none;
+}
+.ss-search .ss-search-input[type="text"]:focus {
+    outline: none;
+    border-color: #2563eb;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+}
+
+.ss-list { max-height: 260px; margin-top: 6px; overflow-y: auto; }
+
+.ss-opt {
+    display: block;
+    width: 100%;
+    padding: 7px 8px;
+    border: 0;
+    border-radius: 6px;
+    background: none;
+    font: inherit;
+    font-size: 13px;
+    color: var(--color-text, #0f1c2e);
+    text-align: left;
+    cursor: pointer;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+.ss-opt:hover,
+.ss-opt.is-active { background: #f1f5f9; }
+.ss-opt.is-selected { background: #eff6ff; color: #1d4ed8; font-weight: 600; }
+
+.ss-empty {
+    margin: 0;
+    padding: 10px 8px;
+    font-size: 12.5px;
+    color: #94a3b8;
+    text-align: center;
 }

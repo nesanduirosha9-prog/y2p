@@ -97,10 +97,6 @@ function renderStaffTable(string $idPrefix, array $staff, array $courseMeta, str
 
 <div class="lecturers-view">
 
-    <div class="page-head">
-        <p class="page-head-sub">Manage lecturers and junior staff members and their course assignments.</p>
-    </div>
-
     <div class="seg" id="staffTabGroup" role="tablist">
         <button type="button" class="seg-btn active" data-tab="lecturer-details">Lecturer Details</button>
         <button type="button" class="seg-btn" data-tab="junior-staff-details">Junior Staff Details</button>

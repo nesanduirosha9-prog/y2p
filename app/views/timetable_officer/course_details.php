@@ -1,10 +1,10 @@
 <?php
 
 // Course Management: searchable/filterable course table + Add / Edit Course
-// modals. $courses / $lecturers / $instructors are read from the database by
-// CoursesController (an empty database renders an empty table). Search, the
-// program/year filters and the add/edit/delete actions are all handled
-// client-side in courses.js and do not persist across a reload.
+// drawer. $courses / $lecturers / $instructors are read from the database by
+// CoursesController (an empty database renders an empty table). Search and
+// the program/year filters run client-side in courses.js; Add / Edit / Delete
+// persist through POST /courses, PUT and DELETE /courses/{code}.
 
 /** JSON for a <select>-backed multi-select: [{code,label}, ...] */
 $lecturerOptions = [];
@@ -69,6 +69,7 @@ $total = count($courses);
                             data-name="<?= htmlspecialchars($c['name']) ?>"
                             data-credits="<?= (int)$c['credits'] ?>"
                             data-year="<?= (int)$c['year'] ?>"
+                            data-semester="<?= (int)$c['semester'] ?>"
                             data-program="<?= htmlspecialchars($c['program']) ?>"
                             data-lecturers="<?= htmlspecialchars(implode(',', $c['lecturers'])) ?>"
                             data-instructors="<?= htmlspecialchars(implode(',', $c['instructors'])) ?>"
@@ -126,7 +127,7 @@ $total = count($courses);
             <div class="field-grid">
                 <div class="form-row">
                     <label for="fieldCode">Course Code</label>
-                    <input type="text" id="fieldCode" placeholder="CS1101" required>
+                    <input type="text" id="fieldCode" placeholder="CS1101" maxlength="20" required>
                 </div>
                 <div class="form-row">
                     <label for="fieldCredits">Credits</label>
@@ -157,6 +158,16 @@ $total = count($courses);
                         <option value="IS">IS</option>
                     </select>
                 </div>
+            </div>
+
+            <!-- courses.semester is NOT NULL with no default, so the form must supply it. -->
+            <div class="form-row">
+                <label for="fieldSemester">Semester</label>
+                <select id="fieldSemester" required>
+                    <option value="">Select&hellip;</option>
+                    <option value="1">Semester 1</option>
+                    <option value="2">Semester 2</option>
+                </select>
             </div>
 
             <p class="section-label">Staff Assignment</p>

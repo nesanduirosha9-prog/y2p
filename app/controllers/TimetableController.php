@@ -80,7 +80,7 @@ class TimetableController extends Controller
             'dept' => $dept,
             'sem' => $sem,
             'year' => $year,
-            'courses' => (new CourseModel())->forDeptYear($dept, $year),
+            'courses' => (new CourseModel())->forDeptSemYear($dept, $sem, $year),
             'sessions' => (new TimetableSessionModel())->forDeptSemYear($dept, $sem, $year),
         ];
 

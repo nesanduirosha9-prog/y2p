@@ -1,5 +1,8 @@
 // Timetable interactions: lecturer/room filters, interactive slot side-panel
 // (view, edit, save, delete), publication flow, and past years archive dropdown.
+// Schedule / edit / delete persist through /timetable/sessions
+// (TimetableSessionsController) and then reload the page — see saveSession().
+// Publish still only writes localStorage, and the archive is hardcoded below.
 
 document.addEventListener('DOMContentLoaded', function () {
     const view = document.querySelector('.tt-view');
@@ -100,6 +103,64 @@ document.addEventListener('DOMContentLoaded', function () {
         }, 3500);
     }
 
+    // ------------------------------------------------------------------
+    // Persistence — TimetableSessionsController. After every successful
+    // write the page reloads: the grid (which cells are free, which are
+    // covered by a multi-hour block) is laid out server-side, which is more
+    // reliable than patching free/busy cells by hand.
+    // ------------------------------------------------------------------
+    function sessionUrl(block) {
+        return '/timetable/sessions/' + encodeURIComponent(block.dataset.location) +
+            '/' + block.dataset.dayKey + '/' + block.dataset.startHour;
+    }
+
+    function sessionPayload(courseCode, roomCode, dayKey, startHour, duration, type) {
+        return {
+            course_code: courseCode,
+            room_code: roomCode,
+            day_of_week: dayKey,
+            start_hour: startHour,
+            duration_hours: duration,
+            session_type: type,
+            department: dept,
+            semester: sem,
+            year_of_study: year,
+        };
+    }
+
+    function saveSession(method, url, payload, successMessage) {
+        return fetch(url, {
+            method: method,
+            headers: { 'Content-Type': 'application/json' },
+            body: payload ? JSON.stringify(payload) : undefined,
+        })
+            .then(function (res) { return res.json().then(function (data) { return { ok: res.ok, data: data }; }); })
+            .then(function (result) {
+                if (!result.ok || !result.data.success) {
+                    throw new Error(result.data.message || 'Could not save the session.');
+                }
+                showToast(successMessage);
+                setTimeout(function () { window.location.reload(); }, 800);
+            })
+            .catch(function (err) { showToast(err.message, false); });
+    }
+
+    // Escapes text for innerHTML — course titles are user-entered now.
+    function esc(s) {
+        const d = document.createElement('div');
+        d.textContent = s == null ? '' : String(s);
+        return d.innerHTML;
+    }
+
+    // "LT-301 (Lecture Hall, cap: 120)" — same wording as the schedule modal.
+    function roomLabel(r) {
+        const type = String(r.type || 'room').replace(/_/g, ' ').replace(/\b\w/g, ch => ch.toUpperCase());
+        return `${r.code} (${type}${r.capacity ? ', cap: ' + r.capacity : ''})`;
+    }
+
+    // Toolbar filters + schedule modal. Panel forms are enhanced in openPanel().
+    SearchableSelect.enhance(document);
+
     function setDraftStatus() {
         if (isArchive) return;
         pubBadge.className = 'pub-badge draft';
@@ -114,6 +175,7 @@ document.addEventListener('DOMContentLoaded', function () {
         tspSubtitle.textContent = subtitle || '';
         tspBody.innerHTML = bodyHtml;
         tspFooter.innerHTML = footerHtml || '';
+        SearchableSelect.enhance(tspBody);
         sidePanel.hidden = false;
         document.body.classList.add('tt-panel-open');
     }
@@ -130,9 +192,17 @@ document.addEventListener('DOMContentLoaded', function () {
     if (tspBack) {
         tspBack.addEventListener('click', closePanel);
     }
+    // The panel floats over the page (.floating-panel): a click on its
+    // backdrop (body::after) targets <body> itself.
+    document.body.addEventListener('click', (e) => {
+        if (e.target === document.body && !sidePanel.hidden) closePanel();
+    });
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && !sidePanel.hidden) closePanel();
+    });
 
     function field(label, value) {
-        return `<div><p class="tsp-field-label">${label}</p><p class="tsp-field-value">${value}</p></div>`;
+        return `<div><p class="tsp-field-label">${label}</p><p class="tsp-field-value">${esc(value)}</p></div>`;
     }
 
     // ------------------------------------------------------------------
@@ -208,13 +278,13 @@ document.addEventListener('DOMContentLoaded', function () {
         Object.keys(coursesMap).forEach(code => {
             const c = coursesMap[code];
             const sel = code === currentCode ? 'selected' : '';
-            courseOptions += `<option value="${code}" ${sel}>${code} — ${c.title}</option>`;
+            courseOptions += `<option value="${esc(code)}" ${sel}>${esc(code)} — ${esc(c.title)}</option>`;
         });
 
         let roomOptions = '';
         roomsList.forEach(r => {
             const sel = r.code === currentLocation ? 'selected' : '';
-            roomOptions += `<option value="${r.code}" ${sel}>${r.code} (${r.type || 'Room'})</option>`;
+            roomOptions += `<option value="${esc(r.code)}" ${sel}>${esc(roomLabel(r))}</option>`;
         });
 
         let dayOptions = '';
@@ -239,7 +309,7 @@ document.addEventListener('DOMContentLoaded', function () {
         const body = `
             <div>
                 <p class="tsp-field-label">Course Module</p>
-                <select class="tsp-select" id="editCourseCode">${courseOptions}</select>
+                <select class="tsp-select" id="editCourseCode" data-searchable data-search-placeholder="Search by code or title…">${courseOptions}</select>
             </div>
             <div>
                 <p class="tsp-field-label">Session Type</p>
@@ -252,7 +322,7 @@ document.addEventListener('DOMContentLoaded', function () {
             </div>
             <div>
                 <p class="tsp-field-label">Venue / Room</p>
-                <select class="tsp-select" id="editVenue">${roomOptions}</select>
+                <select class="tsp-select" id="editVenue" data-searchable data-search-placeholder="Search halls / labs…">${roomOptions}</select>
             </div>
             <div>
                 <p class="tsp-field-label">Day</p>
@@ -286,43 +356,16 @@ document.addEventListener('DOMContentLoaded', function () {
         });
 
         document.getElementById('saveEditBtn').addEventListener('click', () => {
-            const newCode = document.getElementById('editCourseCode').value;
-            const newType = document.getElementById('editSessionType').value;
-            const newVenue = document.getElementById('editVenue').value;
-            const newDayKey = document.getElementById('editDay').value;
-            const newStartHour = parseInt(document.getElementById('editStartHour').value, 10);
-            const newDuration = parseInt(document.getElementById('editDuration').value, 10);
-
-            const courseInfo = coursesMap[newCode] || { title: 'Course Module', lecturer: 'TBA' };
-
-            // Update DOM block attributes
-            block.className = `tt-block type-${newType}`;
-            block.dataset.code = newCode;
-            block.dataset.title = courseInfo.title;
-            block.dataset.location = newVenue;
-            block.dataset.type = newType;
-            block.dataset.day = DAY_LABELS[newDayKey];
-            block.dataset.dayKey = newDayKey;
-            block.dataset.start = hourLabel(newStartHour);
-            block.dataset.startHour = newStartHour;
-            block.dataset.duration = newDuration;
-            block.dataset.lecturer = courseInfo.lecturer || 'TBA';
-
-            // Calculate grid positioning
-            const colIndex = DAY_KEYS.indexOf(newDayKey) + 2;
-            const rowIndex = HOURS.indexOf(newStartHour) + 2;
-            block.style.gridColumn = colIndex;
-            block.style.gridRow = `${rowIndex} / span ${newDuration}`;
-
-            block.innerHTML = `
-                <p class="tt-block-code">${newCode}</p>
-                <p class="tt-block-title">${courseInfo.title}</p>
-                <p class="tt-block-loc">${newVenue}</p>
-            `;
-
-            setDraftStatus();
-            showToast(`Session ${newCode} updated successfully.`);
-            openSessionDetails(block);
+            // The URL carries the block's ORIGINAL key; the body the new values.
+            const payload = sessionPayload(
+                document.getElementById('editCourseCode').value,
+                document.getElementById('editVenue').value,
+                document.getElementById('editDay').value,
+                parseInt(document.getElementById('editStartHour').value, 10),
+                parseInt(document.getElementById('editDuration').value, 10),
+                document.getElementById('editSessionType').value
+            );
+            saveSession('PUT', sessionUrl(block), payload, `Session ${payload.course_code} updated.`);
         });
     }
 
@@ -348,40 +391,7 @@ document.addEventListener('DOMContentLoaded', function () {
         });
 
         document.getElementById('tspConfirmDelBtn').addEventListener('click', () => {
-            const dayKey = d.dayKey;
-            const startHour = parseInt(d.startHour, 10);
-            const duration = parseInt(d.duration, 10);
-            const code = d.code;
-
-            // Remove block
-            block.remove();
-
-            // Restore empty cells in that time slot
-            const colIndex = DAY_KEYS.indexOf(dayKey) + 2;
-            for (let i = 0; i < duration; i++) {
-                const h = startHour + i;
-                const rowIndex = HOURS.indexOf(h) + 2;
-                const isLunch = h === 12;
-
-                const cell = document.createElement('div');
-                cell.className = `tt-cell ${isLunch ? 'tt-cell-lunch' : ''}`;
-                cell.style.gridColumn = colIndex;
-                cell.style.gridRow = rowIndex;
-                cell.dataset.day = DAY_LABELS[dayKey];
-                cell.dataset.dayKey = dayKey;
-                cell.dataset.hour = h;
-                cell.dataset.hourLabel = hourLabel(h);
-                if (isLunch) {
-                    cell.dataset.lunch = '1';
-                    if (dayKey === 'wed') cell.innerHTML = '<span class="lunch-label">Lunch Break</span>';
-                }
-                grid.appendChild(cell);
-            }
-
-            closePanel();
-            setDraftStatus();
-            showToast(`Session ${code} deleted.`);
-            if (typeof updateDayView === 'function') updateDayView(true);
+            saveSession('DELETE', sessionUrl(block), null, `Session ${d.code} deleted.`);
         });
     }
 
@@ -398,12 +408,12 @@ document.addEventListener('DOMContentLoaded', function () {
         let courseOptions = '';
         Object.keys(coursesMap).forEach(code => {
             const c = coursesMap[code];
-            courseOptions += `<option value="${code}">${code} — ${c.title}</option>`;
+            courseOptions += `<option value="${esc(code)}">${esc(code)} — ${esc(c.title)}</option>`;
         });
 
         let roomOptions = '';
         roomsList.forEach(r => {
-            roomOptions += `<option value="${r.code}">${r.code} (${r.type || 'Room'})</option>`;
+            roomOptions += `<option value="${esc(r.code)}">${esc(roomLabel(r))}</option>`;
         });
 
         const body = `
@@ -416,7 +426,7 @@ document.addEventListener('DOMContentLoaded', function () {
             </div>
             <div>
                 <p class="tsp-field-label">Course Module</p>
-                <select class="tsp-select" id="newCourseCode">
+                <select class="tsp-select" id="newCourseCode" data-searchable data-search-placeholder="Search by code or title…">
                     <option value="">Select a course module...</option>
                     ${courseOptions}
                 </select>
@@ -432,7 +442,7 @@ document.addEventListener('DOMContentLoaded', function () {
             </div>
             <div>
                 <p class="tsp-field-label">Venue / Room</p>
-                <select class="tsp-select" id="newVenue">
+                <select class="tsp-select" id="newVenue" data-searchable data-search-placeholder="Search halls / labs…">
                     <option value="">Select a hall / lab...</option>
                     ${roomOptions}
                 </select>
@@ -461,53 +471,17 @@ document.addEventListener('DOMContentLoaded', function () {
 
         document.getElementById('saveNewBtn').addEventListener('click', () => {
             const code = document.getElementById('newCourseCode').value;
-            const type = document.getElementById('newSessionType').value;
-            const venue = document.getElementById('newVenue').value || 'TBA';
-            const duration = parseInt(document.getElementById('newDuration').value, 10);
-
-            if (!code) {
-                alert('Please select a course module.');
+            const venue = document.getElementById('newVenue').value;
+            if (!code || !venue) {
+                alert('Please select a course module and a venue.');
                 return;
             }
-
-            const courseInfo = coursesMap[code] || { title: 'Course Module', lecturer: 'TBA' };
-            const colIndex = DAY_KEYS.indexOf(dayKey) + 2;
-            const rowIndex = HOURS.indexOf(hour) + 2;
-
-            // Remove occupied cell(s)
-            cell.remove();
-            if (duration > 1) {
-                const nextCell = grid.querySelector(`.tt-cell[data-day-key="${dayKey}"][data-hour="${hour + 1}"]`);
-                if (nextCell) nextCell.remove();
-            }
-
-            // Create block
-            const block = document.createElement('div');
-            block.className = `tt-block type-${type}`;
-            block.style.gridColumn = colIndex;
-            block.style.gridRow = `${rowIndex} / span ${duration}`;
-            block.dataset.code = code;
-            block.dataset.title = courseInfo.title;
-            block.dataset.location = venue;
-            block.dataset.type = type;
-            block.dataset.day = dayName;
-            block.dataset.dayKey = dayKey;
-            block.dataset.start = hourLabel(hour);
-            block.dataset.startHour = hour;
-            block.dataset.duration = duration;
-            block.dataset.lecturer = courseInfo.lecturer || 'TBA';
-
-            block.innerHTML = `
-                <p class="tt-block-code">${code}</p>
-                <p class="tt-block-title">${courseInfo.title}</p>
-                <p class="tt-block-loc">${venue}</p>
-            `;
-
-            grid.appendChild(block);
-            setDraftStatus();
-            showToast(`Added ${code} to timetable.`);
-            if (typeof updateDayView === 'function') updateDayView(true);
-            openSessionDetails(block);
+            const payload = sessionPayload(
+                code, venue, dayKey, hour,
+                parseInt(document.getElementById('newDuration').value, 10),
+                document.getElementById('newSessionType').value
+            );
+            saveSession('POST', '/timetable/sessions', payload, `Added ${code} to timetable.`);
         });
     }
 
@@ -630,6 +604,8 @@ document.addEventListener('DOMContentLoaded', function () {
             courseModule.value = '';
             lecturerHint.innerHTML = '&nbsp;';
             venueInput.value = '';
+            SearchableSelect.refresh(courseModule);
+            SearchableSelect.refresh(venueInput);
             sessionTypeToggle.querySelectorAll('.type-btn').forEach(function (b, i) {
                 b.classList.toggle('active', i === 0);
             });
@@ -664,53 +640,24 @@ document.addEventListener('DOMContentLoaded', function () {
 
     if (addToTimetableBtn) {
         addToTimetableBtn.addEventListener('click', function () {
-            const opt = courseModule.options[courseModule.selectedIndex];
-            if (!courseModule.value) {
-                alert('Please select a course module.');
+            const code = courseModule.value;
+            const venue = venueInput.value;
+            if (!code || !venue) {
+                alert('Please select a course module and a venue.');
                 return;
             }
 
-            const code = courseModule.value;
-            const title = opt.textContent.split('—').slice(1).join('—').trim();
-            const type = sessionTypeToggle.querySelector('.type-btn.active').dataset.type;
-            const venue = venueInput.value.trim() || 'TBA';
-            const lecturer = opt.dataset.lecturer || 'TBA';
-
-            const first = selectedCells[0];
             const hoursArr = selectedCells.map(function (c) { return c.hour; });
             const minHour = Math.min.apply(null, hoursArr);
-            const duration = selectedCells.length;
-            const dayIndex = DAY_KEYS.indexOf(first.dayKey);
-            const rowStart = HOURS.indexOf(minHour) + 2;
+            const maxHour = Math.max.apply(null, hoursArr);
+            if (maxHour - minHour + 1 !== selectedCells.length) {
+                alert('Please select consecutive time slots.');
+                return;
+            }
 
-            const block = document.createElement('div');
-            block.className = 'tt-block type-' + type;
-            block.style.gridColumn = (dayIndex + 2);
-            block.style.gridRow = rowStart + ' / span ' + duration;
-            block.dataset.code = code;
-            block.dataset.title = title;
-            block.dataset.location = venue;
-            block.dataset.type = type;
-            block.dataset.day = first.el.dataset.day;
-            block.dataset.dayKey = first.dayKey;
-            block.dataset.start = hourLabel(minHour);
-            block.dataset.startHour = minHour;
-            block.dataset.duration = duration;
-            block.dataset.lecturer = lecturer;
-            block.innerHTML =
-                '<p class="tt-block-code">' + code + '</p>' +
-                '<p class="tt-block-title">' + title + '</p>' +
-                '<p class="tt-block-loc">' + venue + '</p>';
-
-            selectedCells.forEach(function (c) { c.el.remove(); });
-            grid.appendChild(block);
-
-            hideScheduleModal();
-            exitSelectionMode();
-            setDraftStatus();
-            showToast(`Added ${code} to timetable.`);
-            if (typeof updateDayView === 'function') updateDayView(true);
-            openSessionDetails(block);
+            const type = sessionTypeToggle.querySelector('.type-btn.active').dataset.type;
+            const payload = sessionPayload(code, venue, selectedCells[0].dayKey, minHour, selectedCells.length, type);
+            saveSession('POST', '/timetable/sessions', payload, `Added ${code} to timetable.`);
         });
     }
 

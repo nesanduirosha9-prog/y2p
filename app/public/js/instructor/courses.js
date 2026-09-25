@@ -26,7 +26,7 @@ document.addEventListener('DOMContentLoaded', function () {
     // Helper: Toast notification
     function notify(msg, isSuccess = true) {
         if (typeof window.ttToast === 'function') {
-            window.ttToast(msg, { icon: isSuccess ? 'fa-circle-check' : 'fa-circle-exmark' });
+            window.ttToast(msg, { icon: isSuccess ? 'fa-circle-check' : 'fa-circle-exclamation' });
             return;
         }
         // Fallback toast
@@ -97,16 +97,13 @@ document.addEventListener('DOMContentLoaded', function () {
     const coursesCountDisplay = document.getElementById('coursesCountBadge');
     const coursesEmptyMsg = document.getElementById('coursesEmptyMsg');
 
-    const evalPane = document.getElementById('coursesEvalPane');
     const backBtn = document.getElementById('backToCoursesBtn');
-    const evalCourseAvatar = document.getElementById('evalCourseAvatar');
     const evalCourseHeading = document.getElementById('evalCourseHeading');
     const evalCourseYearPill = document.getElementById('evalCourseYearPill');
     const evalCourseProgPill = document.getElementById('evalCourseProgPill');
-    const evalAssignedCount = document.getElementById('evalAssignedCount');
+    const evalCourseSubText = document.getElementById('evalCourseSubText');
     const evalContainer = document.getElementById('evalInstructorsContainer');
     const submitAllBtn = document.getElementById('submitAllCourseEvaluationsBtn');
-    const submissionBanner = document.getElementById('evalSubmissionBanner');
 
     let currentProgram = '';
     let currentYear = '';
@@ -164,96 +161,50 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     const ratingLabels = {
-        1: '1 / 5 — Unsatisfactory',
-        2: '2 / 5 — Needs Improvement',
-        3: '3 / 5 — Satisfactory',
-        4: '4 / 5 — Very Good',
-        5: '5 / 5 — Excellent'
+        1: 'Unsatisfactory',
+        2: 'Needs improvement',
+        3: 'Satisfactory',
+        4: 'Very good',
+        5: 'Excellent'
     };
+
+    /** The 1–5 rating dropdown, empty until the lecturer picks one. */
+    function ratingOptions() {
+        return '<option value="">Select…</option>' +
+            [5, 4, 3, 2, 1].map(n => '<option value="' + n + '">' + n + ' — ' + ratingLabels[n] + '</option>').join('');
+    }
 
     // Open Course Evaluation View (Sliding Master-Detail)
     function openCourseEvaluation(courseCode, courseName, courseYear, courseProg, instructors) {
         if (!flowWrapper) return;
 
-        if (evalCourseAvatar) evalCourseAvatar.textContent = courseProg || 'CS';
+        const count = instructors ? instructors.length : 0;
         if (evalCourseHeading) evalCourseHeading.textContent = courseCode + ' — ' + courseName;
         if (evalCourseYearPill) {
             evalCourseYearPill.textContent = 'Year ' + courseYear;
             evalCourseYearPill.className = 'pill pill-year-' + courseYear;
         }
         if (evalCourseProgPill) evalCourseProgPill.textContent = courseProg || 'CS';
-        if (evalAssignedCount) evalAssignedCount.textContent = instructors ? instructors.length : 0;
-        if (submissionBanner) {
-            submissionBanner.style.display = 'none';
-            submissionBanner.innerHTML = '';
+        if (evalCourseSubText) {
+            evalCourseSubText.textContent = currentWeekLabel() + ' · ' + count + ' junior staff · sent to the Coordinator and the Department In-Charge';
         }
 
         if (evalContainer) {
-            evalContainer.innerHTML = '';
-            if (!instructors || instructors.length === 0) {
-                evalContainer.innerHTML = 
-                    '<div class="eval-empty-card">' +
-                        '<i class="fa-solid fa-user-slash"></i>' +
-                        '<h4>No Supportive Staff Assigned</h4>' +
-                        '<p>There are currently no instructors linked to ' + esc(courseCode) + '.</p>' +
-                    '</div>';
+            if (count === 0) {
+                evalContainer.innerHTML = '<tr><td colspan="3" class="text-muted">No junior staff are assigned to ' + esc(courseCode) + '.</td></tr>';
             } else {
-                instructors.forEach(function (inst) {
-                    const card = document.createElement('div');
-                    card.className = 'instructor-eval-card';
-                    card.dataset.instCode = inst.code;
-
-                    const initials = inst.name ? inst.name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase() : inst.code;
-                    const role = inst.role || 'Supportive Staff';
-                    const email = inst.email || (inst.code.toLowerCase() + '@ucsc.cmb.ac.lk');
-
-                    card.innerHTML = 
-                        '<div class="inst-card-header">' +
-                            '<div class="inst-profile">' +
-                                '<div class="inst-avatar">' + esc(initials) + '</div>' +
-                                '<div class="inst-details">' +
-                                    '<div class="inst-name-row">' +
-                                        '<h3 class="inst-name">' + esc(inst.name) + '</h3>' +
-                                        '<span class="code-badge code-badge--staff" title="' + esc(inst.name) + '">' + esc(inst.code) + '</span>' +
-                                    '</div>' +
-                                    '<div class="inst-meta">' +
-                                        '<span><i class="fa-regular fa-envelope"></i> ' + esc(email) + '</span>' +
-                                    '</div>' +
-                                '</div>' +
+                evalContainer.innerHTML = instructors.map(function (inst) {
+                    return '<tr class="inst-eval-row" data-inst-code="' + esc(inst.code) + '" data-inst-name="' + esc(inst.name) + '">' +
+                        '<td>' +
+                            '<div class="lec-identity">' +
+                                codeBadge(inst.code, 'staff', { title: inst.name }) +
+                                '<span class="lec-name">' + esc(inst.name) + '</span>' +
                             '</div>' +
-                            '<div class="inst-score-summary">' +
-                                '<span class="rating-badge rating-badge-active" id="badge_' + esc(inst.code) + '">' +
-                                    '<i class="fa-solid fa-star"></i> 4 / 5' +
-                                '</span>' +
-                            '</div>' +
-                        '</div>' +
-                        '<div class="inst-card-body">' +
-                            '<div class="inst-rating-col">' +
-                                '<label class="inst-field-label">' +
-                                    '<i class="fa-solid fa-star-half-stroke"></i> Performance Rating (Current Week)' +
-                                '</label>' +
-                                '<div class="modern-star-picker" data-rating="4">' +
-                                    '<div class="star-picker-btns">' +
-                                        '<button type="button" class="star-btn active" data-val="1" title="1 - Unsatisfactory"><i class="fa-solid fa-star"></i></button>' +
-                                        '<button type="button" class="star-btn active" data-val="2" title="2 - Needs Improvement"><i class="fa-solid fa-star"></i></button>' +
-                                        '<button type="button" class="star-btn active" data-val="3" title="3 - Satisfactory"><i class="fa-solid fa-star"></i></button>' +
-                                        '<button type="button" class="star-btn active" data-val="4" title="4 - Very Good"><i class="fa-solid fa-star"></i></button>' +
-                                        '<button type="button" class="star-btn" data-val="5" title="5 - Excellent"><i class="fa-solid fa-star"></i></button>' +
-                                    '</div>' +
-                                    '<span class="star-rating-hint">4 / 5 — Very Good</span>' +
-                                '</div>' +
-                            '</div>' +
-                            '<div class="inst-feedback-col">' +
-                                '<label class="inst-field-label">' +
-                                    '<i class="fa-regular fa-comment-dots"></i> Observations & Qualitative Feedback' +
-                                '</label>' +
-                                '<textarea class="inst-comment-textarea" rows="3" placeholder="Enter comments on student guidance, lab supervision, assignment evaluation, or punctuality..."></textarea>' +
-                            '</div>' +
-                        '</div>';
-
-                    evalContainer.appendChild(card);
-                    wireCardStarPicker(card);
-                });
+                        '</td>' +
+                        '<td><select class="form-select inst-rating-select" aria-label="Rating for ' + esc(inst.name) + '">' + ratingOptions() + '</select></td>' +
+                        '<td><textarea class="form-textarea inst-comment-textarea" rows="2" aria-label="Comments on ' + esc(inst.name) + '"></textarea></td>' +
+                    '</tr>';
+                }).join('');
             }
         }
 
@@ -269,50 +220,6 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     if (backBtn) backBtn.addEventListener('click', returnToCoursesList);
-
-    function wireCardStarPicker(cardEl) {
-        const picker = cardEl.querySelector('.modern-star-picker');
-        if (!picker) return;
-
-        const stars = picker.querySelectorAll('.star-btn');
-        const hint = picker.querySelector('.star-rating-hint');
-        const summaryBadge = cardEl.querySelector('.rating-badge');
-        let currentRating = parseInt(picker.dataset.rating, 10) || 4;
-
-        function updateDisplay(val, isHover) {
-            stars.forEach(function (btn) {
-                const btnVal = parseInt(btn.dataset.val, 10);
-                if (isHover) {
-                    btn.classList.toggle('hover-active', btnVal <= val);
-                } else {
-                    btn.classList.toggle('active', btnVal <= val);
-                    btn.classList.remove('hover-active');
-                }
-            });
-        }
-
-        stars.forEach(function (btn) {
-            const val = parseInt(btn.dataset.val, 10);
-            btn.addEventListener('mouseenter', () => {
-                updateDisplay(val, true);
-                if (hint) hint.textContent = ratingLabels[val] || (val + ' / 5');
-            });
-            btn.addEventListener('mouseleave', () => {
-                stars.forEach(b => b.classList.remove('hover-active'));
-                if (hint) hint.textContent = ratingLabels[currentRating] || (currentRating + ' / 5');
-            });
-            btn.addEventListener('click', () => {
-                currentRating = val;
-                picker.dataset.rating = currentRating;
-                updateDisplay(currentRating, false);
-                if (hint) hint.textContent = ratingLabels[currentRating] || (currentRating + ' / 5');
-                if (summaryBadge) {
-                    summaryBadge.className = 'rating-badge rating-badge-active';
-                    summaryBadge.innerHTML = '<i class="fa-solid fa-star"></i> ' + Math.round(currentRating) + ' / 5';
-                }
-            });
-        });
-    }
 
     if (coursesTbody) {
         coursesTbody.addEventListener('click', function (e) {
@@ -332,9 +239,15 @@ document.addEventListener('DOMContentLoaded', function () {
 
     if (submitAllBtn) {
         submitAllBtn.addEventListener('click', function () {
-            const cards = evalContainer ? evalContainer.querySelectorAll('.instructor-eval-card') : [];
+            const cards = evalContainer ? evalContainer.querySelectorAll('.inst-eval-row') : [];
             if (cards.length === 0) {
-                alert('There are no supportive staff members to evaluate.');
+                notify('There are no junior staff to evaluate on this course.', false);
+                return;
+            }
+            const unrated = Array.from(cards).find(card => !card.querySelector('.inst-rating-select').value);
+            if (unrated) {
+                notify('Give ' + unrated.dataset.instName + ' a rating before submitting.', false);
+                unrated.querySelector('.inst-rating-select').focus();
                 return;
             }
 
@@ -345,9 +258,8 @@ document.addEventListener('DOMContentLoaded', function () {
 
             cards.forEach(card => {
                 const code = card.dataset.instCode;
-                const instName = (card.querySelector('.inst-name') ? card.querySelector('.inst-name').textContent : code).trim();
-                const picker = card.querySelector('.modern-star-picker');
-                const rating = picker ? (parseInt(picker.dataset.rating, 10) || 4) : 4;
+                const instName = card.dataset.instName || code;
+                const rating = parseInt(card.querySelector('.inst-rating-select').value, 10);
                 const commentEl = card.querySelector('.inst-comment-textarea');
                 const comment = commentEl ? commentEl.value.trim() : '';
 
@@ -397,11 +309,7 @@ document.addEventListener('DOMContentLoaded', function () {
                                 '<span class="lec-name" style="font-size: 13px;">' + esc(instName) + '</span>' +
                             '</div>' +
                         '</td>' +
-                        '<td>' +
-                            '<span class="rating-badge rating-badge-active">' +
-                                '<i class="fa-solid fa-star"></i> ' + Math.round(rating) + ' / 5' +
-                            '</span>' +
-                        '</td>' +
+                        '<td><strong>' + Math.round(rating) + '</strong> / 5</td>' +
                         '<td style="font-size: 12.5px; color: #334155; line-height: 1.45;">' +
                             (comment ? esc(comment) : '<span class="text-muted">No observations recorded.</span>') +
                         '</td>' +
@@ -443,14 +351,10 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // Drawer Elements
     const drawerOverlay = document.getElementById('evaluateInstructorDrawerOverlay');
-    const drawerInstAvatar = document.getElementById('drawerInstAvatar');
-    const drawerInstName = document.getElementById('drawerInstName');
-    const drawerInstCode = document.getElementById('drawerInstCode');
-    const drawerInstDept = document.getElementById('drawerInstDept');
-    const drawerInstEmail = document.getElementById('drawerInstEmail');
+    const drawerTitle = document.getElementById('evalDrawerTitle');
+    const drawerSubtitle = document.getElementById('evalDrawerSubtitle');
     const drawerCourseSelect = document.getElementById('drawerCourseSelect');
-    const drawerStarPicker = document.getElementById('drawerStarPicker');
-    const drawerRatingHint = document.getElementById('drawerRatingHint');
+    const drawerRatingSelect = document.getElementById('drawerRatingSelect');
     const drawerComment = document.getElementById('drawerComment');
     const closeDrawerBtn = document.getElementById('closeEvalDrawerBtn');
     const cancelDrawerBtn = document.getElementById('cancelEvalDrawerBtn');
@@ -484,53 +388,13 @@ document.addEventListener('DOMContentLoaded', function () {
     if (instructorSearch) instructorSearch.addEventListener('input', applyInstructorFilters);
     if (instructorCourseFilter) instructorCourseFilter.addEventListener('change', applyInstructorFilters);
 
-    // Star Picker in Slide Drawer
-    if (drawerStarPicker) {
-        const dStars = drawerStarPicker.querySelectorAll('.star-btn');
-        let dCurrentRating = 4;
-
-        function updateDrawerStars(val, isHover) {
-            dStars.forEach(function (btn) {
-                const btnVal = parseInt(btn.dataset.val, 10);
-                if (isHover) {
-                    btn.classList.toggle('hover-active', btnVal <= val);
-                } else {
-                    btn.classList.toggle('active', btnVal <= val);
-                    btn.classList.remove('hover-active');
-                }
-            });
-        }
-
-        dStars.forEach(function (btn) {
-            const val = parseInt(btn.dataset.val, 10);
-            btn.addEventListener('mouseenter', () => {
-                updateDrawerStars(val, true);
-                if (drawerRatingHint) drawerRatingHint.textContent = ratingLabels[val] || (val + ' / 5');
-            });
-            btn.addEventListener('mouseleave', () => {
-                dStars.forEach(b => b.classList.remove('hover-active'));
-                if (drawerRatingHint) drawerRatingHint.textContent = ratingLabels[dCurrentRating] || (dCurrentRating + ' / 5');
-            });
-            btn.addEventListener('click', () => {
-                dCurrentRating = val;
-                drawerStarPicker.dataset.rating = dCurrentRating;
-                updateDrawerStars(dCurrentRating, false);
-                if (drawerRatingHint) drawerRatingHint.textContent = ratingLabels[dCurrentRating] || (dCurrentRating + ' / 5');
-            });
-        });
-    }
+    if (drawerRatingSelect) drawerRatingSelect.innerHTML = ratingOptions();
 
     function openInstructorDrawer(data) {
         activeEvaluatingInstructor = data;
 
-        if (drawerInstAvatar) {
-            const initials = data.name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
-            drawerInstAvatar.textContent = initials;
-        }
-        if (drawerInstName) drawerInstName.textContent = data.name;
-        if (drawerInstCode) drawerInstCode.textContent = data.code;
-        if (drawerInstDept) drawerInstDept.textContent = data.dept || 'Computer Science';
-        if (drawerInstEmail) drawerInstEmail.textContent = data.email || (data.code.toLowerCase() + '@ucsc.cmb.ac.lk');
+        if (drawerTitle) drawerTitle.textContent = data.name + ' (' + data.code + ')';
+        if (drawerSubtitle) drawerSubtitle.textContent = currentWeekLabel();
 
         // Populate courses dropdown
         if (drawerCourseSelect) {
@@ -550,16 +414,7 @@ document.addEventListener('DOMContentLoaded', function () {
         }
 
         // Reset inputs
-        if (drawerStarPicker) {
-            drawerStarPicker.dataset.rating = '4';
-            const stars = drawerStarPicker.querySelectorAll('.star-btn');
-            stars.forEach(b => {
-                const v = parseInt(b.dataset.val, 10);
-                b.classList.toggle('active', v <= 4);
-                b.classList.remove('hover-active');
-            });
-            if (drawerRatingHint) drawerRatingHint.textContent = ratingLabels[4];
-        }
+        if (drawerRatingSelect) drawerRatingSelect.value = '';
         if (drawerComment) drawerComment.value = '';
 
         if (drawerOverlay) {
@@ -616,11 +471,18 @@ document.addEventListener('DOMContentLoaded', function () {
         submitDrawerBtn.addEventListener('click', function () {
             if (!activeEvaluatingInstructor) return;
 
+            if (!drawerRatingSelect || !drawerRatingSelect.value) {
+                notify('Choose a rating before submitting.', false);
+                if (drawerRatingSelect) drawerRatingSelect.focus();
+                return;
+            }
+
             const instCode = activeEvaluatingInstructor.code;
             const instName = activeEvaluatingInstructor.name;
             const courseCode = drawerCourseSelect ? drawerCourseSelect.value : '';
-            const rating = drawerStarPicker ? (parseInt(drawerStarPicker.dataset.rating, 10) || 4) : 4;
+            const rating = parseInt(drawerRatingSelect.value, 10);
             const comment = drawerComment ? drawerComment.value.trim() : '';
+            const dateStr = new Date().toISOString().split('T')[0];
 
             // Update status pill on instructor row
             const statusPill = document.getElementById('instStatus_' + instCode);
@@ -648,8 +510,6 @@ document.addEventListener('DOMContentLoaded', function () {
             // Append row to History table
             const historyTbody = document.getElementById('evaluationHistoryTbody');
             if (historyTbody) {
-                const now = new Date();
-                const dateStr = now.toISOString().split('T')[0];
                 const newRow = document.createElement('tr');
                 newRow.className = 'history-row';
                 newRow.dataset.status = 'evaluated';
@@ -673,11 +533,7 @@ document.addEventListener('DOMContentLoaded', function () {
                             '<span class="lec-name" style="font-size: 13px;">' + esc(instName) + '</span>' +
                         '</div>' +
                     '</td>' +
-                    '<td>' +
-                        '<span class="rating-badge rating-badge-active">' +
-                            '<i class="fa-solid fa-star"></i> ' + Math.round(rating) + ' / 5' +
-                        '</span>' +
-                    '</td>' +
+                    '<td><strong>' + Math.round(rating) + '</strong> / 5</td>' +
                     '<td style="font-size: 12.5px; color: #334155; line-height: 1.45;">' +
                         (comment ? esc(comment) : '<span class="text-muted">No observations recorded.</span>') +
                     '</td>' +

@@ -4,18 +4,10 @@
 $positionLabels = [
     'coordinator' => 'Coordinator',
     'in_charge' => 'In-Charge',
-    'timetable_officer' => 'Timetable Officer',
 ];
 ?>
 
 <div class="accounts-view">
-    <div class="page-head">
-        <div>
-            <h2>Select Role to Change</h2>
-            <p class="page-head-sub">Select which role you want to reassign.</p>
-        </div>
-    </div>
-
     <div class="dir-card handover-card">
         <div class="handover-current">
             <span class="pill pill-muted"><?= htmlspecialchars($positionLabels[$position]) ?></span>

@@ -33,8 +33,9 @@ $coverRequests = [
         'staff_code' => 'MKO',
         'lecturer_name' => 'Dr. Elena Petrov',
         'lecturer_code' => 'DEP',
-        'date' => 'Wed, 14:00 - 16:00',
-        'duration' => '2 hrs/wk',
+        'date' => '2026-09-30',
+        'time_from' => '14:00',
+        'time_to' => '16:00',
         'credits' => 3,
         'year' => 2,
         'program' => 'CS',
@@ -50,8 +51,9 @@ $coverRequests = [
         'staff_code' => 'MYB',
         'lecturer_name' => 'Dr. Linda Osei',
         'lecturer_code' => 'DLO',
-        'date' => 'Thu, 09:00 - 12:00',
-        'duration' => '3 hrs/wk',
+        'date' => '2026-10-01',
+        'time_from' => '09:00',
+        'time_to' => '12:00',
         'credits' => 3,
         'year' => 1,
         'program' => 'IS',
@@ -287,42 +289,72 @@ $coverRequests = [
     </div>
 
     <div class="wk-body" id="wk-panel-assigned" hidden>
-        <!-- Cover Staff Requests Card -->
-        <div class="wk-cover-card">
-            <div class="wk-cover-header">
+        <!-- Cover Staff Requests -->
+        <div class="wk-table-card">
+            <div class="wk-table-header">
                 <div>
-                    <i class="fa-solid fa-bell"></i>
-                    <strong>Cover Staff Requests</strong>
-                    <span class="wk-pending-pill" id="wkPendingPill"><?= count($coverRequests) ?> pending</span>
+                    <p>Cover Staff Requests</p>
+                    <span class="wk-table-header-hint">Sessions you have been asked to cover while a colleague is on leave</span>
                 </div>
-                <span class="wk-cover-hint">A colleague is on leave — please respond</span>
+                <span class="wk-table-header-hint" id="wkPendingPill"><?= count($coverRequests) ?> pending</span>
             </div>
-            <div class="wk-cover-list" id="wkCoverList">
-                <?php foreach ($coverRequests as $cr): ?>
-                    <div class="wk-cover-item" data-id="<?= $cr['id'] ?>"
-                         data-code="<?= htmlspecialchars($cr['code']) ?>"
-                         data-name="<?= htmlspecialchars($cr['title']) ?>"
-                         data-lecturer-name="<?= htmlspecialchars($cr['lecturer_name']) ?>"
-                         data-lecturer-code="<?= htmlspecialchars($cr['lecturer_code']) ?>"
-                         data-colleague="<?= htmlspecialchars($cr['staff_on_leave']) ?>"
-                         data-schedule="<?= htmlspecialchars($cr['date']) ?>"
-                         data-credits="<?= (int)$cr['credits'] ?>"
-                         data-year="<?= (int)$cr['year'] ?>"
-                         data-program="<?= htmlspecialchars($cr['program']) ?>"
-                         data-role="<?= htmlspecialchars($cr['role']) ?>"
-                         data-hours="<?= (int)$cr['hours'] ?>"
-                         data-sessions="<?= htmlspecialchars(implode(',', $cr['sessions'] ?? [])) ?>">
-                        <div class="wk-cover-icon"><i class="fa-solid fa-user-clock"></i></div>
-                        <div class="wk-cover-info">
-                            <p class="wk-cover-title"><?= \app\core\ViewHelpers::codeBadge($cr['code'], 'course', '', 'wk-inline-code') ?> <?= htmlspecialchars($cr['title']) ?></p>
-                            <p class="wk-cover-meta">Staff on leave: <strong><?= htmlspecialchars($cr['staff_on_leave']) ?></strong> · Schedule: <?= htmlspecialchars($cr['date']) ?> · Duration: <?= htmlspecialchars($cr['duration']) ?></p>
-                        </div>
-                        <div class="wk-cover-actions">
-                            <button type="button" class="wk-btn-accept" data-accept="<?= $cr['id'] ?>"><i class="fa-solid fa-check"></i> Accept</button>
-                            <button type="button" class="wk-btn-reject" data-reject="<?= $cr['id'] ?>"><i class="fa-solid fa-xmark"></i> Reject</button>
-                        </div>
-                    </div>
-                <?php endforeach; ?>
+            <div class="dir-scroll">
+                <table class="dir-table" id="coverRequestsTable">
+                    <thead>
+                        <tr>
+                            <th style="width: 120px;">Course Code</th>
+                            <th style="min-width: 180px;">Course Name</th>
+                            <th style="width: 150px;">Date</th>
+                            <th style="width: 120px;">Time</th>
+                            <th style="min-width: 180px;">Covering For</th>
+                            <th style="min-width: 180px;">Lecturer in Charge</th>
+                            <th style="width: 140px;">Role</th>
+                            <th style="width: 170px; text-align: right;">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="wkCoverList">
+                        <?php foreach ($coverRequests as $cr):
+                            $day = new DateTime($cr['date']);
+                            $schedule = $day->format('D j M') . ', ' . $cr['time_from'] . '–' . $cr['time_to'];
+                        ?>
+                            <tr class="wk-cover-item" data-id="<?= $cr['id'] ?>"
+                                data-code="<?= htmlspecialchars($cr['code']) ?>"
+                                data-name="<?= htmlspecialchars($cr['title']) ?>"
+                                data-lecturer-name="<?= htmlspecialchars($cr['lecturer_name']) ?>"
+                                data-lecturer-code="<?= htmlspecialchars($cr['lecturer_code']) ?>"
+                                data-colleague="<?= htmlspecialchars($cr['staff_on_leave']) ?>"
+                                data-schedule="<?= htmlspecialchars($schedule) ?>"
+                                data-credits="<?= (int)$cr['credits'] ?>"
+                                data-year="<?= (int)$cr['year'] ?>"
+                                data-program="<?= htmlspecialchars($cr['program']) ?>"
+                                data-role="<?= htmlspecialchars($cr['role']) ?>"
+                                data-hours="<?= (int)$cr['hours'] ?>"
+                                data-sessions="<?= htmlspecialchars(implode(',', $cr['sessions'] ?? [])) ?>">
+                                <td><?= \app\core\ViewHelpers::codeBadge($cr['code'], 'course', $cr['title']) ?></td>
+                                <td><strong><?= htmlspecialchars($cr['title']) ?></strong></td>
+                                <td style="white-space: nowrap;"><?= $day->format('D, j M Y') ?></td>
+                                <td style="white-space: nowrap;"><?= htmlspecialchars($cr['time_from']) ?> – <?= htmlspecialchars($cr['time_to']) ?></td>
+                                <td>
+                                    <div class="tag-row">
+                                        <?= \app\core\ViewHelpers::codeBadge($cr['staff_code'], 'staff', $cr['staff_on_leave']) ?>
+                                        <span><?= htmlspecialchars($cr['staff_on_leave']) ?></span>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="tag-row">
+                                        <?= \app\core\ViewHelpers::codeBadge($cr['lecturer_code'], 'lecturer', $cr['lecturer_name']) ?>
+                                        <span><?= htmlspecialchars($cr['lecturer_name']) ?></span>
+                                    </div>
+                                </td>
+                                <td><?= htmlspecialchars($cr['role']) ?></td>
+                                <td style="text-align: right; white-space: nowrap;">
+                                    <button type="button" class="btn-primary-sm" data-accept="<?= $cr['id'] ?>">Accept</button>
+                                    <button type="button" class="btn-secondary-sm" data-reject="<?= $cr['id'] ?>">Decline</button>
+                                </td>
+                            </tr>
+                        <?php endforeach; ?>
+                    </tbody>
+                </table>
             </div>
         </div>
 

@@ -4,7 +4,7 @@
 // (your own record). AuditController renders both, with $scope telling them
 // apart; see that controller for why it is one view and not two.
 //
-// A SHELL: js/audit.js renders the feed, the counts and the detail panel from
+// A SHELL: js/audit.js renders the feed and the detail panel from
 // the payload at the bottom. The view's job is the furniture — the filter bar
 // and the empty states — so there is one place to change how filtering looks.
 //
@@ -12,10 +12,9 @@
 // interested in software, and an audit log is the easiest screen in any system
 // to make unusable. So, deliberately:
 //   - the feed is grouped under plain date headings ("Today", "Yesterday",
-//     "Monday, 14 September 2026"), not a dense table with a horizontal
-//     scrollbar;
-//   - each row is one English sentence — "Dr Sarah Chen approved a leave
-//     request" — and not a key like `leave.approved`;
+//     "Monday, 14 September 2026"): a table per day on desktop, with a column
+//     for each detail, and on phones one English sentence per entry —
+//     "Dr Sarah Chen approved a leave request";
 //   - the period control is a single labelled dropdown, not a date-picker
 //     puzzle, with the two date boxes appearing only if you ask for them;
 //   - the active filters are written out in words above the list with one
@@ -23,7 +22,6 @@
 //   - nothing is hover-only, and every control has a visible label.
 //
 // $scope      'system' | 'own'
-// $heading    / $subheading  page copy
 // $ownLogUrl  link to the reader's own record, on the system screen only
 // $auditData  the payload (AuditPrototypeData::feed)
 
@@ -42,8 +40,6 @@ $isSystem = ($scope ?? 'own') === 'system';
                     <i class="fa-solid fa-arrow-left"></i> Back
                 </a>
             <?php endif; ?>
-            <h2><?= htmlspecialchars($heading) ?></h2>
-            <p class="page-head-sub"><?= htmlspecialchars($subheading) ?></p>
         </div>
         <div class="page-head-actions">
             <?php if ($isSystem && !empty($ownLogUrl)): ?>
@@ -56,57 +52,6 @@ $isSystem = ($scope ?? 'own') === 'system';
                 <i class="fa-solid fa-file-arrow-down"></i> Download these entries
             </button>
         </div>
-    </div>
-
-    <!-- The one thing every reader of an audit log needs told, in the one place
-         they will certainly look. Not a tooltip, not a footnote. -->
-    <div class="aud-seal-strip">
-        <i class="fa-solid fa-lock"></i>
-        <p>
-            <strong>This is a permanent record.</strong>
-            Entries are written by the system as work happens. Nobody can add, change or delete
-            one — not you, not the Coordinator, not the Department In-Charge.
-        </p>
-    </div>
-
-    <!-- Four counts, all derived from the entries actually on the page. The
-         last one is a filter: clicking it shows only the failed and refused
-         attempts, which is the reason most people open a log at all. -->
-    <div class="aud-kpi-grid">
-        <div class="aud-kpi">
-            <div class="aud-kpi-icon icon-blue"><i class="fa-solid fa-list-ul"></i></div>
-            <div>
-                <p class="aud-kpi-num" id="audKpiTotal">—</p>
-                <p class="aud-kpi-label">Entries you can see</p>
-            </div>
-        </div>
-        <div class="aud-kpi">
-            <div class="aud-kpi-icon icon-green"><i class="fa-solid fa-clock-rotate-left"></i></div>
-            <div>
-                <p class="aud-kpi-num" id="audKpiToday">—</p>
-                <p class="aud-kpi-label">Recorded today</p>
-            </div>
-        </div>
-        <div class="aud-kpi">
-            <div class="aud-kpi-icon icon-purple">
-                <i class="fa-solid <?= $isSystem ? 'fa-users' : 'fa-calendar-week' ?>"></i>
-            </div>
-            <div>
-                <p class="aud-kpi-num" id="audKpiPeople">—</p>
-                <p class="aud-kpi-label"><?= $isSystem ? 'People active today' : 'Recorded this week' ?></p>
-            </div>
-        </div>
-        <button type="button" class="aud-kpi aud-kpi-btn" id="audKpiProblemCard"
-                title="Show only sign-in failures and refused actions">
-            <div class="aud-kpi-icon icon-red"><i class="fa-solid fa-triangle-exclamation"></i></div>
-            <div>
-                <p class="aud-kpi-num" id="audKpiProblems">—</p>
-                <p class="aud-kpi-label">Failed or refused</p>
-                <!-- Spelled out rather than left to a hover state or a cursor
-                     change, and it says what it will do next, not what it is. -->
-                <p class="aud-kpi-hint" id="audKpiProblemHint">Click to show only these</p>
-            </div>
-        </button>
     </div>
 
     <!-- ---------------------------------------------------------------- Filters -->
@@ -189,7 +134,6 @@ $isSystem = ($scope ?? 'own') === 'system';
 
     <!-- What this reader is not shown, said out loud rather than left to guess. -->
     <p class="aud-restriction">
-        <i class="fa-solid fa-circle-info"></i>
         <?= htmlspecialchars($auditData['restriction']) ?>
     </p>
 
