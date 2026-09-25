@@ -30,7 +30,7 @@ document.addEventListener('DOMContentLoaded', () => {
             };
 
             try {
-                const response = await fetch('http://localhost:8001/timetable/schedule', {
+                const response = await fetch('http://localhost:8081/timetable/schedule', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
                     body: JSON.stringify(payload)
@@ -108,7 +108,7 @@ document.addEventListener('DOMContentLoaded', () => {
         };
 
         try {
-            const response = await fetch('http://localhost:8001/timetable/updateScheduleRequest', {
+            const response = await fetch('http://localhost:8081/timetable/updateScheduleRequest', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
                 body: JSON.stringify(payload)
@@ -138,7 +138,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const payload = { request_id: detailRequestId.value };
 
         try {
-            const response = await fetch('http://localhost:8001/timetable/deleteScheduleRequest', {
+            const response = await fetch('http://localhost:8081/timetable/deleteScheduleRequest', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
                 body: JSON.stringify(payload)
@@ -213,7 +213,7 @@ document.addEventListener('DOMContentLoaded', () => {
         };
 
         try {
-            const response = await fetch('http://localhost:8001/timetable/scheduleRequest', {
+            const response = await fetch('http://localhost:8081/timetable/scheduleRequest', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
                 body: JSON.stringify(payload)
