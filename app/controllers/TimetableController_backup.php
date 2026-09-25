@@ -94,69 +94,58 @@ class TimetableController extends Controller
     // }
     public function index(Request $request)
     {
-    $denied = $this->requireRole('academic_staff', 'timetable_officer');
+        // Both roles may see a timetable; which one they see is decided below.
+        // Anyone else (there is no third role today) gets the 403 page.
+        $denied = $this->requireRole('academic_staff', 'timetable_officer');
+        if ($denied !== null) {
+            return $denied;
+        }
 
-    if ($denied !== null) {
-        return $denied;
+        // The guard above already limited this to the two keys in self::COPY.
+        $role = $_SESSION['role'];
+        $copy = self::COPY[$role];
+
+        // Read + validate the dept/semester/year filters from ?query.
+        $dept = $request->getQueryParams()['dept'] ?? 'cs';
+        $sem = (int)($request->getQueryParams()['sem'] ?? 1);
+        $year = (int)($request->getQueryParams()['year'] ?? 1);
+
+        $dept = in_array($dept, ['cs', 'is'], true) ? $dept : 'cs';
+        $sem = in_array($sem, [1, 2], true) ? $sem : 1;
+        $year = in_array($year, [1, 2, 3, 4], true) ? $year : 1;
+
+        // Fetch sessions based on the user's role
+        $sessionModel = new TimetableSessionModel();
+        if ($role === 'academic_staff') {
+            // Staff only see sessions they manage
+            $sessions = $sessionModel->forStaffManager($_SESSION['staff_code']);
+        } else {
+            // Timetable officers see everything filtered by dept/sem/year
+            $sessions = $sessionModel->forDeptSemYear($dept, $sem, $year);
+        }
+
+        $params = [
+            'title' => $copy['title'],
+            'css_file' => $copy['css_file'],
+            'active' => 'timetable',
+            'pageTitle' => $copy['pageTitle'],
+            'notificationCount' => (new NotificationModel())->unreadCount($_SESSION['staff_code']),
+            'dept' => $dept,
+            'sem' => $sem,
+            'year' => $year,
+            'courses' => (new CourseModel())->forDeptYear($dept, $year),
+            'sessions' => $sessions,
+        ];
+
+        // Only the officer's grid assigns rooms to slots, so only the officer
+        // pays for that query — as before the merge.
+        if ($role === 'timetable_officer') {
+            $params['rooms'] = (new RoomModel())->all();
+        }
+
+        return $this->render($copy['view'], $params);
     }
 
-    $role = $_SESSION['role'];
-    $copy = self::COPY[$role];
-
-    $dept = $request->getQueryParams()['dept'] ?? 'cs';
-    $sem = (int) ($request->getQueryParams()['sem'] ?? 1);
-    $year = (int) ($request->getQueryParams()['year'] ?? 1);
-
-    $dept = in_array($dept, ['cs', 'is'], true) ? $dept : 'cs';
-    $sem = in_array($sem, [1, 2], true) ? $sem : 1;
-    $year = in_array($year, [1, 2, 3, 4], true) ? $year : 1;
-
-    $sessionModel = new TimetableSessionModel();
-
-    if ($role === 'academic_staff') {
-        $sessions = $sessionModel->forStaffManager($_SESSION['staff_code']);
-        $requests = $sessionModel->getRequestsForStaff($_SESSION['staff_code']);
-
-        // Merge schedule requests into the standard sessions array
-        // $requestedSessions = [];
-        // foreach ($requests as $req) {
-        //     $requestedSessions[] = [
-        //         'day_of_week'    => $req['day_of_week'],
-        //         'start_hour'     => (int) $req['start_hour'],
-        //         'duration_hours' => (int) $req['duration_hours'],
-        //         'session_type'   => 'request', // special type for CSS styling
-        //         'course_code'    => 'Request ' . ucfirst($req['status']),
-        //         'course_name'    => $req['description'] ?: 'Awaiting review',
-        //         'location'       => 'ID: #' . $req['request_id'],
-        //         'is_request'     => true,
-        //         'request_id'     => $req['request_id'] // Important for JS SVG lines
-        //     ];
-        // }
-    } else {
-        $sessions = $sessionModel->forDeptSemYear($dept, $sem, $year);
-    }
-
-    $params = [
-        'title' => $copy['title'],
-        'css_file' => $copy['css_file'],
-        'active' => 'timetable',
-        'pageTitle' => $copy['pageTitle'],
-        'notificationCount' => (new \app\models\NotificationModel())
-            ->unreadCount($_SESSION['staff_code']),
-        'dept' => $dept,
-        'sem' => $sem,
-        'year' => $year,
-        'courses' => (new \app\models\CourseModel())->forDeptYear($dept, $year),
-        'sessions' => $sessions,
-        'requests' => $requests,
-    ];
-
-    if ($role === 'timetable_officer') {
-        $params['rooms'] = (new \app\models\RoomModel())->all();
-    }
-
-    return $this->render($copy['view'], $params);
-    }
 
 
 
@@ -213,7 +202,6 @@ class TimetableController extends Controller
         'slots'              => $body['slots'],
         'for_how_many_weeks' => (int) ($body['for_how_many_weeks'] ?? 1),
         'description'        => $body['description'] ?? '',
-        'course_code'        => $body['course_code'] ?? '',
     ];
 
     // Instantiate the model where you placed session_request_create()
@@ -232,147 +220,6 @@ class TimetableController extends Controller
     return json_encode([
         'status' => 'error',
         'message' => 'Failed to save schedule request'
-    ]);
-    }
-
-
-    public function updateScheduleRequest(Request $request)
-    {
-    // Check authorization
-    $denied = $this->requireRole('academic_staff', 'timetable_officer');
-
-    if ($denied !== null) {
-        http_response_code(403);
-
-        return json_encode([
-            'status' => 'error',
-            'message' => 'Forbidden'
-        ]);
-    }
-
-    $body = $request->getBody();
-    $staffCode = $_SESSION['staff_code'] ?? null;
-
-    if (empty($body['request_id']) || !is_numeric($body['request_id'])) {
-        http_response_code(400);
-
-        return json_encode([
-            'status' => 'error',
-            'message' => 'Invalid or missing request_id'
-        ]);
-    }
-
-    $updateData = [
-        'request_id'         => (int) $body['request_id'],
-        'requester_code'     => $staffCode,
-        'for_how_many_weeks' => isset($body['for_how_many_weeks']) ? (int) $body['for_how_many_weeks'] : null,
-        'description'        => array_key_exists('description', $body) ? $body['description'] : null,
-    ];
-
-    // Instantiate the model
-    $sessionModel = new TimetableSessionModel();
-
-    $result = $sessionModel->session_request_update($updateData);
-
-    if ($result === 'not_found') {
-        http_response_code(404);
-
-        return json_encode([
-            'status' => 'error',
-            'message' => 'Schedule request not found'
-        ]);
-    }
-
-    if ($result === 'forbidden') {
-        http_response_code(403);
-
-        return json_encode([
-            'status' => 'error',
-            'message' => 'You are not allowed to update this request'
-        ]);
-    }
-
-    if ($result === true) {
-        return json_encode([
-            'status' => 'success'
-        ]);
-    }
-
-    http_response_code(500);
-
-    return json_encode([
-        'status' => 'error',
-        'message' => 'Failed to update schedule request'
-    ]);
-    }
-
-
-
-    public function deleteScheduleRequest(Request $request)
-    {
-    // Check authorization
-    $denied = $this->requireRole('academic_staff', 'timetable_officer');
-
-    if ($denied !== null) {
-        http_response_code(403);
-
-        return json_encode([
-            'status' => 'error',
-            'message' => 'Forbidden'
-        ]);
-    }
-
-    $body = $request->getBody();
-    $staffCode = $_SESSION['staff_code'] ?? null;
-
-    if (empty($body['request_id']) || !is_numeric($body['request_id'])) {
-        http_response_code(400);
-
-        return json_encode([
-            'status' => 'error',
-            'message' => 'Invalid or missing request_id'
-        ]);
-    }
-
-    $deleteData = [
-        'request_id'     => (int) $body['request_id'],
-        'requester_code' => $staffCode,
-    ];
-
-    // Instantiate the model
-    $sessionModel = new TimetableSessionModel();
-
-    $result = $sessionModel->session_request_delete($deleteData);
-
-    if ($result === 'not_found') {
-        http_response_code(404);
-
-        return json_encode([
-            'status' => 'error',
-            'message' => 'Schedule request not found'
-        ]);
-    }
-
-    if ($result === 'forbidden') {
-        http_response_code(403);
-
-        return json_encode([
-            'status' => 'error',
-            'message' => 'You are not allowed to delete this request'
-        ]);
-    }
-
-    if ($result === true) {
-        return json_encode([
-            'status' => 'success'
-        ]);
-    }
-
-    http_response_code(500);
-
-    return json_encode([
-        'status' => 'error',
-        'message' => 'Failed to delete schedule request'
     ]);
     }
 }

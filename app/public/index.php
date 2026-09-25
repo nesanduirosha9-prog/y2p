@@ -133,6 +133,18 @@ $router->get('/oldabout', function (Request $request, Response $response) {
 $router->get('/timetable', function (Request $request, Response $response) {
     return (new TimetableController())->index($request);
 });
+$router->post('/timetable/schedule', function (Request $request, Response $response) {
+    return (new TimetableController())->schedule($request);
+});
+$router->post('/timetable/scheduleRequest', function (Request $request, Response $response) {
+    return (new TimetableController())->scheduleRequest($request);
+});
+$router->post('/timetable/updateScheduleRequest', function (Request $request, Response $response) {
+    return (new TimetableController())->updateScheduleRequest($request);
+});
+$router->post('/timetable/deleteScheduleRequest', function (Request $request, Response $response) {
+    return (new TimetableController())->deleteScheduleRequest($request);
+});
 
 // --- Courses ---------------------------------------------------------------
 // GET /courses — "Course Details" (the whole catalogue) for an officer,

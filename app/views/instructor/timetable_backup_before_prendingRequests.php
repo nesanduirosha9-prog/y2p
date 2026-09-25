@@ -24,23 +24,10 @@ foreach ($sessions as $s) {
         $occupied[$day][$start + $i] = $i === 0 ? $s : 'busy';
     }
 }
-
-// Group flat $requests rows into arrays of slots per request_id
-// e.g. requestGroups[0] = [ {mon 14:00}, {wed 8:00} ] for request_id 1
-$requestGroups = [];
-foreach ($requests as $rs) {
-    $requestGroups[$rs['request_id']][] = [
-        'course_code'      => $rs['course_code'],
-        'request_id'      => $rs['request_id'],
-        'status'           => $rs['status'],
-        'description'      => $rs['description'],
-        'day_of_week'      => $rs['day_of_week'],
-        'start_hour'       => $rs['start_hour'],
-        'duration_hours'   => $rs['duration_hours'],
-        'weeks'            => $rs['weeks']
-    ];
+foreach ($requests as $rs) 
+{
+     print_r($rs);
 }
-$requestGroups = array_values($requestGroups); // reindex to a plain numeric array
 ?>
 
 <div class="tt-view">
@@ -48,20 +35,12 @@ $requestGroups = array_values($requestGroups); // reindex to a plain numeric arr
         <div class="tt-grid" id="timetableGrid" style="position: relative;">
             <svg id="connectionLines" style="position: absolute; top:0; left:0; width:100%; height:100%; pointer-events: none; z-index: 50; overflow: visible;opacity:0.5"></svg>
             <!-- Top-Left intersection: Calendar icon injected here -->
-            <!-- <div class="tt-grid-corner">
+            <div class="tt-grid-corner">
                 <div class="calendar-picker-wrap" title="Select week">
                     <i class="fa-solid fa-calendar-days"></i>
                     <input type="date" id="weekPicker" aria-label="Select week">
                 </div>
-            </div> -->
-
-    <div class="tt-grid-corner">
-        <div class="calendar-picker-wrap" title="Select week" id="calendarPickerWrap">
-            <i class="fa-solid fa-calendar-days"></i>
-            <input type="date" id="weekPicker" aria-label="Select week" style="display:none;">
-        </div>
-     <?php require_once \app\core\Application::$ROOT_DIR . '/views/components/mini_calendar.php'; ?>
-    </div>
+            </div>
 
             <?php foreach ($days as $dayKey => $label): ?>
                 <div class="tt-grid-day-head" data-day-key="<?= $dayKey ?>">
@@ -102,21 +81,6 @@ $requestGroups = array_values($requestGroups); // reindex to a plain numeric arr
             <?php endforeach; ?>
         </div>
     </div>
-    <button type="button" id="staffFab" title="Assign Staff" aria-label="Assign Staff">
-    <i class="fa-solid fa-user-tie"></i>
-</button>
-
-<?php require_once \app\core\Application::$ROOT_DIR . '/views/components/staff_assign_panel.php'; ?>
 </div>
-
-<script id="requestedSlotsData" type="application/json">
-<?= json_encode(
-        $requestGroups,
-        JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP
-    ) ?>
-</script>
 <?php require_once \app\core\Application::$ROOT_DIR . '/views/components/slot_request_panel.php'; ?>
-<?php require_once \app\core\Application::$ROOT_DIR . '/views/components/request_detail_panel.php'; ?>
-
 <script src="/js/instructor/timetable.js"></script>
-<script src="/js/instructor/mini-calendar.js"></script>

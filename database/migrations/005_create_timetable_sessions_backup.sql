@@ -39,27 +39,14 @@ CREATE TABLE timetable_sessions (
 CREATE TABLE timetable_schedule_requests (
     id                 INT AUTO_INCREMENT PRIMARY KEY,
     requester_code     VARCHAR(12) NOT NULL,
-    course_code        VARCHAR(20) NOT NULL,
     for_how_many_weeks TINYINT NOT NULL DEFAULT 1,
     description        TEXT,
     status             ENUM('pending', 'approved', 'rejected') NOT NULL DEFAULT 'pending',
     created_at         TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at         TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    CONSTRAINT fk_schedreq_requester FOREIGN KEY (requester_code) REFERENCES staff(code) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
-    CONSTRAINT fk_schedreq_requester
-        FOREIGN KEY (requester_code)
-        REFERENCES staff(code)
-        ON DELETE CASCADE,
-
-    CONSTRAINT fk_schedreq_course
-        FOREIGN KEY (course_code)
-        REFERENCES courses(code)
-        ON DELETE CASCADE
-) ENGINE=InnoDB
-  DEFAULT CHARSET=utf8mb4
-  COLLATE=utf8mb4_unicode_ci;
-
-  
 -- 2. Child table for the specific time slots in the request
 CREATE TABLE timetable_schedule_request_slots (
     id             INT AUTO_INCREMENT PRIMARY KEY,

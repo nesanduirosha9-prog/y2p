@@ -11,18 +11,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     sessionBlocks.forEach(block => {
         block.addEventListener('click', async function () {
-
-            // If assign mode is on, open the staff panel instead of the normal flow
-            if (assignModeActive) {
-                openStaffAssignPanel({
-                    courseCode: this.dataset.courseCode,
-                    dayOfWeek: this.dataset.dayOfWeek,
-                    startHour: this.dataset.startHour
-                });
-                return;
-            }
-
-
             const payload = {
                 course_code: this.dataset.courseCode,
                 day_of_week: this.dataset.dayOfWeek,
@@ -79,10 +67,6 @@ document.addEventListener('DOMContentLoaded', () => {
     closeDetailBtn.addEventListener('click', () => {
         detailPanel.classList.remove('open');
     });
-
-
-
-
 
 
     // UPDATE request
@@ -394,98 +378,4 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    //assign staff dummy------------------------
-    // --- STAFF ASSIGN MODE ---
-    const staffFab = document.getElementById('staffFab');
-    const staffPanel = document.getElementById('staffAssignPanel');
-    const closeStaffPanelBtn = document.getElementById('closeStaffPanelBtn');
-    const staffListContainer = document.getElementById('staffListContainer');
-    const staffAssignForm = document.getElementById('staffAssignForm');
-    const staffPanelSessionLabel = document.getElementById('staffPanelSessionLabel');
-    const staffAssignDescription = document.getElementById('staffAssignDescription');
-
-    let assignModeActive = false;
-    let currentAssignSession = null; // dataset of the clicked session block
-
-    // Dummy staff data — replace with a fetch() to your backend later
-    const dummyStaff = [
-        { id: 1, name: 'Alice Fernando', selected: true },
-        { id: 2, name: 'Brian Silva', selected: true },
-        { id: 3, name: 'Chamari Perera', selected: true },
-        { id: 4, name: 'Dinesh Kumar', selected: true },
-        { id: 5, name: 'Erandi Jayasuriya', selected: true },
-        { id: 6, name: 'Farhan Iqbal', selected: false },
-        { id: 7, name: 'Gayan Wickrama', selected: false },
-        { id: 8, name: 'Hasini Ranatunga', selected: false }
-    ];
-
-    staffFab.addEventListener('click', () => {
-        assignModeActive = !assignModeActive;
-        staffFab.classList.toggle('active', assignModeActive);
-
-        // Visually mark session blocks as clickable targets while assign mode is on
-        document.querySelectorAll('.tt-block[data-course-code]').forEach(el => {
-            el.classList.toggle('assign-mode-active', assignModeActive);
-        });
-    });
-
-    closeStaffPanelBtn.addEventListener('click', () => {
-        staffPanel.classList.remove('open');
-    });
-
-    function getInitials(name) {
-        return name.split(' ').map(w => w[0]).join('').substring(0, 2).toUpperCase();
-    }
-
-    function renderStaffList() {
-        staffListContainer.innerHTML = '';
-        dummyStaff.forEach(staff => {
-            const item = document.createElement('label');
-            item.className = 'staff-item';
-            item.innerHTML = `
-            <input type="checkbox" value="${staff.id}" ${staff.selected ? 'checked' : ''}>
-            <span class="staff-avatar">${getInitials(staff.name)}</span>
-            <span class="staff-name">${staff.name}</span>
-        `;
-            staffListContainer.appendChild(item);
-        });
-    }
-
-    function openStaffAssignPanel(sessionData) {
-        currentAssignSession = sessionData;
-        staffPanelSessionLabel.textContent =
-            `${sessionData.courseCode} — ${sessionData.dayOfWeek.toUpperCase()} ${sessionData.startHour}:00`;
-
-        renderStaffList();
-        staffAssignDescription.value = '';
-        staffPanel.classList.add('open');
-    }
-
-    staffAssignForm.addEventListener('submit', (e) => {
-        e.preventDefault();
-
-        const selectedIds = Array.from(
-            staffListContainer.querySelectorAll('input[type="checkbox"]:checked')
-        ).map(cb => parseInt(cb.value));
-
-        const payload = {
-            course_code: currentAssignSession.courseCode,
-            day_of_week: currentAssignSession.dayOfWeek,
-            start_hour: currentAssignSession.startHour,
-            staff_ids: selectedIds,
-            description: staffAssignDescription.value
-        };
-
-        console.log('Assign payload (dummy, not sent yet):', payload);
-        alert(`Assigned ${selectedIds.length} staff member(s). (Not yet wired to backend)`);
-
-        staffPanel.classList.remove('open');
-
-        // Exit assign mode after a successful assignment
-        assignModeActive = false;
-        staffFab.classList.remove('active');
-        document.querySelectorAll('.tt-block.assign-mode-active').forEach(el => {
-            el.classList.remove('assign-mode-active');
-        });
-    });
 });
