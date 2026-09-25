@@ -38,6 +38,7 @@ use app\controllers\AuditController;
 use app\controllers\timetable_officer\CoursesController as OfficerCoursesController;
 use app\controllers\timetable_officer\LecturersController;
 use app\controllers\timetable_officer\LectureHallsController;
+use app\controllers\timetable_officer\TimetableSessionsController;
 
 use app\controllers\instructor\CoursesController as StaffCoursesController;
 use app\controllers\instructor\WorkloadController as StaffWorkloadController;
@@ -145,6 +146,18 @@ $router->post('/timetable/updateScheduleRequest', function (Request $request, Re
 $router->post('/timetable/deleteScheduleRequest', function (Request $request, Response $response) {
     return (new TimetableController())->deleteScheduleRequest($request);
 });
+// Officer-only writes behind the grid (JSON, js/timetable.js). The URL carries
+// a session's ORIGINAL key (room/day/hour), since an edit may move it. Five
+// segments, so nothing else can shadow these in the {param} loop.
+$router->post('/timetable/sessions', function (Request $request, Response $response) {
+    return (new TimetableSessionsController())->store($request, $response);
+});
+$router->put('/timetable/sessions/{room}/{day}/{hour}', function (Request $request, Response $response, array $params) {
+    return (new TimetableSessionsController())->update($request, $response, $params);
+});
+$router->delete('/timetable/sessions/{room}/{day}/{hour}', function (Request $request, Response $response, array $params) {
+    return (new TimetableSessionsController())->destroy($request, $response, $params);
+});
 
 // --- Courses ---------------------------------------------------------------
 // GET /courses — "Course Details" (the whole catalogue) for an officer,
@@ -154,6 +167,18 @@ $router->get('/courses', function (Request $request, Response $response) {
         return (new StaffCoursesController())->index($request);
     }
     return (new OfficerCoursesController())->index($request);
+});
+// Officer-only writes behind the Course Details drawer (JSON, js/courses.js).
+// Different verbs from the GET above, so no dispatch is needed — the
+// controller's guardJson() rejects every other role.
+$router->post('/courses', function (Request $request, Response $response) {
+    return (new OfficerCoursesController())->store($request, $response);
+});
+$router->put('/courses/{code}', function (Request $request, Response $response, array $params) {
+    return (new OfficerCoursesController())->update($request, $response, $params);
+});
+$router->delete('/courses/{code}', function (Request $request, Response $response, array $params) {
+    return (new OfficerCoursesController())->destroy($request, $response, $params);
 });
 
 // --- Staff -----------------------------------------------------------------
@@ -181,12 +206,19 @@ $router->post('/staff/{code}/reject', function (Request $request, Response $resp
 });
 
 // --- Lecture halls ---------------------------------------------------------
-// Already role-free before this refactor; timetable officer only.
+// Already role-free before this refactor; timetable officer only. Full CRUD:
+// the writes answer JSON and are called by js/lecture_halls.js.
 $router->get('/lecture-halls', function (Request $request, Response $response) {
     return (new LectureHallsController())->index($request);
 });
+$router->post('/lecture-halls', function (Request $request, Response $response) {
+    return (new LectureHallsController())->store($request, $response);
+});
 $router->put('/lecture-halls/{code}', function (Request $request, Response $response, array $params) {
     return (new LectureHallsController())->update($request, $response, $params);
+});
+$router->delete('/lecture-halls/{code}', function (Request $request, Response $response, array $params) {
+    return (new LectureHallsController())->destroy($request, $response, $params);
 });
 
 // --- Workload --------------------------------------------------------------
@@ -296,6 +328,10 @@ $router->get('/settings/handover/change/{position}/{code}', function (Request $r
 // "Add coordinator" — the same select/verify steps with nobody replaced.
 $router->get('/settings/handover/add/{position}', function (Request $request, Response $response, array $params) {
     return (new AccountsController())->add($request, $response, $params);
+});
+// The Change / Add panel on the Settings tab loads its candidate list from here.
+$router->get('/settings/handover/candidates/{position}', function (Request $request, Response $response, array $params) {
+    return (new AccountsController())->candidates($request, $response, $params);
 });
 $router->post('/settings/handover/revoke', function (Request $request, Response $response) {
     return (new AccountsController())->revoke($request, $response);

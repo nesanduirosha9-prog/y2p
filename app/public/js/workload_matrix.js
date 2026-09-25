@@ -38,7 +38,7 @@
 
     const BAND_LABEL = { over: 'Overloaded', heavy: 'Heavy', ok: 'Balanced', under: 'Under-used' };
 
-    const state = { view: 'course', search: '', year: 'all', program: 'all', engagement: 'all', staff: null, issuesOnly: false };
+    const state = { view: 'course', search: '', year: 'all', program: 'all', engagement: 'all', staff: null };
 
     // ---------------------------------------------------------------- helpers
     const el = id => document.getElementById(id);
@@ -138,7 +138,6 @@
             if (state.program !== 'all' && c.program !== state.program) return false;
             if (state.engagement !== 'all' && c.engagement !== state.engagement) return false;
             if (state.staff && !c.instructors.includes(state.staff)) return false;
-            if (state.issuesOnly && issuesFor(c).length === 0) return false;
             if (q) {
                 const hay = (c.code + ' ' + c.name + ' ' + c.lecturer + ' ' + c.lecturer_name + ' ' +
                     c.program + ' ' + engagementLabel(c.engagement) + ' ' + c.instructors.join(' ')).toLowerCase();
@@ -149,19 +148,6 @@
     }
 
     // ------------------------------------------------------------- rendering
-    function renderKpis(load, med) {
-        const values = Object.values(load);
-        const deployed = values.filter(l => l.courses > 0).length;
-        const issueCount = courses.reduce((n, c) => n + (issuesFor(c).length ? 1 : 0), 0);
-
-        el('kpiCourses').textContent = courses.length;
-        el('kpiStaff').textContent = deployed + ' / ' + values.length;
-        el('kpiAvgHours').textContent = med.toFixed(1);
-        el('kpiIssues').textContent = issueCount;
-        el('kpiIssuesCard').classList.toggle('is-active', state.issuesOnly);
-        el('kpiIssuesCard').classList.toggle('has-issues', issueCount > 0);
-    }
-
     /**
      * One staff member as a drawer row — shared by the assign drawer and the
      * load drawer. `opts.tag` is 'button' when the whole row is the action.
@@ -291,7 +277,7 @@
 
         const q = state.search.trim().toLowerCase();
         const rows = Object.values(byStaff)
-            .filter(x => x.rows.length > 0 || (!q && !state.issuesOnly && state.staff === null))
+            .filter(x => x.rows.length > 0 || (!q && state.staff === null))
             .filter(x => !state.staff || x.load.code === state.staff)
             .sort((a, b) => b.load.hours - a.load.hours);
 
@@ -347,7 +333,6 @@
         const med = medianLoad(load);
         const list = visibleCourses();
 
-        renderKpis(load, med);
         renderStaffFilter();
         if (openDrawerId === 'wmLoadDrawer') renderLoadDrawer();
 
@@ -361,7 +346,7 @@
 
         el('wmEmpty').hidden = count > 0;
         const filtered = state.search || state.year !== 'all' || state.program !== 'all' ||
-            state.engagement !== 'all' || state.staff || state.issuesOnly;
+            state.engagement !== 'all' || state.staff;
         el('wmClearFilters').hidden = !filtered;
         el('wmResultCount').textContent = filtered
             ? `Showing ${count} of ${courses.length} allocations`
@@ -574,17 +559,12 @@
     el('wmEngagement').addEventListener('change', e => { state.engagement = e.target.value; render(); });
 
     el('wmClearFilters').addEventListener('click', () => {
-        Object.assign(state, { search: '', year: 'all', program: 'all', engagement: 'all', staff: null, issuesOnly: false });
+        Object.assign(state, { search: '', year: 'all', program: 'all', engagement: 'all', staff: null });
         el('wmSearch').value = '';
         el('wmYear').value = 'all';
         el('wmProgram').value = 'all';
         el('wmEngagement').value = 'all';
         render();
-    });
-
-    el('kpiIssuesCard').addEventListener('click', () => { state.issuesOnly = !state.issuesOnly; render(); });
-    el('kpiIssuesCard').addEventListener('keydown', e => {
-        if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); state.issuesOnly = !state.issuesOnly; render(); }
     });
 
     // Staff load drawer

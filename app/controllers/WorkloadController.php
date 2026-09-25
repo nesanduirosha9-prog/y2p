@@ -37,18 +37,12 @@ class WorkloadController extends Controller
         'coordinator' => [
             'title'        => 'Workload — StaffSync',
             'pageTitle'    => 'Workload',
-            'pageSubtitle' => 'Semester course allocation and this week\'s duties',
             'viewClass'    => 'coordinator-workload-view',
-            'heading'      => 'Workload',
-            'subheading'   => 'Semester course allocation, and the dated duties that need cover this week',
         ],
         'in_charge' => [
             'title'        => 'Department Workload Distribution — StaffSync',
-            'pageTitle'    => 'Workload Distribution & Faculty Equity',
-            'pageSubtitle' => 'Department executive oversight of course assignments and supportive member coverage',
+            'pageTitle'    => 'Workload',
             'viewClass'    => 'in-charge-workload-view',
-            'heading'      => 'Faculty Workload & Course Allocation',
-            'subheading'   => 'Executive oversight of teaching load distribution, junior staff allocations, and department capacity',
         ],
     ];
 
@@ -87,10 +81,7 @@ class WorkloadController extends Controller
             'css_file' => ['/css/directory.css', '/css/workload_matrix.css', '/css/scheduler.css', '/css/workload_history.css'],
             'active' => 'workload-dist',
             'pageTitle' => $copy['pageTitle'],
-            'pageSubtitle' => $copy['pageSubtitle'],
             'viewClass' => $copy['viewClass'],
-            'heading' => $copy['heading'],
-            'subheading' => $copy['subheading'],
             'tabs' => $tabs,
             'tab' => $tab,
             // The Coordinator allocates; the In-Charge oversees. Same matrix,

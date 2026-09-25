@@ -173,16 +173,25 @@ $initials = ViewHelpers::currentAvatarCode();
         <?php
         $coordinatorCount = count(array_filter($roleHolders ?? [], fn($h) => ($h['position'] ?? '') === 'coordinator'));
         ?>
+        <?php
+        // The Timetable Officer is its own account, not a seat handed between
+        // staff: when the officer changes, the account's details change, so
+        // that row has no Change button.
+        $positionLabels = ['coordinator' => 'Coordinator', 'in_charge' => 'In-Charge'];
+        ?>
         <div class="settings-panel" id="settings-panel-handover" role="tabpanel" aria-labelledby="tab-handover" hidden>
+          <div class="ho-layout" id="hoLayout">
+           <div class="ho-main">
             <div class="dir-card">
                 <div class="handover-head">
                     <div>
                         <h3>Key roles</h3>
                         <p class="page-head-sub"><?= $coordinatorCount ?> Coordinator<?= $coordinatorCount === 1 ? '' : 's' ?> &middot; 1 In-Charge &middot; 1 Timetable Officer</p>
                     </div>
-                    <a class="btn-primary handover-add-btn" href="/settings/handover/add/coordinator">
-                        <i class="fa-solid fa-user-plus"></i> Add coordinator
-                    </a>
+                    <button type="button" class="btn-primary handover-add-btn"
+                            data-handover="coordinator" data-label="Coordinator">
+                        Add coordinator
+                    </button>
                 </div>
                 <div class="dir-scroll">
                     <table class="dir-table">
@@ -212,9 +221,17 @@ $initials = ViewHelpers::currentAvatarCode();
                                     <td><?= htmlspecialchars($h['email']) ?></td>
                                     <td>
                                         <div class="handover-row-actions">
-                                            <a class="btn-secondary" href="/settings/handover/change/<?= urlencode($posKey) ?>/<?= urlencode($h['code']) ?>">
-                                                Change
-                                            </a>
+                                            <?php if (isset($positionLabels[$posKey])): ?>
+                                                <button type="button" class="btn-secondary"
+                                                        data-handover="<?= htmlspecialchars($posKey) ?>"
+                                                        data-label="<?= htmlspecialchars($positionLabels[$posKey]) ?>"
+                                                        data-code="<?= htmlspecialchars($h['code']) ?>"
+                                                        data-name="<?= htmlspecialchars($h['name']) ?>"
+                                                        data-email="<?= htmlspecialchars($h['email']) ?>"
+                                                        data-kind="<?= $h['academic_rank'] === 'senior' ? 'lecturer' : 'staff' ?>">
+                                                    Change
+                                                </button>
+                                            <?php endif; ?>
                                             <?php if ($isCoordinator): ?>
                                                 <button type="button" class="btn-revoke"
                                                         data-revoke="<?= htmlspecialchars($h['code']) ?>"
@@ -236,9 +253,58 @@ $initials = ViewHelpers::currentAvatarCode();
             </div>
 
             <p class="accounts-note">
-                <i class="fa-solid fa-shield-halved" style="color: #1a3a6b;"></i>
                 Giving someone a role needs a verification code from them. Revoking a Coordinator takes effect straight away.
             </p>
+           </div>
+
+            <!-- Change / Add panel, docked on the right like Request Leave.
+                 js/settings.js (initHandoverPanel) fills it and walks through
+                 the two steps: pick the new holder, then enter their code. -->
+            <aside class="ho-side-panel" id="hoPanel" hidden aria-labelledby="hoPanelTitle">
+                <div class="ho-panel-header">
+                    <h2 id="hoPanelTitle">Change role</h2>
+                    <button type="button" class="ho-panel-close" id="hoPanelClose" aria-label="Close"><i class="fa-solid fa-xmark"></i></button>
+                </div>
+
+                <!-- Step 1: who takes the seat -->
+                <div class="ho-panel-body" id="hoStepPick">
+                    <div class="ho-field" id="hoCurrentRow">
+                        <p class="ho-label">Current holder</p>
+                        <div class="ho-person" id="hoCurrent"></div>
+                    </div>
+
+                    <div class="ho-field">
+                        <label class="ho-label" for="hoSearch">New holder</label>
+                        <div class="search-box handover-search">
+                            <i class="fa-solid fa-magnifying-glass"></i>
+                            <input type="text" id="hoSearch" placeholder="Search by name or email…" autocomplete="off">
+                        </div>
+                        <div class="candidate-list" id="hoCandidates"></div>
+                        <p class="dir-empty" id="hoCandidatesEmpty" hidden>Nobody matches.</p>
+                    </div>
+
+                    <p class="form-error" id="hoPickError" hidden></p>
+                </div>
+
+                <!-- Step 2: the code sent to the new holder -->
+                <div class="ho-panel-body" id="hoStepVerify" hidden>
+                    <div class="ho-field">
+                        <p class="ho-label">Code sent to</p>
+                        <div class="ho-person" id="hoTarget"></div>
+                    </div>
+                    <div class="ho-field">
+                        <label class="ho-label" for="hoOtp">6-digit code</label>
+                        <input type="text" id="hoOtp" maxlength="6" inputmode="numeric" autocomplete="one-time-code" placeholder="000000">
+                    </div>
+                    <p class="form-error" id="hoOtpError" hidden></p>
+                </div>
+
+                <div class="ho-panel-footer">
+                    <button type="button" class="btn-secondary" id="hoBack">Cancel</button>
+                    <button type="button" class="btn-primary" id="hoNext" disabled>Send code</button>
+                </div>
+            </aside>
+          </div>
         </div>
     <?php endif; ?>
 

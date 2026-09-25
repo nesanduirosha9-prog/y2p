@@ -19,7 +19,7 @@
 // JSON payloads at the bottom, which WorkloadController::distribution() builds. js/workload_hub.js
 // switches the tabs.
 //
-// $viewClass / $heading / $subheading / $canEdit come from
+// $viewClass / $canEdit come from
 // WorkloadController::COPY. $tabs lists the tabs this position may see; $tab is
 // the one to open on (?tab=).
 
@@ -31,13 +31,6 @@ $panel = fn(string ...$t) => in_array($tab, $t, true) ? '' : 'hidden';
 ?>
 
 <div class="wm-hub" id="wmHub" data-tab="<?= htmlspecialchars($tab) ?>">
-
-    <div class="page-head">
-        <div>
-            <h2><?= htmlspecialchars($heading) ?></h2>
-            <p class="page-head-sub"><?= htmlspecialchars($subheading) ?></p>
-        </div>
-    </div>
 
     <?php if (count($tabs) > 1): ?>
     <nav class="sched-nav-tabs hub-tabs" id="hubTabs" role="tablist">
@@ -70,39 +63,6 @@ $panel = fn(string ...$t) => in_array($tab, $t, true) ? '' : 'hidden';
 
     <section data-hub-panel="courses" <?= $panel('courses') ?>>
         <div class="<?= htmlspecialchars($viewClass) ?> wm-page" id="wmPage" data-can-edit="<?= $canEdit ? '1' : '0' ?>">
-
-            <!-- KPI strip — all four derived from the payload, never typed -->
-            <div class="wm-kpi-grid">
-                <div class="wm-kpi-card">
-                    <div class="wm-kpi-icon icon-blue"><i class="fa-solid fa-graduation-cap"></i></div>
-                    <div class="wm-kpi-data">
-                        <p class="wm-kpi-num" id="kpiCourses">—</p>
-                        <p class="wm-kpi-label">Course allocations</p>
-                    </div>
-                </div>
-                <div class="wm-kpi-card">
-                    <div class="wm-kpi-icon icon-purple"><i class="fa-solid fa-user-group"></i></div>
-                    <div class="wm-kpi-data">
-                        <p class="wm-kpi-num" id="kpiStaff">—</p>
-                        <p class="wm-kpi-label">Staff deployed</p>
-                    </div>
-                </div>
-                <div class="wm-kpi-card">
-                    <div class="wm-kpi-icon icon-yellow"><i class="fa-solid fa-scale-balanced"></i></div>
-                    <div class="wm-kpi-data">
-                        <p class="wm-kpi-num" id="kpiAvgHours">—</p>
-                        <p class="wm-kpi-label">Median load (hrs/week)</p>
-                    </div>
-                </div>
-                <div class="wm-kpi-card wm-kpi-clickable" id="kpiIssuesCard" role="button" tabindex="0"
-                     title="Show only the rows that need attention">
-                    <div class="wm-kpi-icon icon-red"><i class="fa-solid fa-triangle-exclamation"></i></div>
-                    <div class="wm-kpi-data">
-                        <p class="wm-kpi-num" id="kpiIssues">—</p>
-                        <p class="wm-kpi-label">Needs attention</p>
-                    </div>
-                </div>
-            </div>
 
             <!-- Toolbar: view switch, filters, search -->
             <div class="wm-toolbar">
@@ -156,7 +116,6 @@ $panel = fn(string ...$t) => in_array($tab, $t, true) ? '' : 'hidden';
                          was on it. Shows the picked member when the table is filtered. -->
                     <div class="wm-staff-filter">
                         <button type="button" class="wm-staff-trigger" id="wmStaffBtn" aria-haspopup="dialog">
-                            <i class="fa-solid fa-scale-balanced"></i>
                             <span id="wmStaffBtnLabel">Staff load</span>
                             <i class="fa-solid fa-chevron-down wm-staff-caret"></i>
                         </button>
@@ -171,7 +130,7 @@ $panel = fn(string ...$t) => in_array($tab, $t, true) ? '' : 'hidden';
 
                     <?php if ($canEdit): ?>
                         <button type="button" class="btn-primary wm-balance-btn" id="wmBalanceBtn" title="Suggest moves that even out the load">
-                            <i class="fa-solid fa-scale-balanced"></i> Suggest Rebalance
+                            Suggest Rebalance
                         </button>
                     <?php endif; ?>
                 </div>
@@ -258,38 +217,6 @@ $panel = fn(string ...$t) => in_array($tab, $t, true) ? '' : 'hidden';
     <?php if ($schedulerData): ?>
     <div class="sched-page" id="schedPage">
 
-        <!-- KPI strip for the duty tabs, all derived -->
-        <div class="wm-kpi-grid sched-kpi-grid" data-hub-panel="week requests free" <?= $panel('week', 'requests', 'free') ?>>
-            <div class="wm-kpi-card">
-                <div class="wm-kpi-icon icon-purple"><i class="fa-solid fa-calendar-check"></i></div>
-                <div class="wm-kpi-data">
-                    <p class="wm-kpi-num" id="kpiWeek">—</p>
-                    <p class="wm-kpi-label" id="kpiWeekRange">Active week</p>
-                </div>
-            </div>
-            <div class="wm-kpi-card">
-                <div class="wm-kpi-icon icon-yellow"><i class="fa-solid fa-inbox"></i></div>
-                <div class="wm-kpi-data">
-                    <p class="wm-kpi-num" id="kpiRequests">—</p>
-                    <p class="wm-kpi-label">Requests waiting</p>
-                </div>
-            </div>
-            <div class="wm-kpi-card">
-                <div class="wm-kpi-icon icon-blue"><i class="fa-solid fa-user-check"></i></div>
-                <div class="wm-kpi-data">
-                    <p class="wm-kpi-num" id="kpiFilled">—</p>
-                    <p class="wm-kpi-label">Duty slots filled</p>
-                </div>
-            </div>
-            <div class="wm-kpi-card">
-                <div class="wm-kpi-icon icon-red"><i class="fa-solid fa-triangle-exclamation"></i></div>
-                <div class="wm-kpi-data">
-                    <p class="wm-kpi-num" id="kpiConflicts">—</p>
-                    <p class="wm-kpi-label">Problems to fix</p>
-                </div>
-            </div>
-        </div>
-
         <!-- This week: one row per duty, grouped by day -->
         <section class="sched-view-panel" id="panelWeek" data-hub-panel="week" <?= $panel('week') ?>>
             <div class="dir-card sched-card">
@@ -299,15 +226,26 @@ $panel = fn(string ...$t) => in_array($tab, $t, true) ? '' : 'hidden';
                         <p class="page-head-sub">Auto-allocate swaps in leave covers and fills every gap with the least-loaded staff who are free. Use + to change anyone by hand.</p>
                     </div>
                     <button type="button" class="btn-primary" id="autoAllocateBtn">
-                        <i class="fa-solid fa-wand-magic-sparkles"></i> Auto-allocate week
+                        Auto-allocate week
                     </button>
                 </div>
-                <div class="sched-legend">
-                    <span class="legend-item"><span class="legend-dot dot-green"></span> Filled</span>
-                    <span class="legend-item"><span class="legend-dot dot-yellow"></span> Needs staff</span>
-                    <span class="legend-item"><span class="legend-dot dot-red"></span> Problem</span>
+                <div class="dir-scroll">
+                    <table class="dir-table duty-table">
+                        <thead>
+                            <tr>
+                                <th style="width:110px;">Date</th>
+                                <th style="width:150px;">Time</th>
+                                <th style="width:110px;">Course</th>
+                                <th style="min-width:200px;">Duty</th>
+                                <th style="width:110px;">Requested by</th>
+                                <th style="min-width:260px;">Assigned staff</th>
+                                <th style="width:80px;">Staff</th>
+                                <th style="width:140px;text-align:right;"></th>
+                            </tr>
+                        </thead>
+                        <tbody id="dutyGrid"></tbody>
+                    </table>
                 </div>
-                <div class="duty-agenda" id="dutyGrid"></div>
                 <p class="dir-empty" id="dutyEmpty" hidden>Nothing scheduled this week yet. Approve a request to get started.</p>
             </div>
         </section>
@@ -437,37 +375,6 @@ $panel = fn(string ...$t) => in_array($tab, $t, true) ? '' : 'hidden';
 
     <!-- History: every allocation, before this week and during it -->
     <section class="hist-page" data-hub-panel="history" <?= $panel('history') ?>>
-
-        <div class="wm-kpi-grid">
-            <div class="wm-kpi-card">
-                <div class="wm-kpi-icon icon-blue"><i class="fa-solid fa-list-check"></i></div>
-                <div class="wm-kpi-data">
-                    <p class="wm-kpi-num" id="histKpiTotal">—</p>
-                    <p class="wm-kpi-label">Allocations</p>
-                </div>
-            </div>
-            <div class="wm-kpi-card">
-                <div class="wm-kpi-icon icon-purple"><i class="fa-solid fa-calendar-check"></i></div>
-                <div class="wm-kpi-data">
-                    <p class="wm-kpi-num" id="histKpiDuties">—</p>
-                    <p class="wm-kpi-label">Duties staffed</p>
-                </div>
-            </div>
-            <div class="wm-kpi-card">
-                <div class="wm-kpi-icon icon-yellow"><i class="fa-solid fa-user-shield"></i></div>
-                <div class="wm-kpi-data">
-                    <p class="wm-kpi-num" id="histKpiCovers">—</p>
-                    <p class="wm-kpi-label">Covers &amp; replacements</p>
-                </div>
-            </div>
-            <div class="wm-kpi-card">
-                <div class="wm-kpi-icon icon-red"><i class="fa-solid fa-right-left"></i></div>
-                <div class="wm-kpi-data">
-                    <p class="wm-kpi-num" id="histKpiCourse">—</p>
-                    <p class="wm-kpi-label">Course changes</p>
-                </div>
-            </div>
-        </div>
 
         <!-- One toolbar: when (period picker), then what (search, kind, grouping) -->
         <div class="wm-toolbar hist-toolbar">

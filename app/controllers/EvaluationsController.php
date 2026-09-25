@@ -35,10 +35,7 @@ class EvaluationsController extends Controller
     private const COPY = [
         'title'        => 'Staff Evaluations — StaffSync',
         'pageTitle'    => 'Staff Evaluations',
-        'pageSubtitle' => 'Lecturer evaluations of junior staff, across every course module',
         'viewClass'    => 'eval-view',
-        'heading'      => 'Junior staff evaluations',
-        'subheading'   => 'Each lecturer evaluates their junior staff once a week. See who was evaluated, and which weeks were missed.',
     ];
 
     public function __construct()
@@ -71,10 +68,7 @@ class EvaluationsController extends Controller
             'css_file' => ['/css/directory.css', '/css/workload_matrix.css', '/css/evaluations.css'],
             'active' => 'evaluations',
             'pageTitle' => $copy['pageTitle'],
-            'pageSubtitle' => $copy['pageSubtitle'],
             'viewClass' => $copy['viewClass'],
-            'heading' => $copy['heading'],
-            'subheading' => $copy['subheading'],
             // Same seam as the workload screens — see
             // app/core/WorkloadPrototypeData.php.
             // `assignments` is who is due an evaluation each teaching week;

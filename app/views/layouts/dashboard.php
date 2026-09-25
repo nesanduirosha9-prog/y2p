@@ -9,7 +9,7 @@ use app\core\Application;
 // role-specific asset includes) and writes everything else once.
 //
 // Expects `$content`, optional `$title`, `$css_file`, `$active` (nav key),
-// `$pageTitle`, `$pageSubtitle`.
+// `$pageTitle` (a short name for the top bar).
 
 $role = $_SESSION['role'] ?? 'timetable_officer';
 $position = $_SESSION['position'] ?? null; // additive: 'coordinator' | 'in_charge' | null
@@ -142,7 +142,6 @@ $titleSuffix = $isInstructor ? 'StaffSync - Instructor' : 'StaffSync';
                     </button>
                     <div>
                         <h1><?= $pageTitle ?? 'Dashboard' ?></h1>
-                        <p><?= $pageSubtitle ?? 'University of Colombo' ?></p>
                     </div>
                 </div>
                 <div class="header-actions">

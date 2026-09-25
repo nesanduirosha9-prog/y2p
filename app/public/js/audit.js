@@ -199,28 +199,6 @@
     }
 
     // ------------------------------------------------------------- rendering
-    function renderKpis() {
-        const todays = ENTRIES.filter(e => dayOf(e.ts) === TODAY);
-        el('audKpiTotal').textContent = ENTRIES.length.toLocaleString();
-        el('audKpiToday').textContent = todays.length;
-
-        if (IS_SYSTEM) {
-            // How many different accounts were active today — the number an
-            // In-Charge glances at first.
-            const people = new Set(todays.map(e => e.actor));
-            el('audKpiPeople').textContent = people.size;
-        } else {
-            const weekStart = shiftDays(-6);
-            el('audKpiPeople').textContent = ENTRIES.filter(e => dayOf(e.ts) >= weekStart).length;
-        }
-
-        el('audKpiProblems').textContent = ENTRIES.filter(isProblem).length;
-        el('audKpiProblemCard').classList.toggle('is-active', state.problems);
-        el('audKpiProblemHint').textContent = state.problems
-            ? 'Showing only these — click to undo'
-            : 'Click to show only these';
-    }
-
     function renderChips() {
         const base = filteredExceptCategory();
         const counts = {};
@@ -231,7 +209,7 @@
 
         const all = `
             <button type="button" class="aud-chip ${state.cats.size === 0 ? 'is-active' : ''}" data-cat="">
-                <i class="fa-solid fa-layer-group"></i> All activity
+                All activity
                 <span class="aud-chip-count">${base.length}</span>
             </button>`;
 
@@ -241,7 +219,7 @@
             return `
                 <button type="button" class="aud-chip ${state.cats.has(key) ? 'is-active' : ''} ${n === 0 ? 'is-empty' : ''}"
                         data-cat="${esc(key)}" aria-pressed="${state.cats.has(key)}">
-                    <i class="${esc(c.icon)}"></i> ${esc(c.label)}
+                    ${esc(c.label)}
                     <span class="aud-chip-count">${n}</span>
                 </button>`;
         }).join('');
@@ -278,10 +256,17 @@
     }
 
     /** One entry as a single readable sentence plus what it was done to. */
+    /** Failed / Refused as a small label; nothing for a normal entry. */
+    function outcomeFlag(e) {
+        if (e.result === 'failed') return '<span class="aud-flag aud-flag-failed">Failed</span>';
+        if (e.result === 'refused') return '<span class="aud-flag aud-flag-refused">Refused</span>';
+        return '';
+    }
+
+    // Phones: one entry as a readable sentence, stacked.
     function entryRow(e) {
         const actor = ACTORS[e.actor] || { name: e.actor, label: '' };
         const action = ACTIONS[e.action] || { label: e.action, category: 'system' };
-        const cat = CATEGORIES[action.category] || { icon: 'fa-solid fa-circle', label: action.category };
 
         // Labels are stored capitalised ("Approved a leave request") so they can
         // stand alone in the drawer and in the exported file; lower-casing the
@@ -290,14 +275,12 @@
         const who = IS_SYSTEM ? actor.name : 'You';
 
         const flags = [];
-        if (e.result === 'failed') flags.push('<span class="aud-flag aud-flag-failed"><i class="fa-solid fa-circle-exclamation"></i> Failed</span>');
-        if (e.result === 'refused') flags.push('<span class="aud-flag aud-flag-refused"><i class="fa-solid fa-ban"></i> Refused</span>');
+        if (outcomeFlag(e)) flags.push(outcomeFlag(e));
         if (IS_SYSTEM && e.actor === VIEWER.code) flags.push('<span class="aud-flag aud-flag-you">You</span>');
 
         return `
             <button type="button" class="aud-entry ${isProblem(e) ? 'is-problem' : ''}" data-id="${esc(e.id)}">
                 <span class="aud-entry-time">${esc(clockTime(e.ts))}</span>
-                <span class="aud-icon cat-${esc(action.category)}"><i class="${esc(cat.icon)}"></i></span>
                 <span class="aud-entry-main">
                     <span class="aud-entry-line"><strong>${esc(who)}</strong> ${esc(verb)}</span>
                     ${e.target ? `<span class="aud-entry-target">${esc(e.target)}</span>` : ''}
@@ -308,8 +291,46 @@
                         ${flags.join('')}
                     </span>
                 </span>
-                <span class="aud-entry-chevron"><i class="fa-solid fa-chevron-right"></i></span>
             </button>`;
+    }
+
+    // Desktop: the same entry spread across columns.
+    function tableHead() {
+        return `
+            <tr>
+                <th style="width:80px;">Time</th>
+                <th style="width:110px;">Entry</th>
+                ${IS_SYSTEM ? '<th style="min-width:190px;">Person</th>' : ''}
+                <th style="min-width:200px;">Action</th>
+                <th style="min-width:200px;">Applied to</th>
+                <th style="min-width:220px;">Detail</th>
+                <th style="width:100px;">Outcome</th>
+                <th style="width:130px;">Network address</th>
+            </tr>`;
+    }
+
+    function tableRow(e) {
+        const actor = ACTORS[e.actor] || { name: e.actor, label: '' };
+        const action = ACTIONS[e.action] || { label: e.action, category: 'system' };
+        const you = IS_SYSTEM && e.actor === VIEWER.code ? ' <span class="aud-flag aud-flag-you">You</span>' : '';
+
+        return `
+            <tr class="aud-row" data-id="${esc(e.id)}" tabindex="0">
+                <td class="aud-mono">${esc(e.ts.slice(11, 19))}</td>
+                <td class="aud-mono aud-muted">${esc(e.id)}</td>
+                ${IS_SYSTEM ? `
+                <td>
+                    <div class="aud-person">
+                        ${codeBadge(e.actor, 'staff', { title: actor.name })}
+                        <span>${esc(actor.name)}${you}</span>
+                    </div>
+                </td>` : ''}
+                <td>${esc(action.label)}</td>
+                <td>${e.target ? esc(e.target) : '<span class="aud-muted">—</span>'}</td>
+                <td class="aud-muted">${e.detail ? esc(e.detail) : '—'}</td>
+                <td>${outcomeFlag(e) || 'Completed'}</td>
+                <td class="aud-mono aud-muted">${esc(e.ip || '—')}</td>
+            </tr>`;
     }
 
     function renderFeed() {
@@ -338,6 +359,14 @@
                     <h3 class="aud-day-title">${esc(dayHeading(g.day))}</h3>
                     <span class="aud-day-count">${g.items.length} ${g.items.length === 1 ? 'entry' : 'entries'}</span>
                 </div>
+                <div class="dir-card aud-day-table">
+                    <div class="dir-scroll">
+                        <table class="dir-table aud-table">
+                            <thead>${tableHead()}</thead>
+                            <tbody>${g.items.map(tableRow).join('')}</tbody>
+                        </table>
+                    </div>
+                </div>
                 <div class="aud-day-list">${g.items.map(entryRow).join('')}</div>
             </section>`).join('');
 
@@ -354,7 +383,6 @@
     }
 
     function render() {
-        renderKpis();
         renderChips();
         renderFeed();
     }
@@ -366,7 +394,7 @@
 
         const actor = ACTORS[e.actor] || { name: e.actor, label: '' };
         const action = ACTIONS[e.action] || { label: e.action, category: 'system' };
-        const cat = CATEGORIES[action.category] || { icon: 'fa-solid fa-circle', label: action.category };
+        const cat = CATEGORIES[action.category] || { label: action.category };
         const resultText = {
             success: 'Completed',
             failed: 'Failed — the action did not happen',
@@ -380,7 +408,6 @@
 
         el('audDrawerBody').innerHTML = `
             <div class="aud-drawer-lead">
-                <span class="aud-icon cat-${esc(action.category)}"><i class="${esc(cat.icon)}"></i></span>
                 <div class="aud-drawer-lead-text">
                     <p>${esc(IS_SYSTEM ? actor.name : 'You')}</p>
                     <p>${esc(actor.label || '')}${IS_SYSTEM ? ' · ' + esc(e.actor) : ''}</p>
@@ -541,15 +568,16 @@
         render();
     });
 
-    el('audKpiProblemCard').addEventListener('click', function () {
-        state.problems = !state.problems;
-        state.limit = PAGE_SIZE;
-        render();
-    });
-
     el('audFeed').addEventListener('click', function (event) {
-        const row = event.target.closest('.aud-entry');
+        const row = event.target.closest('[data-id]');
         if (row) openEntry(row.dataset.id);
+    });
+    el('audFeed').addEventListener('keydown', function (event) {
+        const row = event.target.closest('.aud-row');
+        if (row && (event.key === 'Enter' || event.key === ' ')) {
+            event.preventDefault();
+            openEntry(row.dataset.id);
+        }
     });
 
     el('audMoreBtn').addEventListener('click', function () {

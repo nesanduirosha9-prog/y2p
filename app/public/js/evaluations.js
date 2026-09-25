@@ -97,25 +97,11 @@
     }
 
     // ------------------------------------------------------------- rendering
-    function renderKpis() {
-        const done = rows.filter(r => r.sub);
-        el('evKpiDue').textContent = rows.length;
-        el('evKpiDone').textContent = done.length;
-        el('evKpiMissing').textContent = rows.length - done.length;
-        el('evKpiAvg').textContent = done.length
-            ? toRating(done.reduce((s, r) => s + r.score, 0) / done.length)
-            : '—';
-
-        el('evKpiDoneCard').classList.toggle('is-active', state.status === 'evaluated');
-        el('evKpiMissingCard').classList.toggle('is-active', state.status === 'missing');
-        el('evKpiMissingCard').classList.toggle('has-issues', rows.length - done.length > 0);
-    }
-
     function renderList() {
         const list = visible();
 
         el('evBody').innerHTML = list.map(r => `
-            <tr class="eval-row ${r.sub ? '' : 'is-missing'}" data-key="${esc(r.key)}">
+            <tr class="eval-row" data-key="${esc(r.key)}">
                 <td>${person(r.a.staff_code, r.a.staff_name, 'staff')}</td>
                 <td>
                     ${codeBadge(r.a.course_code, 'course', { title: r.a.course_name })}
@@ -128,7 +114,7 @@
                 </td>
                 <td>
                     ${r.sub
-                        ? `<div class="eval-score-pill score-${scoreBand(r.score)}"><i class="fa-solid fa-star"></i> <strong>${r.score}</strong> / 5</div>`
+                        ? `<strong>${r.score}</strong> / 5`
                         : '<span class="text-muted">—</span>'}
                 </td>
                 <td style="text-align:right;">
@@ -148,7 +134,6 @@
     }
 
     function render() {
-        renderKpis();
         renderList();
     }
 
@@ -226,16 +211,6 @@
     el('evStatusSeg').addEventListener('click', e => {
         const btn = e.target.closest('[data-status]');
         if (btn) setStatus(btn.dataset.status);
-    });
-
-    // The two count cards double as filters; a second click clears.
-    ['evKpiDoneCard|evaluated', 'evKpiMissingCard|missing'].forEach(pair => {
-        const [id, status] = pair.split('|');
-        const toggle = () => setStatus(state.status === status ? 'all' : status);
-        el(id).addEventListener('click', toggle);
-        el(id).addEventListener('keydown', e => {
-            if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggle(); }
-        });
     });
 
     el('evClear').addEventListener('click', () => {

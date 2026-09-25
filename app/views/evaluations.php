@@ -19,56 +19,10 @@
 
 <div class="<?= htmlspecialchars($viewClass) ?> eval-page" id="evalPage">
 
-    <div class="page-head">
-        <div>
-            <h2><?= htmlspecialchars($heading) ?></h2>
-            <p class="page-head-sub"><?= htmlspecialchars($subheading) ?></p>
-        </div>
-        <div class="page-head-actions">
-            <button type="button" class="btn-outline" id="evalExportBtn">
-                <i class="fa-solid fa-file-arrow-down"></i> Export summary
-            </button>
-        </div>
-    </div>
-
     <!-- Which stretch of time the page is showing: this week by default,
          with arrows back through earlier weeks, months, semesters, years. -->
     <div class="dir-card eval-period-card">
         <div id="evPeriodNav"></div>
-    </div>
-
-    <!-- KPIs, all derived from the payload for the chosen period -->
-    <div class="wm-kpi-grid">
-        <div class="wm-kpi-card">
-            <div class="wm-kpi-icon icon-blue"><i class="fa-solid fa-clipboard-list"></i></div>
-            <div class="wm-kpi-data">
-                <p class="wm-kpi-num" id="evKpiDue">—</p>
-                <p class="wm-kpi-label">Evaluations due</p>
-            </div>
-        </div>
-        <div class="wm-kpi-card wm-kpi-clickable" id="evKpiDoneCard" role="button" tabindex="0"
-             title="Show only the evaluated ones">
-            <div class="wm-kpi-icon icon-green"><i class="fa-solid fa-circle-check"></i></div>
-            <div class="wm-kpi-data">
-                <p class="wm-kpi-num" id="evKpiDone">—</p>
-                <p class="wm-kpi-label">Evaluated</p>
-            </div>
-        </div>
-        <div class="wm-kpi-card wm-kpi-clickable" id="evKpiMissingCard" role="button" tabindex="0"
-             title="Show only the ones not evaluated">
-            <div class="wm-kpi-icon icon-red"><i class="fa-solid fa-clock"></i></div>
-            <div class="wm-kpi-data">
-                <p class="wm-kpi-num" id="evKpiMissing">—</p>
-                <p class="wm-kpi-label">Not evaluated</p>
-            </div>
-        </div>
-        <div class="wm-kpi-card">
-            <div class="wm-kpi-icon icon-purple"><i class="fa-solid fa-star"></i></div>
-            <div class="wm-kpi-data">
-                <p class="wm-kpi-num" id="evKpiAvg">—</p>
-                <p class="wm-kpi-label">Average score (out of 5)</p>
-            </div>
-        </div>
     </div>
 
     <!-- Toolbar -->
@@ -98,6 +52,10 @@
 
             <button type="button" class="btn-ghost wm-clear" id="evClear" hidden>
                 <i class="fa-solid fa-xmark"></i> Clear
+            </button>
+
+            <button type="button" class="btn-outline wm-balance-btn" id="evalExportBtn">
+                Export summary
             </button>
         </div>
     </div>

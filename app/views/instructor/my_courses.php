@@ -12,9 +12,6 @@ use app\core\ViewHelpers;
 
 $totalCourses = count($assignedCourses ?? []);
 $totalInstructors = count($assignedInstructors ?? []);
-// The history tab's badge counts the weeks the lecturer missed, not every row:
-// the history holds a row per instructor per week, so a total is just noise.
-$missedHistory = count(array_filter($evaluationHistory ?? [], fn($h) => ($h['status'] ?? '') === 'Not evaluated'));
 ?>
 
 <div class="courses-hub-container">
@@ -34,9 +31,6 @@ $missedHistory = count(array_filter($evaluationHistory ?? [], fn($h) => ($h['sta
         <button type="button" class="course-tab" data-tab="history" role="tab" aria-selected="false" id="tab-history">
             <i class="fa-solid fa-clock-rotate-left"></i>
             <span>Evaluation History</span>
-            <?php if ($missedHistory > 0): ?>
-                <span class="course-tab-badge course-tab-badge-warn" id="historyCountBadge" title="Evaluations you missed"><?= $missedHistory ?> missed</span>
-            <?php endif; ?>
         </button>
     </div>
 
@@ -156,7 +150,7 @@ $missedHistory = count(array_filter($evaluationHistory ?? [], fn($h) => ($h['sta
                                                     data-course-year="<?= (int)$c['year'] ?>"
                                                     data-course-program="<?= htmlspecialchars($c['program']) ?>"
                                                     data-instructors='<?= htmlspecialchars(json_encode($c['instructor_details'] ?? []), ENT_QUOTES) ?>'>
-                                                <i class="fa-solid fa-star-half-stroke"></i> Evaluate
+                                                Evaluate
                                             </button>
                                         </td>
                                     </tr>
@@ -269,7 +263,7 @@ $missedHistory = count(array_filter($evaluationHistory ?? [], fn($h) => ($h['sta
                                                 data-phone="<?= htmlspecialchars($inst['phone']) ?>"
                                                 data-dept="<?= htmlspecialchars($inst['department'] ?? 'Computer Science') ?>"
                                                 data-courses='<?= htmlspecialchars(json_encode($inst['courses'] ?? []), ENT_QUOTES) ?>'>
-                                            <i class="fa-solid fa-star-half-stroke"></i> Evaluate
+                                            Evaluate
                                         </button>
                                     <?php endif; ?>
                                 </td>
@@ -354,7 +348,7 @@ $missedHistory = count(array_filter($evaluationHistory ?? [], fn($h) => ($h['sta
                             $histSearch = strtolower($h['course_code'] . ' ' . $h['course_name'] . ' ' . $h['instructor_code'] . ' ' . $h['instructor_name'] . ' ' . $h['comment']);
                             $missed = ($h['status'] ?? '') === 'Not evaluated';
                             ?>
-                            <tr class="history-row <?= $missed ? 'is-missing' : '' ?>"
+                            <tr class="history-row"
                                 data-id="<?= htmlspecialchars($h['id']) ?>"
                                 data-status="<?= $missed ? 'missing' : 'evaluated' ?>"
                                 data-week-start="<?= htmlspecialchars($h['week_start']) ?>"
@@ -379,9 +373,7 @@ $missedHistory = count(array_filter($evaluationHistory ?? [], fn($h) => ($h['sta
                                     <?php if ($missed): ?>
                                         <span class="text-muted">&mdash;</span>
                                     <?php else: ?>
-                                        <span class="rating-badge rating-badge-active">
-                                            <i class="fa-solid fa-star"></i> <?= (int)round((float)$h['rating']) ?> / 5
-                                        </span>
+                                        <strong><?= (int)round((float)$h['rating']) ?></strong> / 5
                                     <?php endif; ?>
                                 </td>
                                 <td style="font-size: 12.5px; color: #334155; line-height: 1.45;">
@@ -418,68 +410,36 @@ $missedHistory = count(array_filter($evaluationHistory ?? [], fn($h) => ($h['sta
     <div class="side-drawer" role="dialog" aria-modal="true" aria-labelledby="evalDrawerTitle">
         <div class="side-drawer-header">
             <div>
-                <h3 class="side-drawer-title" id="evalDrawerTitle">Evaluate Instructor</h3>
-                <p class="side-drawer-subtitle" id="evalDrawerSubtitle">Current Week Performance Appraisal</p>
+                <h3 class="side-drawer-title" id="evalDrawerTitle">—</h3>
+                <p class="side-drawer-subtitle" id="evalDrawerSubtitle">—</p>
             </div>
-            <button type="button" class="side-drawer-close" id="closeEvalDrawerBtn" aria-label="Close drawer"><i class="fa-solid fa-xmark"></i></button>
+            <button type="button" class="side-drawer-close" id="closeEvalDrawerBtn" aria-label="Close"><i class="fa-solid fa-xmark"></i></button>
         </div>
 
         <form class="side-drawer-body" id="evaluateInstructorForm">
-            <!-- Selected Instructor Profile Card -->
-            <div class="drawer-inst-card">
-                <div class="drawer-inst-avatar" id="drawerInstAvatar">--</div>
-                <div class="drawer-inst-info">
-                    <h4 id="drawerInstName">Instructor Name</h4>
-                    <p style="font-size: 12px; margin-top: 2px;">
-                        <span class="pill pill-muted" id="drawerInstCode">--</span>
-                    </p>
-                    <p style="font-size: 11.5px; color: #64748b; margin-top: 3px;">
-                        <i class="fa-regular fa-envelope"></i> <span id="drawerInstEmail">--</span>
-                    </p>
-                </div>
-            </div>
-
-            <!-- Course Selection -->
             <div class="form-row">
-                <label for="drawerCourseSelect" class="form-label">
-                    <i class="fa-solid fa-book-bookmark" style="color: #1a3a6b;"></i> Course Module
-                </label>
+                <label for="drawerCourseSelect">Course</label>
                 <select id="drawerCourseSelect" class="form-select" required>
-                    <!-- Populated dynamically based on instructor's assigned courses -->
+                    <!-- Filled from the instructor's assigned courses -->
                 </select>
             </div>
 
-            <!-- Rating Picker -->
             <div class="form-row">
-                <label class="form-label">
-                    <i class="fa-solid fa-star-half-stroke" style="color: #1a3a6b;"></i> Performance Rating (Current Week)
-                </label>
-                <div class="modern-star-picker" id="drawerStarPicker" data-rating="4">
-                    <div class="star-picker-btns">
-                        <button type="button" class="star-btn active" data-val="1" title="1 - Unsatisfactory"><i class="fa-solid fa-star"></i></button>
-                        <button type="button" class="star-btn active" data-val="2" title="2 - Needs Improvement"><i class="fa-solid fa-star"></i></button>
-                        <button type="button" class="star-btn active" data-val="3" title="3 - Satisfactory"><i class="fa-solid fa-star"></i></button>
-                        <button type="button" class="star-btn active" data-val="4" title="4 - Very Good"><i class="fa-solid fa-star"></i></button>
-                        <button type="button" class="star-btn" data-val="5" title="5 - Excellent"><i class="fa-solid fa-star"></i></button>
-                    </div>
-                    <span class="star-rating-hint" id="drawerRatingHint">4 / 5 — Very Good</span>
-                </div>
+                <label for="drawerRatingSelect">Rating</label>
+                <select id="drawerRatingSelect" class="form-select" required>
+                    <!-- Filled by courses.js (ratingOptions) -->
+                </select>
             </div>
 
-            <!-- Comment Box -->
             <div class="form-row">
-                <label for="drawerComment" class="form-label">
-                    <i class="fa-regular fa-comment-dots" style="color: #1a3a6b;"></i> Observations &amp; Feedback
-                </label>
-                <textarea id="drawerComment" class="form-textarea" rows="4" placeholder="Enter observations on student guidance, lab supervision, assignment evaluation, or punctuality..."></textarea>
+                <label for="drawerComment">Comments</label>
+                <textarea id="drawerComment" class="form-textarea" rows="4"></textarea>
             </div>
         </form>
 
         <div class="side-drawer-footer">
             <button type="button" class="btn-drawer-cancel" id="cancelEvalDrawerBtn">Cancel</button>
-            <button type="button" class="btn-drawer-submit" id="submitEvalDrawerBtn">
-                <i class="fa-solid fa-paper-plane"></i> Submit Evaluation
-            </button>
+            <button type="button" class="btn-drawer-submit" id="submitEvalDrawerBtn">Submit evaluation</button>
         </div>
     </div>
 </div>

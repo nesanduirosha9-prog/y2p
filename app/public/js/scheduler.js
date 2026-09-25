@@ -296,20 +296,7 @@
     }
 
     // --------------------------------------------------------------- rendering
-    function renderKpis() {
-        let filled = 0, needed = 0, clashes = 0;
-        duties.forEach(d => {
-            const st = dutyState(d);
-            filled += Math.min(d.assigned.length - st.clashes.length, d.headcount);
-            needed += d.headcount;
-            if (st.key === 'clash') clashes++;
-        });
-
-        el('kpiWeek').textContent = 'Week ' + DATA.week.number;
-        el('kpiWeekRange').textContent = DATA.week.label;
-        el('kpiRequests').textContent = requests.length;
-        el('kpiFilled').textContent = filled + ' / ' + needed;
-        el('kpiConflicts').textContent = clashes;
+    function renderHeader() {
         el('tabWeekBadge').textContent = duties.length + ' duties';
         el('tabRequestsBadge').textContent = requests.length + ' pending';
         el('tabRequestsBadge').hidden = requests.length === 0;
@@ -317,19 +304,12 @@
     }
 
     /** This week: one row per duty, grouped under a heading per day. */
+    /** This week: one table row per duty, in date and time order. */
     function renderWeek() {
-        const byDay = {};
-        [...duties]
-            .sort((a, b) => a.date.localeCompare(b.date) ||
-                (SLOT_HOURS[a.slots[0]] || 0) - (SLOT_HOURS[b.slots[0]] || 0))
-            .forEach(d => (byDay[d.date] = byDay[d.date] || []).push(d));
+        const list = [...duties].sort((a, b) => a.date.localeCompare(b.date) ||
+            (SLOT_HOURS[a.slots[0]] || 0) - (SLOT_HOURS[b.slots[0]] || 0));
 
-        el('dutyGrid').innerHTML = Object.keys(byDay).map(iso => `
-            <section class="duty-day">
-                <h4 class="duty-day-head">${esc(dayName(iso))}<span>${esc(prettyDate(iso))}</span></h4>
-                ${byDay[iso].map(dutyRow).join('')}
-            </section>`).join('');
-
+        el('dutyGrid').innerHTML = list.map(dutyRow).join('');
         el('dutyEmpty').hidden = duties.length > 0;
     }
 
@@ -342,51 +322,61 @@
     function dutyRow(d) {
         const st = dutyState(d);
         const ok = d.assigned.length - st.clashes.length;
+        const count = ok + '/' + d.headcount;
 
         const chips = d.assigned.map(code => {
             const why = st.problems[code];
             const s = staffByCode[code];
-            // Plain chip; the problem is spelled out in the issue line below.
+            // Plain chip; the problem is spelled out on its own line below.
             return codeBadge(code, 'staff', { title: (s ? s.name : code) + (why ? ' — ' + why : '') });
         }).join('');
 
         const issues = st.clashes.map(code => {
             const cover = st.covers[code];
             return `
-                <div class="duty-row-issue">
-                    <i class="fa-solid fa-triangle-exclamation"></i>
-                    <span>${esc(code)} — ${esc(st.problems[code])}${cover ? ' · cover: ' + esc(cover) : ''}</span>
+                <div class="duty-cell-issue">
+                    <span>${esc(code)}: ${esc(st.problems[code])}${cover ? ' — cover ' + esc(cover) : ''}</span>
                     ${cover
-                        ? `<button type="button" class="btn-secondary-sm" data-cover="${esc(d.id)}|${esc(code)}">
-                               <i class="fa-solid fa-user-shield"></i> Use ${esc(cover)}
-                           </button>`
-                        : `<button type="button" class="btn-ghost" data-replace="${esc(d.id)}|${esc(code)}">Replace</button>`}
+                        ? `<button type="button" class="btn-secondary-sm" data-cover="${esc(d.id)}|${esc(code)}">Use ${esc(cover)}</button>`
+                        : `<button type="button" class="btn-secondary-sm" data-replace="${esc(d.id)}|${esc(code)}">Replace</button>`}
                 </div>`;
         }).join('');
 
+        const status = st.key === 'clash'
+            ? `<span class="pill pill-danger" title="Someone on this duty cannot do it">${count}</span>`
+            : ok < d.headcount
+                ? `<span class="pill pill-warn" title="Needs more staff">${count}</span>`
+                : `<span class="pill pill-active">${count}</span>`;
+
         return `
-            <article class="duty-row is-${st.key}" data-duty="${esc(d.id)}">
-                <span class="duty-row-time">${esc(slotRange(d.slots))}</span>
-                <div class="duty-row-main">
-                    ${codeBadge(d.course, 'course', { title: d.course_name })}
-                    <span class="duty-row-title" title="${esc(d.course_name || d.course)} · requested by ${esc(d.requester_name || d.requester)}">${esc(d.duty)}</span>
-                </div>
-                <div class="duty-row-staff">
-                    ${chips || '<span class="wm-none">Nobody yet</span>'}
-                    <button type="button" class="wm-add-chip" data-swap="${esc(d.id)}" title="Add or remove staff by hand" aria-label="Add or remove staff"><i class="fa-solid fa-plus"></i></button>
-                    <span class="duty-row-count" title="${ok} of ${d.headcount} staff can do it">${ok}/${d.headcount}</span>
-                </div>
-                <div class="duty-row-actions">
+            <tr data-duty="${esc(d.id)}">
+                <td style="white-space:nowrap;">
+                    <strong>${esc(dayName(d.date))}</strong>
+                    <div class="duty-cell-sub">${esc(prettyDate(d.date))}</div>
+                </td>
+                <td style="white-space:nowrap;">${esc(slotRange(d.slots))}</td>
+                <td>${codeBadge(d.course, 'course', { title: d.course_name })}</td>
+                <td>
+                    <strong>${esc(d.duty)}</strong>
+                    ${d.course_name ? `<div class="duty-cell-sub">${esc(d.course_name)}</div>` : ''}
+                </td>
+                <td>${codeBadge(d.requester, 'lecturer', { title: d.requester_name || d.requester })}</td>
+                <td>
+                    <div class="wm-instructors-list">
+                        ${chips || '<span class="wm-none">Nobody yet</span>'}
+                        <button type="button" class="wm-add-chip" data-swap="${esc(d.id)}" title="Add or remove staff by hand" aria-label="Add or remove staff"><i class="fa-solid fa-plus"></i></button>
+                    </div>
+                    ${issues}
+                </td>
+                <td>${status}</td>
+                <td style="text-align:right;white-space:nowrap;">
                     ${ok < d.headcount && !st.clashes.length
-                        ? `<button type="button" class="btn-secondary-sm" data-fill="${esc(d.id)}"><i class="fa-solid fa-wand-magic-sparkles"></i> Fill</button>`
+                        ? `<button type="button" class="btn-secondary-sm" data-fill="${esc(d.id)}">Fill</button>`
                         : ''}
-                    <button type="button" class="btn-ghost" data-invite="${esc(d.id)}" title="Preview invite" aria-label="Preview invite"
-                            ${d.assigned.length ? '' : 'disabled'}>
-                        <i class="fa-regular fa-envelope"></i>
-                    </button>
-                </div>
-                ${issues}
-            </article>`;
+                    <button type="button" class="btn-secondary-sm" data-invite="${esc(d.id)}" title="Preview the invite"
+                            ${d.assigned.length ? '' : 'disabled'}>Invite</button>
+                </td>
+            </tr>`;
     }
 
     function renderRequests() {
@@ -537,7 +527,7 @@
 
     function render() {
         document.dispatchEvent(new CustomEvent('sched:changed', { detail: { rows: historyRows() } }));
-        renderKpis();
+        renderHeader();
         if (view === 'week') renderWeek();
         else if (view === 'requests') renderRequests();
         else renderAvailability();

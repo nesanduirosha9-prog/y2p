@@ -207,10 +207,11 @@
     color: #6b7c96;
 }
 
-.pill-year-1 { background: #eff6ff; color: #1447e6; }
-.pill-year-2 { background: #ecfdf5; color: #007a55; }
-.pill-year-3 { background: #f5f3ff; color: #7008e7; }
-.pill-year-4 { background: #fff7ed; color: #ca3500; }
+/* Every year looks the same: blue text on the grey of .pill-muted. */
+.pill-year-1,
+.pill-year-2,
+.pill-year-3,
+.pill-year-4 { background: #eef1f6; color: #1447e6; }
 
 .tag {
     display: inline-flex;

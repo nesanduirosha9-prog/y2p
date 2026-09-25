@@ -31,5 +31,7 @@ use app\core\Application;
     <!-- Main Content injected here -->
     <?= $content ?? '' ?>
 
+    <script src="/js/password_toggle.js"></script>
+
 </body>
 </html>

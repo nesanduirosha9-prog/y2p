@@ -113,6 +113,7 @@ class TimetableController extends Controller
 
     $sessionModel = new TimetableSessionModel();
 
+    $requests = []; // officers have none — only academic staff send schedule requests
     if ($role === 'academic_staff') {
         $sessions = $sessionModel->forStaffManager($_SESSION['staff_code']);
         $requests = $sessionModel->getRequestsForStaff($_SESSION['staff_code']);
@@ -136,20 +137,19 @@ class TimetableController extends Controller
         $sessions = $sessionModel->forDeptSemYear($dept, $sem, $year);
     }
 
-    $params = [
-        'title' => $copy['title'],
-        'css_file' => $copy['css_file'],
-        'active' => 'timetable',
-        'pageTitle' => $copy['pageTitle'],
-        'notificationCount' => (new \app\models\NotificationModel())
-            ->unreadCount($_SESSION['staff_code']),
-        'dept' => $dept,
-        'sem' => $sem,
-        'year' => $year,
-        'courses' => (new \app\models\CourseModel())->forDeptYear($dept, $year),
-        'sessions' => $sessions,
-        'requests' => $requests,
-    ];
+        $params = [
+            'title' => $copy['title'],
+            'css_file' => $copy['css_file'],
+            'active' => 'timetable',
+            'pageTitle' => $copy['pageTitle'],
+            'notificationCount' => (new NotificationModel())->unreadCount($_SESSION['staff_code']),
+            'dept' => $dept,
+            'sem' => $sem,
+            'year' => $year,
+            'courses' => (new CourseModel())->forDeptSemYear($dept, $sem, $year),
+            'sessions' => $sessions,
+            'requests' => $requests
+        ];
 
     if ($role === 'timetable_officer') {
         $params['rooms'] = (new \app\models\RoomModel())->all();

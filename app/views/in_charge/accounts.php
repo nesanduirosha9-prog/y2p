@@ -14,10 +14,6 @@ function roleHolderPositionKey(array $h): string
 ?>
 
 <div class="accounts-view">
-    <div class="page-head">
-        <p class="page-head-sub">Manage key academic role holders for the department.</p>
-    </div>
-
     <div class="dir-card">
         <div class="dir-scroll">
             <table class="dir-table">
@@ -36,9 +32,11 @@ function roleHolderPositionKey(array $h): string
                             <td><?= htmlspecialchars($h['name']) ?></td>
                             <td><?= htmlspecialchars($h['email']) ?></td>
                             <td>
-                                <a class="btn-secondary" href="/settings/handover/change/<?= urlencode(roleHolderPositionKey($h)) ?>/<?= urlencode($h['code']) ?>">
-                                    Change
-                                </a>
+                                <?php if (roleHolderPositionKey($h) !== 'timetable_officer'): ?>
+                                    <a class="btn-secondary" href="/settings/handover/change/<?= urlencode(roleHolderPositionKey($h)) ?>/<?= urlencode($h['code']) ?>">
+                                        Change
+                                    </a>
+                                <?php endif; ?>
                             </td>
                         </tr>
                     <?php endforeach; ?>

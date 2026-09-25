@@ -192,18 +192,8 @@
             </tr>`;
     }
 
-    function renderKpis(list) {
-        const duties = new Set(list.filter(r => r.kind === 'duty' && r.how !== 'removed')
-            .map(r => r.date + '|' + r.course + '|' + r.title));
-        el('histKpiTotal').textContent = list.filter(r => r.how !== 'removed').length;
-        el('histKpiDuties').textContent = duties.size;
-        el('histKpiCovers').textContent = list.filter(r => r.how === 'cover' || r.how === 'replacement').length;
-        el('histKpiCourse').textContent = list.filter(r => r.kind === 'course' && (r.how === 'added' || r.how === 'removed')).length;
-    }
-
     function render() {
         const list = visible();
-        renderKpis(list);
 
         const g = GROUPS[state.group];
         const groups = {};

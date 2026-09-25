@@ -5,10 +5,12 @@ namespace app\models;
 use app\core\Database;
 use PDO;
 
-// RoomModel: reads/updates the room/lecture-hall catalog for the
+// RoomModel: full CRUD over the room/lecture-hall catalog for the
 // "Lecture Halls" screen. `code` is the room's primary key, so editing a
 // room updates its capacity/type in place — the code itself isn't editable
-// here (it's also the FK every timetable_session references).
+// here (it's also the FK every timetable_session references). Deleting is
+// only safe when sessionCount() is 0: timetable_sessions.room_code is
+// ON DELETE CASCADE, so the database would otherwise wipe those sessions.
 class RoomModel
 {
     /**
@@ -44,5 +46,34 @@ class RoomModel
             'capacity' => $capacity,
             'code' => $code,
         ]);
+    }
+
+    /** Insert a new room. Caller must check exists() first — a duplicate code throws. */
+    public function create(string $code, string $type, int $capacity): bool
+    {
+        $pdo = Database::getConnection();
+        $stmt = $pdo->prepare("INSERT INTO rooms (code, type, capacity) VALUES (:code, :type, :capacity)");
+        return $stmt->execute([
+            'code' => $code,
+            'type' => $type,
+            'capacity' => $capacity,
+        ]);
+    }
+
+    /** How many timetable sessions use this room — deleting it would cascade to all of them. */
+    public function sessionCount(string $code): int
+    {
+        $pdo = Database::getConnection();
+        $stmt = $pdo->prepare("SELECT COUNT(*) FROM timetable_sessions WHERE room_code = :code");
+        $stmt->execute(['code' => $code]);
+        return (int) $stmt->fetchColumn();
+    }
+
+    /** Delete a room. Returns false if no row matched. */
+    public function delete(string $code): bool
+    {
+        $pdo = Database::getConnection();
+        $stmt = $pdo->prepare("DELETE FROM rooms WHERE code = :code");
+        return $stmt->execute(['code' => $code]) && $stmt->rowCount() > 0;
     }
 }

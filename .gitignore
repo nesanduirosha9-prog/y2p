@@ -11,3 +11,5 @@
 # OS / editor noise
 .DS_Store
 *.swp
+
+/docs/CODEBASE_RECONSTRUCTION_GUIDE/

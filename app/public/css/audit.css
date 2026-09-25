@@ -80,110 +80,6 @@
     display: none;
 }
 
-/* ---- "This cannot be changed" strip -------------------------------------
-   The single most important sentence on the page, so it sits above the data
-   and is styled as information rather than as a warning. */
-.aud-seal-strip {
-    display: flex;
-    align-items: flex-start;
-    gap: 12px;
-    padding: 13px 16px;
-    background: #f8fafc;
-    border: 1px solid #dde3ee;
-    border-left: 4px solid #1a3a6b;
-    border-radius: 12px;
-}
-
-.aud-seal-strip i {
-    color: #1a3a6b;
-    font-size: 14px;
-    margin-top: 2px;
-}
-
-.aud-seal-strip p {
-    font-size: 12.5px;
-    line-height: 1.6;
-    color: #475569;
-}
-
-.aud-seal-strip strong {
-    color: #0f1c2e;
-}
-
-/* ---- Counts ---- */
-.aud-kpi-grid {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 12px;
-}
-
-.aud-kpi {
-    display: flex;
-    align-items: center;
-    gap: 13px;
-    padding: 15px 17px;
-    background: #fff;
-    border: 1px solid #dde3ee;
-    border-radius: 14px;
-    text-align: left;
-}
-
-.aud-kpi-btn {
-    font-family: inherit;
-    cursor: pointer;
-    transition: border-color 0.15s ease, box-shadow 0.15s ease;
-}
-
-.aud-kpi-btn:hover {
-    border-color: #cbd5e1;
-}
-
-.aud-kpi-btn.is-active {
-    border-color: #fb2c36;
-    box-shadow: 0 0 0 3px rgba(251, 44, 54, 0.12);
-}
-
-.aud-kpi-icon {
-    width: 40px;
-    height: 40px;
-    border-radius: 11px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 15px;
-    flex-shrink: 0;
-}
-
-.icon-blue   { background: #eff6ff; color: #1447e6; }
-.icon-green  { background: #ecfdf5; color: #007a55; }
-.icon-purple { background: #f5f3ff; color: #7008e7; }
-.icon-red    { background: #fef2f2; color: #c10007; }
-
-.aud-kpi-num {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 20px;
-    font-weight: 700;
-    color: #0f1c2e;
-    line-height: 1.2;
-}
-
-.aud-kpi-label {
-    font-size: 11.5px;
-    color: #6b7c96;
-    margin-top: 2px;
-}
-
-.aud-kpi-hint {
-    font-size: 10.5px;
-    font-weight: 600;
-    color: #2563eb;
-    margin-top: 4px;
-}
-
-.aud-kpi-btn.is-active .aud-kpi-hint {
-    color: #b91c1c;
-}
-
 /* ---- Filter card ---- */
 .aud-filters {
     padding: 16px 18px;
@@ -348,15 +244,8 @@
     padding: 0 2px;
 }
 
-.aud-restriction i {
-    color: #94a3b8;
-    margin-top: 2px;
-}
-
 /* ---- The feed ----------------------------------------------------------
-   Grouped by day rather than laid out as a table: a table wide enough for
-   time + person + action + target needs a horizontal scrollbar on a laptop,
-   and horizontal scrolling is the first thing that loses a reader. */
+   Grouped by day: a table per day on desktop, a stacked list on phones. */
 .aud-feed {
     display: flex;
     flex-direction: column;
@@ -431,30 +320,6 @@
     flex-shrink: 0;
     padding-top: 9px;
 }
-
-.aud-icon {
-    width: 32px;
-    height: 32px;
-    border-radius: 9px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 12.5px;
-    flex-shrink: 0;
-    margin-top: 2px;
-}
-
-/* One colour per kind of activity, so a run of the same thing is obvious
-   without reading every line. */
-.cat-leave      { background: #eff6ff; color: #1447e6; }
-.cat-timetable  { background: #f0f9ff; color: #0369a1; }
-.cat-workload   { background: #f5f3ff; color: #7008e7; }
-.cat-duty       { background: #ecfeff; color: #0e7490; }
-.cat-evaluation { background: #fdf4ff; color: #a21caf; }
-.cat-staff      { background: #ecfdf5; color: #007a55; }
-.cat-auth       { background: #f1f5f9; color: #475569; }
-.cat-message    { background: #fff7ed; color: #c2410c; }
-.cat-system     { background: #fefce8; color: #a16207; }
 
 /* The row is a <button>, so its parts are spans and each one that should own a
    line needs saying so explicitly. */
@@ -544,20 +409,29 @@
     border: 1px solid #bfdbfe;
 }
 
-.aud-entry-chevron {
-    display: block;
-    color: #cbd5e1;
-    font-size: 12px;
-    padding-top: 10px;
-    flex-shrink: 0;
-}
-
 .aud-entry.is-problem {
     background: #fffbfb;
 }
 
 .aud-entry.is-problem:hover {
     background: #fff5f5;
+}
+
+/* ---- Desktop table / phone list ----
+   Desktop shows each day as a table with a column per detail; phones keep the
+   stacked sentence list, which reads better at that width. */
+.aud-day-list { display: none; }
+
+.aud-table tbody tr { cursor: pointer; }
+.aud-table tbody tr:focus-visible { outline: 2px solid #2563eb; outline-offset: -2px; }
+.aud-table td { vertical-align: top; font-size: 12.5px; }
+.aud-mono { font-family: 'JetBrains Mono', monospace; font-size: 11.5px; white-space: nowrap; }
+.aud-muted { color: #6b7c96; }
+.aud-person { display: flex; align-items: center; gap: 8px; }
+
+@media (max-width: 768px) {
+    .aud-day-table { display: none; }
+    .aud-day-list { display: block; }
 }
 
 /* ---- Empty state + paging ---- */
@@ -635,13 +509,6 @@
     background: #f8fafc;
     border: 1px solid #dde3ee;
     border-radius: 12px;
-}
-
-.aud-drawer-lead .aud-icon {
-    width: 38px;
-    height: 38px;
-    font-size: 14px;
-    margin-top: 0;
 }
 
 .aud-drawer-lead-text p:first-child {
@@ -740,7 +607,6 @@
    control take a full row; the phone step turns each entry into a stacked
    block so nothing has to scroll sideways. */
 @media (max-width: 1024px) {
-    .aud-kpi-grid { grid-template-columns: repeat(2, 1fr); }
     .aud-field { flex: 1 1 200px; }
 }
 
@@ -753,9 +619,6 @@
     .aud-field { flex: 1 1 100%; }
     .aud-dates .aud-field { flex: 1 1 calc(50% - 5px); }
 
-    .aud-kpi { padding: 13px 14px; gap: 11px; }
-    .aud-kpi-icon { width: 36px; height: 36px; font-size: 14px; }
-    .aud-kpi-num { font-size: 18px; }
 
     .aud-summary { flex-direction: column; align-items: flex-start; }
 }
@@ -766,18 +629,11 @@
         gap: 10px;
         padding: 13px 14px;
     }
-    /* Time moves onto the same line as the icon, and the sentence takes the
-       full width underneath — no truncation, no sideways scroll. */
-    .aud-entry-time {
-        order: 2;
-        width: auto;
-        padding-top: 8px;
-    }
-    .aud-icon { order: 1; }
-    .aud-entry-chevron { order: 3; margin-left: auto; }
-    .aud-entry-main { order: 4; flex: 1 1 100%; }
+    /* Time on its own line, the sentence full width underneath — no
+       truncation, no sideways scroll. */
+    .aud-entry-time { width: auto; padding-top: 0; }
+    .aud-entry-main { flex: 1 1 100%; }
 
-    .aud-kpi-grid { grid-template-columns: 1fr; }
     .aud-kv { grid-template-columns: 1fr; gap: 2px; }
     .aud-kv dd { margin-bottom: 8px; }
     .aud-chip { min-height: 40px; }

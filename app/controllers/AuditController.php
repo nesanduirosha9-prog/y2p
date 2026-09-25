@@ -45,19 +45,13 @@ class AuditController extends Controller
         }
 
         $viewer = $this->viewer();
-        $isInCharge = ($viewer['position'] ?? '') === 'in_charge';
 
         return $this->render('audit_log', [
             'title'        => 'Activity Log — StaffSync',
             'css_file'     => ['/css/directory.css', '/css/audit.css'],
             'active'       => 'audit',
             'pageTitle'    => 'Activity Log',
-            'pageSubtitle' => $isInCharge
-                ? 'Every action recorded across the department, oldest entry kept for good'
-                : 'Actions recorded across the department, as far as your role allows',
             'scope'        => 'system',
-            'heading'      => 'Department activity',
-            'subheading'   => 'Who did what, when, and from where. Pick a period and a kind of activity to narrow it down.',
             'ownLogUrl'    => '/audit/me',
             // See app/core/AuditPrototypeData.php — same seam as the workload
             // screens. Swapping the fixture for an AuditLogModel is a change to
@@ -83,10 +77,7 @@ class AuditController extends Controller
             // would light up a link that is not there for most roles.
             'active'       => 'audit-me',
             'pageTitle'    => 'My Activity',
-            'pageSubtitle' => 'Everything the system has recorded under your account',
             'scope'        => 'own',
-            'heading'      => 'Your activity record',
-            'subheading'   => 'A permanent record of what you have done in StaffSync. Use it to check what happened and when.',
             'ownLogUrl'    => null,
             'auditData'    => AuditPrototypeData::feed($this->viewer(), 'own'),
         ]);

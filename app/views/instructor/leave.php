@@ -7,8 +7,8 @@
 // always split sensibly regardless of when the page is opened), embedded as
 // JSON and rendered entirely client-side by /js/instructor/leave.js — the
 // same JSON-payload + JS-render approach views/messages.php uses for
-// $conversationsData, so stat totals, the Upcoming Leaves list, and the
-// History table all stay derived from one source instead of three.
+// $conversationsData, so the Upcoming Leave and Leave History tables stay
+// derived from one source.
 $title = "Leave Management";
 
 $today = new DateTime('today');
@@ -37,7 +37,7 @@ $instructorRoster = [
 $leaveRecords = [
     [
         'id' => 1,
-        'type' => 'Study Leave',
+        'type' => 'Other',
         'dates' => [lvOffsetDate($today, 12), lvOffsetDate($today, 13), lvOffsetDate($today, 14)],
         'reason' => 'Curriculum research',
         'cover_staff' => [
@@ -83,7 +83,7 @@ $leaveRecords = [
     ],
     [
         'id' => 5,
-        'type' => 'Study Leave',
+        'type' => 'Other',
         'dates' => [lvOffsetDate($today, -20), lvOffsetDate($today, -19)],
         'reason' => 'ICCS 2025 Workshop',
         'cover_staff' => [
@@ -98,84 +98,68 @@ $leaveRecords = [
 <div class="lv-container">
     <div class="lv-header">
         <button type="button" class="btn-primary-sm lv-new-btn" id="requestLeaveBtn">
-            <i class="fa-solid fa-plus"></i> Request Leave
+            Request Leave
         </button>
     </div>
 
     <div class="lv-body">
         <div class="lv-main-col">
-            <!-- Stat Cards -->
-            <div class="lv-stats-grid">
-                <div class="lv-stat-card">
-                    <div class="lv-icon-box" style="background: #e8edf5; color: #1a3a6b;">
-                        <i class="fa-regular fa-calendar-check"></i>
-                    </div>
-                    <p class="lv-stat-label">ANNUAL BALANCE</p>
-                    <p class="lv-stat-value"><span id="lvStatBalance">21</span> <span class="lv-stat-unit">days</span></p>
-                </div>
-                <div class="lv-stat-card">
-                    <div class="lv-icon-box" style="background: #d0fae5; color: #0f766e;">
-                        <i class="fa-solid fa-calendar-minus"></i>
-                    </div>
-                    <p class="lv-stat-label">DAYS USED</p>
-                    <p class="lv-stat-value"><span id="lvStatUsed">0</span> <span class="lv-stat-unit">days</span></p>
-                </div>
-                <div class="lv-stat-card">
-                    <div class="lv-icon-box" style="background: #fef3c7; color: #b45309;">
-                        <i class="fa-solid fa-hourglass-half"></i>
-                    </div>
-                    <p class="lv-stat-label">UPCOMING DAYS</p>
-                    <p class="lv-stat-value"><span id="lvStatUpcoming">0</span> <span class="lv-stat-unit">days</span></p>
-                </div>
-                <div class="lv-stat-card">
-                    <div class="lv-icon-box" style="background: #f4f6f9; color: #6b7c96;">
-                        <i class="fa-solid fa-list-check"></i>
-                    </div>
-                    <p class="lv-stat-label">TOTAL REQUESTS</p>
-                    <p class="lv-stat-value"><span id="lvStatTotal">0</span></p>
-                </div>
-            </div>
-
-            <!-- Upcoming Leaves -->
+            <!-- Upcoming leave -->
             <div class="lv-table-card" id="lvUpcomingCard">
-                <div class="lv-table-header lv-header-amber">
-                    <i class="fa-regular fa-clock"></i>
-                    <p>Upcoming Leaves</p>
-                    <span class="lv-head-note">You can cancel before the leave date</span>
-                </div>
-                <div id="lvUpcomingList"></div>
-            </div>
-
-            <!-- Leave History -->
-            <div class="lv-table-card">
-                <div class="lv-table-header lv-header-wrap">
-                    <p>Leave History</p>
-                    <div class="lv-filter-bar">
-                        <span class="lv-filter-label">Filter by date:</span>
-                        <div class="lv-filter-group">
-                            <span>From</span>
-                            <input type="date" class="lv-date-input" id="lvFilterFrom">
-                        </div>
-                        <span class="lv-filter-sep">&mdash;</span>
-                        <div class="lv-filter-group">
-                            <span>To</span>
-                            <input type="date" class="lv-date-input" id="lvFilterTo">
-                        </div>
-                        <button type="button" class="lv-btn-clear-filter" id="lvClearFilter" hidden>
-                            <i class="fa-solid fa-xmark"></i> Clear
-                        </button>
+                <div class="lv-table-header">
+                    <div>
+                        <p>Upcoming Leave</p>
+                        <span class="lv-head-note">Leave can be cancelled until its first day</span>
                     </div>
+                    <span class="lv-head-note" id="lvUpcomingCount"></span>
                 </div>
-                <div class="lv-table-wrapper">
-                    <table class="lv-table">
+                <div class="dir-scroll">
+                    <table class="dir-table lv-leave-table">
                         <thead>
                             <tr>
-                                <th>LEAVE TYPE</th>
-                                <th>DATES / TIME</th>
-                                <th>DAYS</th>
-                                <th>REASON</th>
-                                <th>COVER STAFF</th>
-                                <th>NOTE</th>
+                                <th style="width: 120px;">Leave Type</th>
+                                <th style="width: 190px;">Dates</th>
+                                <th style="width: 150px;">Duration</th>
+                                <th style="min-width: 160px;">Reason</th>
+                                <th style="min-width: 240px;">Cover Staff</th>
+                                <th style="width: 110px; text-align: right;">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="lvUpcomingList"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Leave history -->
+            <div class="lv-table-card">
+                <div class="lv-table-header">
+                    <div>
+                        <p>Leave History</p>
+                        <span class="lv-head-note">Leave that has passed or was cancelled</span>
+                    </div>
+                    <span class="lv-head-note" id="lvHistoryCount"></span>
+                </div>
+                <div class="lv-filter-bar">
+                    <div class="lv-filter-group">
+                        <label for="lvFilterFrom">From</label>
+                        <input type="date" class="lv-date-input" id="lvFilterFrom">
+                    </div>
+                    <div class="lv-filter-group">
+                        <label for="lvFilterTo">To</label>
+                        <input type="date" class="lv-date-input" id="lvFilterTo">
+                    </div>
+                    <button type="button" class="lv-btn-clear-filter" id="lvClearFilter" hidden>Clear</button>
+                </div>
+                <div class="dir-scroll">
+                    <table class="dir-table lv-leave-table">
+                        <thead>
+                            <tr>
+                                <th style="width: 120px;">Leave Type</th>
+                                <th style="width: 190px;">Dates</th>
+                                <th style="width: 150px;">Duration</th>
+                                <th style="min-width: 160px;">Reason</th>
+                                <th style="min-width: 240px;">Cover Staff</th>
+                                <th style="width: 110px; text-align: right;">Status</th>
                             </tr>
                         </thead>
                         <tbody id="lvHistoryBody"></tbody>
@@ -184,8 +168,8 @@ $leaveRecords = [
             </div>
         </div>
 
-        <!-- Request Leave panel -->
-        <aside class="lv-side-panel" id="lvRequestPanel" hidden>
+        <!-- Request Leave panel — .floating-panel (components.css) opens it over the page -->
+        <aside class="lv-side-panel floating-panel" id="lvRequestPanel" hidden>
             <div class="lv-panel-header">
                 <div class="lv-panel-header-left">
                     <button type="button" class="lv-btn-back" id="lvBackBtn" aria-label="Back to leave overview" title="Back">
@@ -206,7 +190,6 @@ $leaveRecords = [
                             <select class="req-select" id="lvType">
                                 <option value="">Select type&hellip;</option>
                                 <option>Sick Leave</option>
-                                <option>Study Leave</option>
                                 <option>Other</option>
                             </select>
                             <i class="fa-solid fa-chevron-down chevron"></i>
