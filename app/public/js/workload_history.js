@@ -186,8 +186,7 @@
                 <td>${pick(r.lecturer, 'lecturer', r.lecturer_name)}</td>
                 <td>${what}</td>
                 <td>
-                    <span class="hist-how hist-how-${esc(r.how)}">${esc(HOW_LABEL[r.how] || r.how)}</span>
-                    ${r.note ? `<span class="hist-note">${esc(r.note)}</span>` : ''}
+                    <span class="hist-how hist-how-${esc(r.how)}"${r.note ? ` title="${esc(r.note)}"` : ''}>${esc(HOW_LABEL[r.how] || r.how)}</span>
                 </td>
             </tr>`;
     }

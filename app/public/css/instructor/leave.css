@@ -1,138 +1,9 @@
 /* Instructor Leave CSS */
 
-.lv-container {
-    display: flex;
-    flex-direction: column;
-    height: 100%;
-}
-
-/* Holds the Request Leave button alone. It used to carry a "Track your leave
-   balance…" subtitle as well; that line said nothing the page below doesn't
-   already show, and it was the one thing left holding the row open. flex-end
-   keeps the button on the right now that it has no sibling to sit opposite. */
-.lv-header {
-    background: transparent;
-    border-bottom: none;
-    padding: 0 24px 16px 24px;
-    display: flex;
-    align-items: center;
-    justify-content: flex-end;
-    flex-shrink: 0;
-}
-
-.lv-new-btn {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-}
-
-/* Nothing here hides on open. The Request Leave panel floats over the page
-   (.floating-panel in components.css), so the layout never shifts. */
-
-.lv-body {
-    padding: 24px;
-    display: flex;
-    align-items: flex-start;
-    gap: 20px;
-}
-
-.lv-main-col {
-    flex: 1;
-    min-width: 0;
-    display: flex;
-    flex-direction: column;
-    gap: 20px;
-}
-
-/* ---- Upcoming / History tables — same card as the Assigned Work page ---- */
-.lv-table-card {
-    background: #fff;
-    border: 1px solid #dde3ee;
-    border-radius: 12px;
-    overflow: hidden;
-}
-
-.lv-table-header {
-    padding: 14px 20px;
-    border-bottom: 1px solid #dde3ee;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 12px;
-    flex-wrap: wrap;
-}
-
-.lv-table-header p {
-    font-size: 13px;
-    font-weight: 700;
-    color: #0f1c2e;
-}
-
-.lv-head-note {
-    font-size: 11px;
-    color: #9ca3af;
-}
-
-.lv-leave-table td { vertical-align: top; }
-.lv-cell-sub { font-size: 11.5px; color: #6b7c96; margin-top: 2px; }
-
-.lv-cover-line {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    font-size: 12.5px;
-}
-.lv-cover-line + .lv-cover-line { margin-top: 6px; }
-.lv-cover-date { width: 78px; flex-shrink: 0; color: #6b7c96; font-size: 12px; }
-
-.lv-leave-table .pill-active { background: #d0fae5; color: #036b4f; }
-
-/* ---- History date filter ---- */
-.lv-filter-bar {
-    display: flex;
-    align-items: flex-end;
-    gap: 12px;
-    flex-wrap: wrap;
-    padding: 12px 20px;
-    border-bottom: 1px solid #eef1f6;
-}
-
-.lv-filter-group {
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-    font-size: 11.5px;
-    color: #6b7c96;
-}
-
-.lv-date-input {
-    padding: 7px 9px;
-    border: 1px solid #dde3ee;
-    border-radius: 8px;
-    background: #fff;
-    font-size: 12px;
-    color: #0f1c2e;
-    outline: none;
-    width: 150px;
-}
-
-.lv-date-input:focus {
-    border-color: #2563eb;
-    box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.2);
-}
-
-.lv-btn-clear-filter {
-    font-size: 12px;
-    font-weight: 600;
-    color: #374151;
-    border: 1px solid #cbd5e1;
-    border-radius: 6px;
-    padding: 6px 12px;
-    background: #fff;
-    cursor: pointer;
-}
-
-.lv-btn-clear-filter:hover { background: #f4f6f9; }
+/* The page layout (tab bar, filters, tables) comes from coordinator/staff.css
+   and leave_tables.css, shared with the Leave Requests page. This file styles
+   the Request / Edit Leave panel. It floats over the page (.floating-panel in
+   components.css), so the layout never shifts when it opens. */
 
 /* ==============================
    Shared form controls (modal / side panel)
@@ -462,6 +333,9 @@
 
 .lv-day:hover { background: #eff6ff; color: #1d4ed8; }
 .lv-day.lv-day-empty { visibility: hidden; cursor: default; }
+/* Past days cannot be picked — LeaveController refuses them too. */
+.lv-day.lv-day-past,
+.lv-day.lv-day-past:hover { color: #cbd5e1; background: transparent; cursor: not-allowed; }
 .lv-day.lv-day-selected {
     background: linear-gradient(135deg, #1a3a6b 0%, #2563eb 100%) !important;
     color: #ffffff !important;
@@ -980,23 +854,6 @@
    Responsive (768px/480px per tokens.css)
    ============================== */
 @media (max-width: 1024px) {
-    /* `align-items: flex-start` on the base rule is the vertical axis while
-       .lv-body is a row, but the moment it turns into a column that becomes the
-       HORIZONTAL axis and both children size to fit-content instead of filling.
-       .lv-main-col contains the leave tables (.dir-table, min-width: 720px), so
-       its fit-content is wider than a phone and everything inside it was laid
-       out at that width and ran off the right of the screen. stretch is what a
-       column flex container needs here. */
-    .lv-body {
-        flex-direction: column;
-        align-items: stretch;
-    }
-
-    .lv-main-col {
-        width: 100%;
-        min-width: 0;
-    }
-
     .lv-side-panel {
         width: 100%;
         max-height: none;
@@ -1056,19 +913,8 @@
 }
 
 @media (max-width: 480px) {
-    .lv-header {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 10px;
-    }
-
-    .lv-new-btn {
+    .lr-toolbar-end {
         width: 100%;
-        justify-content: center;
-    }
-
-    .lv-body {
-        padding: 16px;
     }
 
     .lv-panel-footer .btn-row {
@@ -1077,14 +923,6 @@
 
     .lv-manual-date {
         flex-direction: column;
-    }
-
-    .lv-date-input {
-        width: 100%;
-    }
-
-    .lv-filter-group {
-        flex: 1 1 auto;
     }
 
     .lv-time-grid {

@@ -1,172 +1,81 @@
 <?php
 
 // instructor/leave.php — "Leave" page (LeaveController).
-// NOTE (gap): none of this reads/writes the `leave_requests` table
-// (migration 009) — see LeaveController.php. $leaveRecords below is a fixed
-// demo data set (dates generated relative to "today" so upcoming/history
-// always split sensibly regardless of when the page is opened), embedded as
-// JSON and rendered entirely client-side by /js/instructor/leave.js — the
-// same JSON-payload + JS-render approach views/messages.php uses for
-// $conversationsData, so the Upcoming Leave and Leave History tables stay
-// derived from one source.
-$title = "Leave Management";
-
-$today = new DateTime('today');
-
-function lvOffsetDate(DateTime $base, int $days): string
-{
-    $d = clone $base;
-    $d->modify(($days >= 0 ? '+' : '') . $days . ' days');
-    return $d->format('Y-m-d');
-}
-
-$instructorRoster = [
-    ['code' => 'TMF', 'name' => 'Ms. Thilini Fernando', 'department' => 'Computer Science'],
-    ['code' => 'MKA', 'name' => 'Mr. Kwame Addo', 'department' => 'Computer Science'],
-    ['code' => 'MEM', 'name' => 'Ms. Efua Mensah', 'department' => 'Computer Science'],
-    ['code' => 'MAB', 'name' => 'Mr. Ato Baidoo', 'department' => 'Computer Science'],
-    ['code' => 'MYD', 'name' => 'Ms. Yaa Darko', 'department' => 'Computer Science'],
-    ['code' => 'MKO', 'name' => 'Mr. Kojo Amoah', 'department' => 'Computer Science'],
-    ['code' => 'MNA', 'name' => 'Ms. Nana Ama', 'department' => 'Computer Science'],
-    ['code' => 'MAT', 'name' => 'Mr. Atta Tetteh', 'department' => 'Computer Science'],
-    ['code' => 'MEQ', 'name' => 'Ms. Esi Quaye', 'department' => 'Computer Science'],
-    ['code' => 'MAD', 'name' => 'Mr. Adom Boateng', 'department' => 'Computer Science'],
-    ['code' => 'MYB', 'name' => 'Ms. Yaw Bediako', 'department' => 'Information Systems'],
-];
-
-$leaveRecords = [
-    [
-        'id' => 1,
-        'type' => 'Other',
-        'dates' => [lvOffsetDate($today, 12), lvOffsetDate($today, 13), lvOffsetDate($today, 14)],
-        'reason' => 'Curriculum research',
-        'cover_staff' => [
-            ['code' => 'MKO', 'name' => 'Mr. Kojo Amoah', 'date' => lvOffsetDate($today, 12)],
-            ['code' => 'MKO', 'name' => 'Mr. Kojo Amoah', 'date' => lvOffsetDate($today, 13)],
-            ['code' => 'MNA', 'name' => 'Ms. Nana Ama', 'date' => lvOffsetDate($today, 14)],
-        ],
-        'cancelled' => false,
-    ],
-    [
-        'id' => 2,
-        'type' => 'Sick Leave',
-        'dates' => [lvOffsetDate($today, 3)],
-        'reason' => 'Medical appointment',
-        'cover_staff' => [
-            ['code' => 'MEM', 'name' => 'Ms. Efua Mensah', 'date' => lvOffsetDate($today, 3)],
-        ],
-        'cancelled' => false,
-        'timeFrom' => '09:00',
-        'timeTo' => '12:00',
-    ],
-    [
-        'id' => 3,
-        'type' => 'Other',
-        'dates' => [lvOffsetDate($today, -35), lvOffsetDate($today, -34), lvOffsetDate($today, -33)],
-        'reason' => 'Family event',
-        'cover_staff' => [
-            ['code' => 'MNA', 'name' => 'Ms. Nana Ama', 'date' => lvOffsetDate($today, -35)],
-            ['code' => 'MAB', 'name' => 'Mr. Ato Baidoo', 'date' => lvOffsetDate($today, -34)],
-            ['code' => 'MAB', 'name' => 'Mr. Ato Baidoo', 'date' => lvOffsetDate($today, -33)],
-        ],
-        'cancelled' => false,
-    ],
-    [
-        'id' => 4,
-        'type' => 'Sick Leave',
-        'dates' => [lvOffsetDate($today, -70)],
-        'reason' => 'Fever recovery',
-        'cover_staff' => [
-            ['code' => 'MYD', 'name' => 'Ms. Yaa Darko', 'date' => lvOffsetDate($today, -70)],
-        ],
-        'cancelled' => false,
-    ],
-    [
-        'id' => 5,
-        'type' => 'Other',
-        'dates' => [lvOffsetDate($today, -20), lvOffsetDate($today, -19)],
-        'reason' => 'ICCS 2025 Workshop',
-        'cover_staff' => [
-            ['code' => 'MAB', 'name' => 'Mr. Ato Baidoo', 'date' => lvOffsetDate($today, -20)],
-            ['code' => 'TMF', 'name' => 'Ms. Thilini Fernando', 'date' => lvOffsetDate($today, -19)],
-        ],
-        'cancelled' => true,
-    ],
+// The member's own leave and the Request / Edit Leave panel. Leave is
+// approved on paper, so this only records it: no status, upcoming until its
+// last day passes, then history.
+//
+// Laid out like the Coordinator's Leave Requests page: the Staff Details tab
+// bar (.staff-tabs) over two panels, each with its own filters (type, date
+// range). Request Leave sits in the Upcoming panel only. Every row renders
+// client-side by /js/instructor/leave.js (cells from /js/leave_cells.js) from
+// $leaveData, which LeaveController::index() builds from LeaveRequestModel:
+//   today    server date, splits Upcoming from History
+//   rank     the member's rank — covers share it, and so their badge style
+//   records  the member's leave, each with its per-day covers
+//   covers   who may cover (same rank, active, not the member)
+// $tab is the tab to open on (?tab=upcoming|history).
+$panels = [
+    'upcoming' => 'Upcoming leave',
+    'history' => 'History',
 ];
 ?>
 
-<div class="lv-container">
-    <div class="lv-header">
-        <button type="button" class="btn-primary-sm lv-new-btn" id="requestLeaveBtn">
-            Request Leave
-        </button>
+<div class="lr-page" id="lvPage">
+
+    <div class="staff-tabs" id="lvTabs" role="tablist">
+        <?php foreach ($panels as $key => $label): ?>
+            <button type="button" class="staff-tab <?= $tab === $key ? 'active' : '' ?>" data-tab="<?= $key ?>" role="tab">
+                <span><?= $label ?></span>
+                <span class="staff-tab-badge" data-count="<?= $key ?>"></span>
+            </button>
+        <?php endforeach; ?>
     </div>
 
-    <div class="lv-body">
-        <div class="lv-main-col">
-            <!-- Upcoming leave -->
-            <div class="lv-table-card" id="lvUpcomingCard">
-                <div class="lv-table-header">
-                    <div>
-                        <p>Upcoming Leave</p>
-                        <span class="lv-head-note">Leave can be cancelled until its first day</span>
-                    </div>
-                    <span class="lv-head-note" id="lvUpcomingCount"></span>
-                </div>
-                <div class="dir-scroll">
-                    <table class="dir-table lv-leave-table">
-                        <thead>
-                            <tr>
-                                <th style="width: 120px;">Leave Type</th>
-                                <th style="width: 190px;">Dates</th>
-                                <th style="width: 150px;">Duration</th>
-                                <th style="min-width: 160px;">Reason</th>
-                                <th style="min-width: 240px;">Cover Staff</th>
-                                <th style="width: 110px; text-align: right;">Action</th>
-                            </tr>
-                        </thead>
-                        <tbody id="lvUpcomingList"></tbody>
-                    </table>
-                </div>
+    <?php foreach ($panels as $key => $label): ?>
+        <section class="lr-panel" data-panel="<?= $key ?>" <?= $tab === $key ? '' : 'hidden' ?>>
+            <div class="lr-toolbar" data-filters="<?= $key ?>">
+                <label class="lr-filter">
+                    <span>Type</span>
+                    <select class="lr-select" data-filter="type">
+                        <option value="all">All types</option>
+                        <option value="sick">Sick leave</option>
+                        <option value="other">Other</option>
+                    </select>
+                </label>
+                <label class="lr-filter">
+                    <span>From</span>
+                    <input type="date" class="lr-select" data-filter="from">
+                </label>
+                <label class="lr-filter">
+                    <span>To</span>
+                    <input type="date" class="lr-select" data-filter="to">
+                </label>
+                <button type="button" class="lr-clear" data-clear hidden>Clear filters</button>
+                <?php if ($key === 'upcoming'): ?>
+                    <button type="button" class="btn-primary-sm lr-toolbar-end" id="requestLeaveBtn">Request Leave</button>
+                <?php endif; ?>
             </div>
 
-            <!-- Leave history -->
-            <div class="lv-table-card">
-                <div class="lv-table-header">
-                    <div>
-                        <p>Leave History</p>
-                        <span class="lv-head-note">Leave that has passed or was cancelled</span>
-                    </div>
-                    <span class="lv-head-note" id="lvHistoryCount"></span>
-                </div>
-                <div class="lv-filter-bar">
-                    <div class="lv-filter-group">
-                        <label for="lvFilterFrom">From</label>
-                        <input type="date" class="lv-date-input" id="lvFilterFrom">
-                    </div>
-                    <div class="lv-filter-group">
-                        <label for="lvFilterTo">To</label>
-                        <input type="date" class="lv-date-input" id="lvFilterTo">
-                    </div>
-                    <button type="button" class="lv-btn-clear-filter" id="lvClearFilter" hidden>Clear</button>
-                </div>
+            <div class="dir-card">
+                <p class="lr-count" data-summary="<?= $key ?>"></p>
                 <div class="dir-scroll">
-                    <table class="dir-table lv-leave-table">
+                    <table class="leave-table">
                         <thead>
                             <tr>
-                                <th style="width: 120px;">Leave Type</th>
-                                <th style="width: 190px;">Dates</th>
-                                <th style="width: 150px;">Duration</th>
-                                <th style="min-width: 160px;">Reason</th>
-                                <th style="min-width: 240px;">Cover Staff</th>
-                                <th style="width: 110px; text-align: right;">Status</th>
+                                <th>Type</th>
+                                <th>Dates</th>
+                                <th>Cover staff</th>
+                                <th>Reason</th>
+                                <?php if ($key === 'upcoming'): ?><th></th><?php endif; ?>
                             </tr>
                         </thead>
-                        <tbody id="lvHistoryBody"></tbody>
+                        <tbody data-rows="<?= $key ?>"></tbody>
                     </table>
                 </div>
             </div>
-        </div>
+        </section>
+    <?php endforeach; ?>
 
         <!-- Request Leave panel — .floating-panel (components.css) opens it over the page -->
         <aside class="lv-side-panel floating-panel" id="lvRequestPanel" hidden>
@@ -176,8 +85,8 @@ $leaveRecords = [
                         <i class="fa-solid fa-arrow-left"></i>
                     </button>
                     <div>
-                        <h2>Request Leave</h2>
-                        <p>Select dates &amp; submit for approval</p>
+                        <h2 id="lvPanelTitle">Request Leave</h2>
+                        <p id="lvPanelSub">Select dates and a cover for each day</p>
                     </div>
                 </div>
                 <button type="button" class="modal-close" id="closeLeaveModal" title="Close" aria-label="Close"><i class="fa-solid fa-xmark"></i></button>
@@ -189,8 +98,8 @@ $leaveRecords = [
                         <div class="req-select-wrapper">
                             <select class="req-select" id="lvType">
                                 <option value="">Select type&hellip;</option>
-                                <option>Sick Leave</option>
-                                <option>Other</option>
+                                <option value="sick">Sick Leave</option>
+                                <option value="other">Other</option>
                             </select>
                             <i class="fa-solid fa-chevron-down chevron"></i>
                         </div>
@@ -262,19 +171,14 @@ $leaveRecords = [
                 <div class="btn-row">
                     <button type="button" class="btn-outline" id="cancelLeaveModal">Cancel</button>
                     <button type="button" class="btn-primary-sm lv-submit-btn" id="submitLeaveRequest" disabled>
-                        <i class="fa-solid fa-paper-plane"></i> Submit Request
+                        <i class="fa-solid fa-paper-plane"></i> <span id="lvSubmitLabel">Submit</span>
                     </button>
                 </div>
             </div>
         </aside>
-    </div>
 </div>
 
-<script type="application/json" id="leaveData"><?= json_encode([
-    'today' => $today->format('Y-m-d'),
-    'records' => $leaveRecords,
-    'instructors' => $instructorRoster,
-    'currentUser' => $_SESSION['staff_code'] ?? 'MKA',
-]) ?></script>
+<script type="application/json" id="leaveData"><?= json_encode($leaveData) ?></script>
+<script src="/js/leave_cells.js"></script>
 <script src="/js/instructor/leave.js"></script>
 

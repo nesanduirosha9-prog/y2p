@@ -46,17 +46,6 @@
         { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[m]
     ));
     const engagementLabel = k => ENGAGEMENTS[k] || k;
-    // Maps the engagement key to the existing .duty-tag-* palette in
-    // workload_matrix.css rather than deriving it from the key, because
-    // assignment_marking and coordination_* do not split cleanly.
-    const ENGAGEMENT_CLASS = {
-        practical: 'duty-tag-practical',
-        tutorial: 'duty-tag-tutorial',
-        assignment_marking: 'duty-tag-marking',
-        coordination_lecture: 'duty-tag-coordination',
-        coordination_project: 'duty-tag-coordination',
-    };
-    const engagementClass = k => ENGAGEMENT_CLASS[k] || 'duty-tag-practical';
     const yearLabel = y => ({ 1: '1st', 2: '2nd', 3: '3rd', 4: '4th' }[y] || y) + ' year';
 
     /** Recompute every staff member's load from the current allocations. */
@@ -246,7 +235,7 @@
                     </td>
                     <td>${codeBadge(c.lecturer, 'lecturer', { title: c.lecturer_name })}</td>
                     <td>
-                        <span class="wm-duty-type ${engagementClass(c.engagement)}">${esc(engagementLabel(c.engagement))}</span>
+                        <span class="wm-duty-type">${esc(engagementLabel(c.engagement))}</span>
                         <span class="wm-hours-note">${esc(c.hours)}h/wk</span>
                     </td>
                     <td>

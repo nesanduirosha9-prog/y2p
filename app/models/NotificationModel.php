@@ -3,6 +3,7 @@
 namespace app\models;
 
 use app\core\Database;
+use app\core\Uuid;
 use PDO;
 
 // NotificationModel: the notification feed and its unread count (used for
@@ -85,6 +86,28 @@ class NotificationModel
         );
         $stmt->execute(['staff_code' => $staffCode]);
         return $stmt->rowCount();
+    }
+
+    /**
+     * Creates one notification and delivers it to every code in $staffCodes
+     * (duplicates are dropped). $type is 'info' | 'success' | 'warning'.
+     */
+    public function send(array $staffCodes, string $type, string $title, string $body): void
+    {
+        $staffCodes = array_values(array_unique($staffCodes));
+        if ($staffCodes === []) {
+            return;
+        }
+
+        $pdo = Database::getConnection();
+        $id = Uuid::v4();
+        $pdo->prepare("INSERT INTO notifications (id, type, title, body) VALUES (:id, :type, :title, :body)")
+            ->execute(['id' => $id, 'type' => $type, 'title' => $title, 'body' => $body]);
+
+        $stmt = $pdo->prepare("INSERT INTO notification_recipients (notification_id, staff_code) VALUES (:id, :code)");
+        foreach ($staffCodes as $code) {
+            $stmt->execute(['id' => $id, 'code' => $code]);
+        }
     }
 
     /** Count of unread notifications for one staff member. */

@@ -42,12 +42,10 @@ $panel = fn(string ...$t) => in_array($tab, $t, true) ? '' : 'hidden';
         <button type="button" class="sched-nav-tab" data-tab="week" role="tab">
             <i class="fa-solid fa-calendar-week"></i>
             <span>This week</span>
-            <span class="sched-tab-badge" id="tabWeekBadge">—</span>
         </button>
         <button type="button" class="sched-nav-tab" data-tab="requests" role="tab">
             <i class="fa-solid fa-inbox"></i>
             <span>Requests</span>
-            <span class="sched-tab-badge alert-badge" id="tabRequestsBadge">—</span>
         </button>
         <button type="button" class="sched-nav-tab" data-tab="free" role="tab">
             <i class="fa-solid fa-table-list"></i>
@@ -416,12 +414,13 @@ $panel = fn(string ...$t) => in_array($tab, $t, true) ? '' : 'hidden';
                     <!-- Click a heading to sort by it; click again to reverse. -->
                     <thead id="histHead">
                         <tr>
-                            <th style="width:130px;"><button type="button" class="hist-sort" data-sort="date">Date</button></th>
-                            <th style="width:190px;"><button type="button" class="hist-sort" data-sort="staff">Staff</button></th>
-                            <th style="width:120px;"><button type="button" class="hist-sort" data-sort="course">Course</button></th>
-                            <th style="width:110px;"><button type="button" class="hist-sort" data-sort="lecturer">Lecturer</button></th>
-                            <th style="min-width:220px;">What</th>
-                            <th style="width:250px;"><button type="button" class="hist-sort" data-sort="how">How</button></th>
+                            <!-- Shares of the width, not pixels, so the columns spread across the card. -->
+                            <th style="width:14%;"><button type="button" class="hist-sort" data-sort="date">Date</button></th>
+                            <th style="width:22%;"><button type="button" class="hist-sort" data-sort="staff">Staff</button></th>
+                            <th style="width:15%;"><button type="button" class="hist-sort" data-sort="course">Course</button></th>
+                            <th style="width:14%;"><button type="button" class="hist-sort" data-sort="lecturer">Lecturer</button></th>
+                            <th style="width:22%;">What</th>
+                            <th style="width:13%;"><button type="button" class="hist-sort" data-sort="how">How</button></th>
                         </tr>
                     </thead>
                     <tbody id="histBody"></tbody>

@@ -297,9 +297,6 @@
 
     // --------------------------------------------------------------- rendering
     function renderHeader() {
-        el('tabWeekBadge').textContent = duties.length + ' duties';
-        el('tabRequestsBadge').textContent = requests.length + ' pending';
-        el('tabRequestsBadge').hidden = requests.length === 0;
         el('weekHeading').textContent = 'Duties this week (' + DATA.week.label + ')';
     }
 

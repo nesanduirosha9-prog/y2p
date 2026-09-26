@@ -60,24 +60,6 @@
     border-radius: 3px 3px 0 0;
 }
 
-.sched-tab-badge {
-    background: #f1f5f9;
-    color: #475569;
-    font-size: 11px;
-    font-weight: 700;
-    padding: 2px 8px;
-    border-radius: 12px;
-}
-
-.sched-nav-tab.active .sched-tab-badge {
-    background: #eff6ff;
-    color: #2563eb;
-}
-
-.alert-badge {
-    background: #fef3c7 !important;
-    color: #b45309 !important;
-}
 
 /* ---- Panel Container ---- */
 .sched-view-panel {

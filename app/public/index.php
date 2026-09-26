@@ -46,6 +46,7 @@ use app\controllers\instructor\LeaveController;
 use app\controllers\instructor\RequestsController;
 
 use app\controllers\coordinator\StaffController;
+use app\controllers\coordinator\LeaveRequestsController;
 
 use app\controllers\in_charge\AccountsController;
 
@@ -279,6 +280,21 @@ $router->get('/messages', function (Request $request, Response $response) {
 // --- Academic staff screens with no officer equivalent ---------------------
 $router->get('/leave', function (Request $request, Response $response) {
     return (new LeaveController())->index($request);
+});
+// Leave CRUD — the requester's own requests. JSON only.
+$router->post('/leave', function (Request $request, Response $response) {
+    return (new LeaveController())->store($request, $response);
+});
+$router->put('/leave/{id}', function (Request $request, Response $response, array $params) {
+    return (new LeaveController())->update($request, $response, $params);
+});
+$router->delete('/leave/{id}', function (Request $request, Response $response, array $params) {
+    return (new LeaveController())->destroy($request, $response, $params);
+});
+// Everyone's leave, read-only — Coordinator / In-Charge. An exact path, so
+// no {id} route can shadow it (Router tries exact matches first).
+$router->get('/leave/requests', function (Request $request, Response $response) {
+    return (new LeaveRequestsController())->index($request);
 });
 $router->get('/requests', function (Request $request, Response $response) {
     return (new RequestsController())->index($request);

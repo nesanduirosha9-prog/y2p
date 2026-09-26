@@ -175,19 +175,21 @@
     border-radius: 4px;
 }
 
-/* Duty Type Badges */
+/* Engagement label: one neutral look for every type, the same as the course
+   code badge (.code-badge--course in components.css). */
 .wm-duty-type {
     display: inline-block;
     padding: 4px 9px;
     border-radius: 6px;
-    font-size: 11px;
+    border: 1px solid #e2e8f0;
+    background: #f1f5f9;
+    color: #1e293b;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11.5px;
     font-weight: 700;
+    letter-spacing: 0.3px;
+    line-height: 1.2;
 }
-
-.duty-tag-practical { background: #e0f2fe; color: #0284c7; }
-.duty-tag-tutorial { background: #fef3c7; color: #b45309; }
-.duty-tag-marking { background: #ede9fe; color: #7c3aed; }
-.duty-tag-coordination { background: #dcfce7; color: #16a34a; }
 
 /* Assigned staff list (course view) and course list (staff view) */
 .wm-instructors-list {

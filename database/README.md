@@ -83,6 +83,7 @@ header comment for the reasoning behind its specific key.
 | `notifications` | `007_create_notifications.sql` | PK is a UUID; no `is_read` here |
 | `notification_recipients` | `008_create_notification_recipients.sql` | Per-recipient `is_read` |
 | `leave_requests` | `009_create_leave_requests.sql` | PK is a UUID |
+| `leave_days` | `009_create_leave_requests.sql` | One row per leave date + its cover; unique keys stop double leave / double cover on a day |
 | `workload_tasks` | `010_create_workload_tasks.sql` | PK is a UUID |
 | `chat_rooms` | `011_create_chat_rooms.sql` | PK is a UUID; scoped to a course |
 | `chat_participants` | `012_create_chat_participants.sql` | Chat membership |
@@ -93,7 +94,7 @@ header comment for the reasoning behind its specific key.
 Every Timetable Officer screen reads from these tables — there is no
 hardcoded sample data in those controllers. The screens render fine against
 an empty database; `--seed` loads the sample rows. The instructor-side
-`leave`/`workload`/`messages`/`requests` pages still render hardcoded PHP
+`workload`/`messages`/`requests` pages still render hardcoded PHP
 arrays (per `docs/DESIGN_PATTERNS_PLAN.md` item 8) — their tables exist now,
 but wiring each page to a real Model is separate follow-up work.
 

@@ -1,26 +1,31 @@
-// Instructor Leave JS: the Upcoming Leave and Leave History tables (history
-// with date-range filtering) and the Request Leave panel (multi-date calendar
-// picker + partial-day toggle) all render from the `leaveData` JSON payload
-// embedded by the view — same JSON-payload + client-render approach as
-// messages.js. DOM-only demo — nothing persists past a reload.
+// Instructor Leave JS: the Upcoming leave / History tabs (each with type and
+// date-range filters) and the Request / Edit Leave panel (multi-date
+// calendar picker + partial-day toggle + a cover person per date), rendered
+// from the `leaveData` payload that LeaveController::index() embeds.
+//
+// Leave is approved on paper outside the system, so saving only records it —
+// there is no status. It stays in Upcoming until its last day has passed,
+// then moves to History. Before its first day it can be edited or cancelled.
+//
+// Saves go to the server (LeaveController): POST /leave creates, PUT
+// /leave/{id} edits, DELETE /leave/{id} cancels. Each success answers with
+// the saved record, which replaces the local copy. Table cells come from
+// js/leave_cells.js, shared with the Coordinator's Leave Requests page.
 document.addEventListener('DOMContentLoaded', () => {
     const dataEl = document.getElementById('leaveData');
-    if (!dataEl) return;
+    if (!dataEl || !window.leaveCells) return;
 
+    const cells = window.leaveCells;
     const payload = JSON.parse(dataEl.textContent);
     const TODAY = payload.today;
-    let leaves = payload.records;
-    let nextId = Math.max(0, ...leaves.map(l => l.id)) + 1;
+    let leaves = payload.records || [];
 
-    const INSTRUCTORS = payload.instructors || [];
-    const CURRENT_USER = payload.currentUser || '';
-    // Only junior instructors, excluding the logged-in user
-    const availableInstructors = INSTRUCTORS.filter(i => i.code !== CURRENT_USER);
+    // Who may cover: same rank, active, never the member themselves. Covers
+    // share the member's rank, so they share its badge style too.
+    const COVERS = payload.covers || [];
+    const COVER_BADGE = payload.rank === 'senior' ? 'code-badge--lecturer' : 'code-badge--staff';
 
-    function isUpcoming(l) { return !l.cancelled && l.dates.some(d => d >= TODAY); }
-    function isHistory(l) { return l.cancelled || l.dates.every(d => d < TODAY); }
-
-    function sortedDates(l) { return [...l.dates].sort(); }
+    function isUpcoming(l) { return l.end_date >= TODAY; }
 
     function fmtTime(t) {
         if (!t) return '';
@@ -36,150 +41,146 @@ document.addEventListener('DOMContentLoaded', () => {
         return div.innerHTML;
     }
 
-    function isPartial(l) { return !!(l.timeFrom && l.timeTo); }
-
-    const DAY = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-    const MON = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-
-    /** "Mon 12 Oct 2026" from an ISO date, read as a local calendar day. */
-    function longDate(iso) {
-        const [y, m, d] = iso.split('-').map(Number);
-        const dt = new Date(y, m - 1, d);
-        return `${DAY[dt.getDay()]} ${d} ${MON[m - 1]} ${y}`;
+    function toast(message, isError) {
+        window.ttToast?.(message, { icon: isError ? 'fa-circle-exclamation' : 'fa-circle-check' });
     }
 
-    function dateCell(l) {
-        const sorted = sortedDates(l);
-        if (sorted.length === 1) return esc(longDate(sorted[0]));
-        return `${esc(longDate(sorted[0]))}<div class="lv-cell-sub">to ${esc(longDate(sorted[sorted.length - 1]))}</div>`;
+    /** fetch() + JSON, resolving to { success, message, ... } even on a network or parse failure. */
+    function send(url, method, body) {
+        return fetch(url, {
+            method,
+            headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+            body: body === undefined ? undefined : JSON.stringify(body),
+        })
+            .then(res => res.json().catch(() => ({ success: false, message: 'Unexpected response from the server.' })))
+            .catch(() => ({ success: false, message: 'Network error. Please try again.' }));
     }
 
-    function durationCell(l) {
-        if (isPartial(l)) {
-            const [fh, fm] = l.timeFrom.split(':').map(Number);
-            const [th, tm] = l.timeTo.split(':').map(Number);
-            const hrs = Math.round(((th * 60 + tm) - (fh * 60 + fm)) / 6) / 10;
-            return `${fmtTime(l.timeFrom)} – ${fmtTime(l.timeTo)}<div class="lv-cell-sub">Part day · ${hrs} hrs</div>`;
-        }
-        const n = l.dates.length;
-        return `${n} full day${n === 1 ? '' : 's'}`;
+    function cellsOf(l) {
+        return `<td>${cells.type(l)}</td>
+                <td>${cells.dates(l, TODAY)}</td>
+                <td>${cells.covers(l)}</td>
+                <td>${cells.reason(l)}</td>`;
     }
 
-    /** Who covers which day: one line per date, code badge plus name. */
-    function coverCell(l) {
-        let staffList = [];
-        if (Array.isArray(l.cover_staff) && l.cover_staff.length > 0) {
-            staffList = l.cover_staff;
-        } else if (l.perDayCover && Object.keys(l.perDayCover).length > 0) {
-            staffList = Object.entries(l.perDayCover).map(([d, c]) => ({ date: d, code: c.code, name: c.name }));
-        } else if (l.cover) {
-            const matched = INSTRUCTORS.find(i => i.name === l.cover || i.code === l.cover);
-            if (!matched) return esc(l.cover);
-            staffList = [{ code: matched.code, name: matched.name, date: '' }];
-        }
-        staffList = staffList.filter(item => item && item.code);
-        if (!staffList.length) return '<span class="lv-cell-sub">—</span>';
+    // ---- Upcoming / History tabs ----
+    // Same layout as the Leave Requests page (js/leave_requests.js): one
+    // table per tab, each with its own type / date-range filters.
+    const page = document.getElementById('lvPage');
+    const BLANK = { type: 'all', from: '', to: '' };
+    const TABS = {
+        upcoming: {
+            pick: l => isUpcoming(l),
+            order: (a, b) => a.start_date.localeCompare(b.start_date),
+            empty: 'No upcoming leave. Use Request Leave to record some.',
+            columns: 5,
+            filter: { ...BLANK },
+        },
+        history: {
+            pick: l => !isUpcoming(l),
+            order: (a, b) => b.start_date.localeCompare(a.start_date),
+            empty: 'No past leave yet.',
+            columns: 4,
+            filter: { ...BLANK },
+        },
+    };
 
-        return [...staffList]
-            .sort((x, y) => (x.date || '').localeCompare(y.date || ''))
-            .map(item => `
-                <div class="lv-cover-line">
-                    ${item.date ? `<span class="lv-cover-date">${esc(longDate(item.date).slice(0, -5))}</span>` : ''}
-                    ${codeBadge(item.code, 'staff', { title: item.name || item.code })}
-                    <span>${esc(item.name || item.code)}</span>
-                </div>`).join('');
+    function matches(l, f) {
+        if (f.type !== 'all' && l.leave_type !== f.type) return false;
+        // Overlap with the picked range, not containment.
+        if (f.from && l.end_date < f.from) return false;
+        if (f.to && l.start_date > f.to) return false;
+        return true;
     }
 
-    function reasonCell(l) {
-        return l.reason && l.reason !== '—' ? esc(l.reason) : '<span class="lv-cell-sub">—</span>';
+    function rowOf(key, l) {
+        if (key === 'history') return `<tr>${cellsOf(l)}</tr>`;
+        // Same rule as the server: edit or cancel only before the first day.
+        const actions = l.start_date > TODAY
+            ? `<button type="button" class="btn-secondary-sm" data-edit-id="${esc(l.id)}">Edit</button>
+               <button type="button" class="btn-secondary-sm" data-cancel-id="${esc(l.id)}">Cancel</button>`
+            : '';
+        return `<tr>${cellsOf(l)}<td class="leave-actions">${actions}</td></tr>`;
     }
 
-    // ---- Upcoming / History rendering ----
+    function renderTab(key) {
+        const tab = TABS[key];
+        const all = leaves.filter(tab.pick).sort(tab.order);
+        const list = all.filter(l => matches(l, tab.filter));
+        const filtered = Object.keys(BLANK).some(k => tab.filter[k] !== BLANK[k]);
 
-    function renderUpcoming() {
-        const tbody = document.getElementById('lvUpcomingList');
-        const upcoming = leaves.filter(isUpcoming);
-        document.getElementById('lvUpcomingCount').textContent =
-            upcoming.length + (upcoming.length === 1 ? ' request' : ' requests');
-
-        if (!upcoming.length) {
-            tbody.innerHTML = '<tr><td colspan="6" class="dir-empty">No upcoming leave.</td></tr>';
-            return;
-        }
-
-        tbody.innerHTML = upcoming.map(l => {
-            const canCancel = sortedDates(l)[0] >= TODAY;
-            return `
-                <tr>
-                    <td><strong>${esc(l.type)}</strong></td>
-                    <td>${dateCell(l)}</td>
-                    <td>${durationCell(l)}</td>
-                    <td>${reasonCell(l)}</td>
-                    <td>${coverCell(l)}</td>
-                    <td style="text-align: right;">
-                        ${canCancel ? `<button type="button" class="btn-secondary-sm" data-cancel-id="${l.id}">Cancel</button>` : ''}
-                    </td>
-                </tr>`;
-        }).join('');
+        page.querySelector(`[data-rows="${key}"]`).innerHTML = list.length
+            ? list.map(l => rowOf(key, l)).join('')
+            : `<tr><td colspan="${tab.columns}" class="leave-empty">${esc(filtered && all.length ? 'No leave matches these filters.' : tab.empty)}</td></tr>`;
+        page.querySelector(`[data-summary="${key}"]`).textContent = filtered
+            ? `Showing ${list.length} of ${all.length}`
+            : key === 'upcoming'
+                ? 'Leave can be edited or cancelled up to the day before it starts.'
+                : `${all.length} past leave record${all.length === 1 ? '' : 's'}`;
+        page.querySelector(`[data-count="${key}"]`).textContent = all.length;
+        page.querySelector(`[data-filters="${key}"] [data-clear]`).hidden = !filtered;
     }
-
-    document.getElementById('lvUpcomingList').addEventListener('click', (e) => {
-        const btn = e.target.closest('[data-cancel-id]');
-        if (!btn) return;
-        const id = parseInt(btn.dataset.cancelId, 10);
-        leaves = leaves.map(l => l.id === id ? { ...l, cancelled: true } : l);
-        renderAll();
-        window.ttToast?.('Leave cancelled.', { icon: 'fa-circle-check' });
-    });
-
-    function renderHistory() {
-        const from = document.getElementById('lvFilterFrom').value;
-        const to = document.getElementById('lvFilterTo').value;
-        document.getElementById('lvClearFilter').hidden = !(from || to);
-
-        const hist = leaves.filter(isHistory).filter(l => {
-            const sorted = sortedDates(l);
-            const first = sorted[0], last = sorted[sorted.length - 1];
-            if (from && last < from) return false;
-            if (to && first > to) return false;
-            return true;
-        });
-        document.getElementById('lvHistoryCount').textContent =
-            hist.length + (hist.length === 1 ? ' request' : ' requests');
-
-        const tbody = document.getElementById('lvHistoryBody');
-        if (!hist.length) {
-            tbody.innerHTML = '<tr><td colspan="6" class="dir-empty">No leave in this range.</td></tr>';
-            return;
-        }
-
-        tbody.innerHTML = hist.map(l => `
-            <tr>
-                <td><strong>${esc(l.type)}</strong></td>
-                <td>${dateCell(l)}</td>
-                <td>${durationCell(l)}</td>
-                <td>${reasonCell(l)}</td>
-                <td>${coverCell(l)}</td>
-                <td style="text-align: right;">
-                    ${l.cancelled
-                        ? '<span class="pill pill-muted">Cancelled</span>'
-                        : '<span class="pill pill-active">Taken</span>'}
-                </td>
-            </tr>`).join('');
-    }
-
-    document.getElementById('lvFilterFrom').addEventListener('input', renderHistory);
-    document.getElementById('lvFilterTo').addEventListener('input', renderHistory);
-    document.getElementById('lvClearFilter').addEventListener('click', () => {
-        document.getElementById('lvFilterFrom').value = '';
-        document.getElementById('lvFilterTo').value = '';
-        renderHistory();
-    });
 
     function renderAll() {
-        renderUpcoming();
-        renderHistory();
+        Object.keys(TABS).forEach(renderTab);
     }
+
+    Object.keys(TABS).forEach(key => {
+        const tab = TABS[key];
+        const bar = page.querySelector(`[data-filters="${key}"]`);
+        bar.addEventListener('input', e => {
+            const name = e.target.dataset.filter;
+            if (!name) return;
+            tab.filter[name] = e.target.value;
+            renderTab(key);
+        });
+        bar.querySelector('[data-clear]').addEventListener('click', () => {
+            tab.filter = { ...BLANK };
+            bar.querySelectorAll('[data-filter]').forEach(input => { input.value = BLANK[input.dataset.filter]; });
+            renderTab(key);
+        });
+    });
+
+    // ?tab= kept in the URL so a reload opens the same tab.
+    const tabBar = document.getElementById('lvTabs');
+    tabBar.addEventListener('click', e => {
+        const b = e.target.closest('[data-tab]');
+        if (!b) return;
+        tabBar.querySelectorAll('[data-tab]').forEach(x => {
+            x.classList.toggle('active', x === b);
+            x.setAttribute('aria-selected', x === b ? 'true' : 'false');
+        });
+        page.querySelectorAll('[data-panel]').forEach(p => { p.hidden = p.dataset.panel !== b.dataset.tab; });
+        const url = new URL(location.href);
+        url.searchParams.set('tab', b.dataset.tab);
+        history.replaceState(history.state, '', url);
+    });
+
+    page.querySelector('[data-rows="upcoming"]').addEventListener('click', (e) => {
+        const editBtn = e.target.closest('[data-edit-id]');
+        if (editBtn) {
+            const rec = leaves.find(l => l.id === editBtn.dataset.editId);
+            if (rec) openPanel(rec);
+            return;
+        }
+
+        const btn = e.target.closest('[data-cancel-id]');
+        if (!btn) return;
+        const id = btn.dataset.cancelId;
+        if (!confirm('Cancel this leave? It will be removed, and your cover staff will be told they are no longer needed.')) return;
+
+        btn.disabled = true;
+        send('/leave/' + encodeURIComponent(id), 'DELETE').then(data => {
+            if (!data.success) {
+                btn.disabled = false;
+                toast(data.message || 'Could not cancel the leave.', true);
+                return;
+            }
+            leaves = leaves.filter(l => l.id !== id);
+            renderAll();
+            toast('Leave cancelled.');
+        });
+    });
 
     // ---- Request Leave panel (docked, not a modal — see lvRequestPanel) ----
     const panel = document.getElementById('lvRequestPanel');
@@ -192,6 +193,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let selectedDates = [];
     let isPartialDay = false;
     let perDayCover = {}; // { 'YYYY-MM-DD': { code: 'MKO', name: 'Mr. Kojo Amoah' } }
+    let editingId = null; // id of the leave being edited, null for a new one
 
     function fmt(date) {
         const y = date.getFullYear();
@@ -225,11 +227,14 @@ document.addEventListener('DOMContentLoaded', () => {
             const classes = ['lv-day'];
             if (selectedDates.includes(dateStr)) classes.push('lv-day-selected');
             if (dateStr === TODAY) classes.push('lv-day-today');
-            html += `<button type="button" class="${classes.join(' ')}" data-date="${dateStr}">${d}</button>`;
+            // Leave cannot be requested for a past date (the server refuses it too).
+            const past = dateStr < TODAY;
+            if (past) classes.push('lv-day-past');
+            html += `<button type="button" class="${classes.join(' ')}" data-date="${dateStr}"${past ? ' disabled' : ''}>${d}</button>`;
         }
         grid.innerHTML = html;
 
-        grid.querySelectorAll('.lv-day:not(.lv-day-empty)').forEach(btn => {
+        grid.querySelectorAll('.lv-day:not(.lv-day-empty):not(.lv-day-past)').forEach(btn => {
             btn.addEventListener('click', () => {
                 const dateStr = btn.dataset.date;
                 const idx = selectedDates.indexOf(dateStr);
@@ -284,7 +289,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (selectedDates.length === 0) {
             container.innerHTML = `
                 <div class="lv-no-dates-cover-hint" id="lvNoDatesCoverHint">
-                    <i class="fa-regular fa-calendar-check"></i> Select dates from the calendar above to assign cover instructors.
+                    Select dates from the calendar above to assign cover staff.
                 </div>
             `;
             if (applyAllBtn) applyAllBtn.style.display = 'none';
@@ -307,7 +312,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (hasAssigned) {
                 triggerHtml = `
                     <span class="lv-combobox-selected-text">
-                        <span class="code-badge code-badge--staff" style="margin-right: 6px;">${esc(assigned.code)}</span>
+                        <span class="code-badge ${COVER_BADGE}" style="margin-right: 6px;">${esc(assigned.code)}</span>
                         <strong>${esc(assigned.name)}</strong>
                     </span>
                     <button type="button" class="lv-combobox-clear-btn" data-clear-date="${esc(d)}" title="Clear assignment"><i class="fa-solid fa-xmark"></i></button>
@@ -315,17 +320,17 @@ document.addEventListener('DOMContentLoaded', () => {
             } else {
                 triggerHtml = `
                     <span class="lv-combobox-selected-text">
-                        <span class="lv-combobox-placeholder"><i class="fa-solid fa-user-plus" style="margin-right: 6px;"></i>Select cover instructor...</span>
+                        <span class="lv-combobox-placeholder">Select cover staff…</span>
                     </span>
                     <i class="fa-solid fa-chevron-down lv-combobox-chevron"></i>
                 `;
             }
 
-            const itemsHtml = availableInstructors.map(inst => {
+            const itemsHtml = COVERS.map(inst => {
                 const isSel = hasAssigned && assigned.code === inst.code;
                 return `
                     <div class="lv-combobox-item ${isSel ? 'selected' : ''}" data-date="${esc(d)}" data-code="${esc(inst.code)}" data-name="${esc(inst.name)}">
-                        <span class="code-badge code-badge--staff">${esc(inst.code)}</span>
+                        <span class="code-badge ${COVER_BADGE}">${esc(inst.code)}</span>
                         <span class="lv-combobox-name">${esc(inst.name)}</span>
                         ${isSel ? '<i class="fa-solid fa-check" style="color: #2563eb; font-size: 11px;"></i>' : ''}
                     </div>
@@ -345,7 +350,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         <div class="lv-combobox-dropdown" hidden>
                             <div class="lv-combobox-search-wrap">
                                 <i class="fa-solid fa-magnifying-glass"></i>
-                                <input type="text" class="lv-combobox-search-input" placeholder="Search instructor by name or code..." autocomplete="off">
+                                <input type="text" class="lv-combobox-search-input" placeholder="Search by name or code…" autocomplete="off">
                             </div>
                             <div class="lv-combobox-menu">
                                 ${itemsHtml}
@@ -446,7 +451,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (!emptyMsg) {
                 emptyMsg = document.createElement('div');
                 emptyMsg.className = 'lv-combobox-empty';
-                emptyMsg.textContent = 'No matching instructors found.';
+                emptyMsg.textContent = 'No matching staff found.';
                 menu.appendChild(emptyMsg);
             }
             emptyMsg.style.display = 'block';
@@ -533,24 +538,36 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // The panel floats over the page (.floating-panel in components.css),
     // pinned top/right/bottom — it sizes itself, nothing to measure here.
-    function openPanel() {
-        selectedDates = [];
-        isPartialDay = false;
+    // With a record: edit mode, prefilled from that leave.
+    function openPanel(rec) {
+        editingId = rec && rec.id ? rec.id : null;
+        selectedDates = rec && rec.id ? rec.days.map(d => d.date) : [];
+        isPartialDay = !!(rec && rec.id && rec.time_from);
         perDayCover = {};
-        if (document.getElementById('lvType')) document.getElementById('lvType').value = '';
-        if (document.getElementById('lvReason')) document.getElementById('lvReason').value = '';
-        if (document.getElementById('lvTimeFrom')) document.getElementById('lvTimeFrom').value = '08:00';
-        if (document.getElementById('lvTimeTo')) document.getElementById('lvTimeTo').value = '12:00';
+        if (rec && rec.id) {
+            rec.days.forEach(d => { perDayCover[d.date] = { code: d.cover_code, name: d.cover_name }; });
+        }
+        document.getElementById('lvType').value = editingId ? rec.leave_type : '';
+        document.getElementById('lvReason').value = editingId ? (rec.reason || '') : '';
+        document.getElementById('lvTimeFrom').value = isPartialDay ? rec.time_from : '08:00';
+        document.getElementById('lvTimeTo').value = isPartialDay ? rec.time_to : '12:00';
+
+        document.getElementById('lvPanelTitle').textContent = editingId ? 'Edit Leave' : 'Request Leave';
+        document.getElementById('lvPanelSub').textContent = editingId
+            ? 'Change your leave before it starts'
+            : 'Select dates and a cover for each day';
+        document.getElementById('lvSubmitLabel').textContent = editingId ? 'Save Changes' : 'Submit';
 
         if (durationSeg) {
             durationSeg.querySelectorAll('.lv-seg-btn, .seg-btn').forEach(b => {
-                b.classList.toggle('active', b.dataset.duration === 'full');
+                b.classList.toggle('active', b.dataset.duration === (isPartialDay ? 'partial' : 'full'));
             });
         }
         const timeRow = document.getElementById('lvTimeInputsRow');
-        if (timeRow) timeRow.hidden = true;
+        if (timeRow) timeRow.hidden = !isPartialDay;
 
-        viewDate = new Date();
+        // Open the calendar on the request's first month when editing.
+        viewDate = editingId ? new Date(rec.start_date + 'T00:00:00') : new Date();
         renderCalendar();
         renderSelectedChips();
         renderPerDayCoverCards();
@@ -566,7 +583,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const backBtn = document.getElementById('lvBackBtn');
 
-    openBtn.addEventListener('click', openPanel);
+    openBtn.addEventListener('click', () => openPanel(null));
     closeBtn.addEventListener('click', closePanel);
     cancelBtn.addEventListener('click', closePanel);
     backBtn?.addEventListener('click', closePanel);
@@ -582,49 +599,53 @@ document.addEventListener('DOMContentLoaded', () => {
         if (e.target === document.body && panel && !panel.hidden) closePanel();
     });
 
-    document.getElementById('submitLeaveRequest')?.addEventListener('click', () => {
+    const submitBtn = document.getElementById('submitLeaveRequest');
+    submitBtn?.addEventListener('click', () => {
         const type = document.getElementById('lvType')?.value;
         const reason = document.getElementById('lvReason')?.value.trim();
         const hasDates = selectedDates.length > 0;
         const allCovered = hasDates && selectedDates.every(d => !!perDayCover[d]);
 
         if (!type || !hasDates) {
-            window.ttToast?.('Please select a leave type and dates.', { icon: 'fa-circle-exclamation' });
+            toast('Please select a leave type and dates.', true);
             return;
         }
-
         if (!allCovered) {
-            window.ttToast?.('Please assign a cover instructor for each selected date.', { icon: 'fa-circle-exclamation' });
+            toast('Please assign a cover person for each selected date.', true);
             return;
         }
 
-        const coverStaffList = selectedDates.map(d => ({
-            date: d,
-            code: perDayCover[d].code,
-            name: perDayCover[d].name
-        }));
-
-        const uniqueNames = Array.from(new Set(coverStaffList.map(c => c.name)));
-        const coverSummary = uniqueNames.join(', ');
-
-        const rec = {
-            id: nextId++,
-            type,
-            dates: [...selectedDates].sort(),
-            reason: reason || '—',
-            cover: coverSummary,
-            cover_staff: coverStaffList,
-            perDayCover: { ...perDayCover },
-            cancelled: false,
-        };
-        if (isPartialDay) {
-            rec.timeFrom = document.getElementById('lvTimeFrom')?.value || '08:00';
-            rec.timeTo = document.getElementById('lvTimeTo')?.value || '12:00';
+        const timeFrom = isPartialDay ? document.getElementById('lvTimeFrom').value : null;
+        const timeTo = isPartialDay ? document.getElementById('lvTimeTo').value : null;
+        if (isPartialDay && !(timeFrom && timeTo && timeFrom < timeTo)) {
+            toast('The end time must be after the start time.', true);
+            return;
         }
-        leaves = [rec, ...leaves];
-        closePanel();
-        renderAll();
-        window.ttToast?.('Leave request submitted successfully.', { icon: 'fa-circle-check' });
+
+        const body = {
+            leave_type: type,
+            reason: reason || null,
+            time_from: timeFrom,
+            time_to: timeTo,
+            days: [...selectedDates].sort().map(d => ({ date: d, cover_code: perDayCover[d].code })),
+        };
+        const wasEditing = editingId;
+
+        submitBtn.disabled = true;
+        send(wasEditing ? '/leave/' + encodeURIComponent(wasEditing) : '/leave', wasEditing ? 'PUT' : 'POST', body)
+            .then(data => {
+                if (!data.success) {
+                    validateForm();
+                    toast(data.message || 'Could not save the leave request.', true);
+                    return;
+                }
+                leaves = wasEditing
+                    ? leaves.map(l => l.id === wasEditing ? data.record : l)
+                    : [data.record, ...leaves];
+                closePanel();
+                renderAll();
+                toast(wasEditing ? 'Leave updated.' : 'Leave recorded.');
+            });
     });
 
     renderAll();

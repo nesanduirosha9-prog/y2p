@@ -45,6 +45,7 @@ if (!$isInstructor) {
         // Same screen for both positions; the Coordinator also gets the duty
         // tabs (This week / Requests / Who's free) on it.
         $admin[] = $nav('/workload/distribution', 'fa-solid fa-table-cells', 'Workload', 'workload-dist');
+        $admin[] = $nav('/leave/requests', 'fa-regular fa-calendar-check', 'Leave Requests', 'leave-requests');
         $admin[] = $nav('/evaluations', 'fa-solid fa-clipboard-check', 'Evaluations',   'evaluations');
         $admin[] = $nav('/staff',       'fa-solid fa-user-check',      'Staff Details', 'staff');
         // The department-wide log is rarely needed, so it closes the admin
