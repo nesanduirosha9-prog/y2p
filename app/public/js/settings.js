@@ -12,6 +12,7 @@ document.addEventListener('DOMContentLoaded', () => {
     initAvatarUpload();
     initThemeSelection();
     initSaveButton();
+    initPasswordChange();
     initRevokeCoordinator();
     initHandoverPanel();
 });
@@ -242,12 +243,12 @@ function initRevokeCoordinator() {
                     window.location.hash = 'handover';
                     window.location.reload();
                 } else {
-                    alert(data.message || 'Could not revoke the role.');
+                    showToast(data.message || 'Could not revoke the role.', true);
                     btn.disabled = false;
                 }
             })
             .catch(() => {
-                alert('Something went wrong. Please try again.');
+                showToast('Something went wrong. Please try again.', true);
                 btn.disabled = false;
             });
     });
@@ -416,20 +417,100 @@ function initSaveButton() {
     });
 }
 
-function showToast(msg, isError) {
-    let toast = document.getElementById('sysToast');
-    if (!toast) {
-        toast = document.createElement('div');
-        toast.id = 'sysToast';
-        toast.className = 'sys-toast';
-        document.body.appendChild(toast);
-    }
-    toast.classList.toggle('error', !!isError);
-    toast.textContent = msg;
-    toast.classList.add('show');
+/**
+ * Settings → Password. "Change Password" emails a 6-digit code to the
+ * member's own address (POST /settings/password/code) and opens the form;
+ * "Update Password" sends the code + new password (POST /settings/password).
+ * Same 8-character minimum as sign-up.
+ */
+function initPasswordChange() {
+    const start = document.getElementById('pwStart');
+    const form = document.getElementById('pwForm');
+    const footer = document.getElementById('pwFooter');
+    const sendBtn = document.getElementById('pwSendCode');
+    const resendBtn = document.getElementById('pwResend');
+    const submitBtn = document.getElementById('pwSubmit');
+    const codeInput = document.getElementById('pwCode');
+    const newInput = document.getElementById('pwNew');
+    const confirmInput = document.getElementById('pwConfirm');
+    if (!start || !form) return;
 
-    clearTimeout(toast._hideTimer);
-    toast._hideTimer = setTimeout(() => {
-        toast.classList.remove('show');
-    }, 2500);
+    function post(url, body) {
+        return fetch(url, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(body || {})
+        }).then(r => r.json());
+    }
+
+    function showStep(editing) {
+        start.hidden = editing;
+        form.hidden = !editing;
+        footer.hidden = !editing;
+        if (!editing) {
+            [codeInput, newInput, confirmInput].forEach(i => { i.value = ''; });
+        }
+    }
+
+    function requestCode(btn) {
+        const label = btn.innerHTML;
+        btn.disabled = true;
+        btn.textContent = 'Sending…';
+        return post('/settings/password/code')
+            .then(data => {
+                if (!data.success) {
+                    showToast(data.message || 'Could not send the code.', true);
+                    return;
+                }
+                showToast(data.message || 'Verification code sent');
+                showStep(true);
+                codeInput.focus();
+            })
+            .catch(() => showToast('Could not reach the server', true))
+            .finally(() => {
+                btn.disabled = false;
+                btn.innerHTML = label;
+            });
+    }
+
+    sendBtn.addEventListener('click', () => requestCode(sendBtn));
+    resendBtn.addEventListener('click', () => requestCode(resendBtn));
+    document.getElementById('pwCancel').addEventListener('click', () => showStep(false));
+
+    // Digits only, like the sign-in pages' code boxes.
+    codeInput.addEventListener('input', () => {
+        codeInput.value = codeInput.value.replace(/\D/g, '').slice(0, 6);
+    });
+
+    submitBtn.addEventListener('click', () => {
+        const otp = codeInput.value.trim();
+        const password = newInput.value;
+
+        if (!/^\d{6}$/.test(otp)) { showToast('Enter the 6-digit code from your email', true); codeInput.focus(); return; }
+        if (password.length < 8) { showToast('Use at least 8 characters for the new password', true); newInput.focus(); return; }
+        if (password !== confirmInput.value) { showToast('The passwords do not match', true); confirmInput.focus(); return; }
+
+        submitBtn.disabled = true;
+        submitBtn.textContent = 'Updating…';
+        post('/settings/password', { otp: otp, password: password })
+            .then(data => {
+                if (!data.success) {
+                    showToast(data.message || 'Could not update your password.', true);
+                    if (data.field === 'otp') codeInput.select();
+                    return;
+                }
+                showToast(data.message || 'Password updated');
+                showStep(false);
+            })
+            .catch(() => showToast('Could not reach the server', true))
+            .finally(() => {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = '<i class="fa-solid fa-check"></i> Update Password';
+            });
+    });
+}
+
+// System toast (js/toast.js)
+function showToast(msg, isError) {
+    isError ? ttToast.error(msg) : ttToast(msg);
 }

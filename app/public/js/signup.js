@@ -7,18 +7,11 @@
 //    POSTs /signup/verify-otp and advances only on a verified match.
 // 3. Step 3 (password): live length/match validation, then POST /signup with
 //    {email, password} — rejected unless step 2 verified this same email.
-// Feedback goes through the system toast (window.ttToast, js/instructor/common.js).
+// Feedback goes through the system toast (window.ttToast, js/toast.js).
 // Wait for the HTML to fully load before running anything
 document.addEventListener('DOMContentLoaded', function() {
 
-    // Toast helper — long server messages stay up a little longer.
-    function notify(message, isError) {
-        window.ttToast(message, {
-            type: isError ? 'error' : undefined,
-            icon: isError ? 'fa-circle-exclamation' : 'fa-circle-check',
-            duration: message.length > 80 ? 6000 : 4000
-        });
-    }
+    const notify = (message, isError) => isError ? ttToast.error(message) : ttToast(message);
 
     // 1. Grab the Content Containers (The 3 forms on the right)
     const step1Content = document.getElementById('step-1-content');

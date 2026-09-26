@@ -19,7 +19,8 @@ use app\services\EmailService;
 // 3. approve() — POST, assigns a role/rank and flips status to 'active'.
 // 4. reject()  — POST, deletes a pending row outright (no soft-delete).
 // 5. create()  — POST, adds an active Lecturer / Junior Staff account from
-//    just an email, and emails the member how to set their password.
+//    just an email, with a random temporary password emailed to the member
+//    (DEMO_AUTH: the shared demo password instead, nothing emailed).
 // 6. deactivate() / activate() — POST, soft-removes a member who left the
 //    university (and brings them back). An active account is never DELETEd:
 //    too many tables reference it — see migration 023.
@@ -39,6 +40,10 @@ class StaffController extends Controller
         'lecturer' => 'senior',
         'junior' => 'junior',
     ];
+
+    // Password for accounts added while DEMO_AUTH is on — the same placeholder
+    // every seeded account uses (database/seeds/001_staff.sql).
+    private const DEMO_PASSWORD = 'Password123!';
 
     public function __construct()
     {
@@ -118,41 +123,66 @@ class StaffController extends Controller
             return;
         }
 
-        $created = $staffModel->createByAdmin($email, $rank);
+        // Demo mode: the same placeholder password as every seeded account,
+        // nothing emailed. Real mode: a random password, emailed to the member.
+        $demo = defined('DEMO_AUTH') && DEMO_AUTH;
+        $temporaryPassword = $demo ? self::DEMO_PASSWORD : $this->temporaryPassword();
+        $created = $staffModel->createByAdmin($email, $rank, $temporaryPassword);
         if ($created === null) {
             $response->json(['success' => false, 'message' => 'Could not create the account. Please try again.'], 500);
             return;
         }
 
-        // The account exists either way; the email only tells the member how
-        // to get in. In demo mode nothing is sent — Forgot Password accepts
-        // any code there, so the member can still set a password.
-        $demo = defined('DEMO_AUTH') && DEMO_AUTH;
-        $invited = !$demo && EmailService::send($email, 'Your StaffSync account', $this->inviteBody($created['code']));
+        $invited = !$demo && EmailService::send($email, 'Your StaffSync account', $this->inviteBody($created['code'], $email, $temporaryPassword));
 
         $response->json([
             'success' => true,
             'code' => $created['code'],
             'name' => $created['name'],
+            'email' => $email,
             'invited' => $invited,
-            'demo' => $demo,
+            // Only when a real-mode email failed: shown to the coordinator
+            // once, or the account would be locked behind a password nobody knows.
+            'temporaryPassword' => (!$demo && !$invited) ? $temporaryPassword : null,
         ]);
     }
 
-    /** The invite email: no password in it — the member sets their own. */
-    private function inviteBody(string $code): string
+    /**
+     * 12 characters from an alphabet without look-alikes (0/O, 1/l/I), with
+     * at least one upper-case letter, lower-case letter and digit.
+     */
+    private function temporaryPassword(): string
+    {
+        $sets = ['ABCDEFGHJKLMNPQRSTUVWXYZ', 'abcdefghijkmnpqrstuvwxyz', '23456789'];
+        $all = implode('', $sets);
+        $chars = array_map(fn($set) => $set[random_int(0, strlen($set) - 1)], $sets);
+        while (count($chars) < 12) {
+            $chars[] = $all[random_int(0, strlen($all) - 1)];
+        }
+        // Fisher–Yates with random_int, so the guaranteed characters aren't always first.
+        for ($i = count($chars) - 1; $i > 0; $i--) {
+            $j = random_int(0, $i);
+            [$chars[$i], $chars[$j]] = [$chars[$j], $chars[$i]];
+        }
+        return implode('', $chars);
+    }
+
+    /** The invite email: sign-in details, and where to change the password. */
+    private function inviteBody(string $code, string $email, string $temporaryPassword): string
     {
         // Host comes from the request, so only accept a plain host[:port]
         // before putting it in a link.
         $host = $_SERVER['HTTP_HOST'] ?? '';
         $scheme = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
-        $link = preg_match('/^[A-Za-z0-9.\-]+(:\d+)?$/', $host)
-            ? '<a href="' . $scheme . '://' . $host . '/forgot-password">set your password</a>'
-            : 'set your password using "Forgot password" on the sign-in page';
+        $signIn = preg_match('/^[A-Za-z0-9.\-]+(:\d+)?$/', $host)
+            ? '<a href="' . $scheme . '://' . $host . '/login">Sign in to StaffSync</a>'
+            : 'Sign in to StaffSync';
 
         return '<p>An account has been created for you on StaffSync.</p>'
-            . '<p>Your staff code is <b>' . htmlspecialchars($code) . '</b>. To sign in, first '
-            . $link . ' with this email address.</p>'
+            . '<p>Staff code: <b>' . htmlspecialchars($code) . '</b><br>'
+            . 'Email: <b>' . htmlspecialchars($email) . '</b><br>'
+            . 'Temporary password: <b>' . htmlspecialchars($temporaryPassword) . '</b></p>'
+            . '<p>' . $signIn . ', then change your password from Settings → Password.</p>'
             . '<p>If you were not expecting this, you can ignore this email.</p>';
     }
 

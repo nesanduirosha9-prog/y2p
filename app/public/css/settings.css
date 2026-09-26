@@ -308,6 +308,40 @@
     color: var(--color-text-muted);
 }
 
+.sys-password-row[hidden],
+#pwForm[hidden],
+.sys-card-footer[hidden] {
+    display: none;
+}
+
+.sys-label-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.sys-link-btn {
+    padding: 0;
+    border: none;
+    background: none;
+    font-family: var(--font-sans);
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--color-primary);
+    cursor: pointer;
+}
+
+.sys-link-btn:hover { text-decoration: underline; }
+.sys-link-btn:disabled { color: var(--color-text-muted); cursor: default; text-decoration: none; }
+
+.sys-code-input {
+    max-width: 200px;
+    font-family: var(--font-mono);
+    font-size: 16px;
+    letter-spacing: 4px;
+}
+
 /* Theme Option Cards (decorative — see header comment) */
 .sys-theme-options {
     display: grid;
@@ -415,33 +449,6 @@ input:checked + .sys-slider {
 
 input:checked + .sys-slider:before {
     transform: translateX(16px);
-}
-
-/* Toast (save feedback) */
-.sys-toast {
-    position: fixed;
-    bottom: 24px;
-    right: 24px;
-    background: var(--color-navy);
-    color: #ffffff;
-    padding: 12px 18px;
-    border-radius: var(--radius-md);
-    font-size: 13px;
-    font-weight: 500;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-    z-index: 9999;
-    opacity: 0;
-    transform: translateY(10px);
-    transition: opacity 0.3s ease, transform 0.3s ease;
-}
-
-.sys-toast.error {
-    background: var(--color-danger);
-}
-
-.sys-toast.show {
-    opacity: 1;
-    transform: translateY(0);
 }
 
 /* Responsive (768px/480px per tokens.css convention) */

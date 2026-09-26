@@ -23,27 +23,9 @@ document.addEventListener('DOMContentLoaded', function () {
         return w ? 'Week ' + w.number + ' · ' + w.semName : 'This week';
     }
 
-    // Helper: Toast notification
+    // Helper: system toast (js/toast.js)
     function notify(msg, isSuccess = true) {
-        if (typeof window.ttToast === 'function') {
-            window.ttToast(msg, { icon: isSuccess ? 'fa-circle-check' : 'fa-circle-exclamation' });
-            return;
-        }
-        // Fallback toast
-        let toast = document.getElementById('hubToast');
-        if (!toast) {
-            toast = document.createElement('div');
-            toast.id = 'hubToast';
-            toast.style.cssText = 'position: fixed; bottom: 24px; right: 24px; z-index: 9999; background: #0f1c2e; color: #fff; padding: 12px 20px; border-radius: 8px; font-size: 13px; font-weight: 500; display: flex; align-items: center; gap: 10px; box-shadow: 0 10px 25px rgba(0,0,0,0.2); transition: opacity 0.3s;';
-            document.body.appendChild(toast);
-        }
-        toast.innerHTML = `<i class="fa-solid ${isSuccess ? 'fa-circle-check' : 'fa-circle-exclamation'}" style="color: ${isSuccess ? '#10b981' : '#f59e0b'};"></i> <span>${esc(msg)}</span>`;
-        toast.style.display = 'flex';
-        toast.style.opacity = '1';
-        setTimeout(() => {
-            toast.style.opacity = '0';
-            setTimeout(() => { toast.style.display = 'none'; }, 300);
-        }, 3500);
+        isSuccess ? ttToast(msg) : ttToast.error(msg);
     }
 
     // =========================================================================

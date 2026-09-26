@@ -43,11 +43,6 @@ document.addEventListener('DOMContentLoaded', function () {
     const tspBody = document.getElementById('tspBody');
     const tspFooter = document.getElementById('tspFooter');
 
-    // Toast
-    const ttToast = document.getElementById('ttToast');
-    const toastMsg = document.getElementById('toastMsg');
-    const toastIcon = document.getElementById('toastIcon');
-
     // Filters
     const lecturerFilter = document.getElementById('lecturerFilter');
     const roomFilter = document.getElementById('roomFilter');
@@ -63,7 +58,6 @@ document.addEventListener('DOMContentLoaded', function () {
     let isArchive = false;
     let selecting = false;
     let selectedCells = []; // { el, dayKey, hour }
-    let toastTimeout = null;
 
     // Save initial grid HTML to restore when returning from archive
     let currentYearGridHtml = grid.innerHTML;
@@ -80,15 +74,9 @@ document.addEventListener('DOMContentLoaded', function () {
         return hourLabel(s) + ' – ' + hourLabel(s + d);
     }
 
+    // System toast (js/toast.js)
     function showToast(message, isSuccess = true) {
-        if (toastTimeout) clearTimeout(toastTimeout);
-        toastMsg.textContent = message;
-        toastIcon.className = isSuccess ? 'fa-solid fa-circle-check' : 'fa-solid fa-circle-exclamation';
-        toastIcon.style.color = isSuccess ? '#10b981' : '#f59e0b';
-        ttToast.hidden = false;
-        toastTimeout = setTimeout(() => {
-            ttToast.hidden = true;
-        }, 3500);
+        isSuccess ? ttToast(message) : ttToast.error(message);
     }
 
     // ------------------------------------------------------------------
@@ -473,7 +461,7 @@ document.addEventListener('DOMContentLoaded', function () {
             const code = courseSelect.value;
             const venue = document.getElementById('newVenue').value;
             if (!code || !venue) {
-                alert('Please select a course module and a venue.');
+                ttToast.warning('Please select a course module and a venue.');
                 return;
             }
             const payload = sessionPayload(
@@ -601,7 +589,7 @@ document.addEventListener('DOMContentLoaded', function () {
             const minHour = Math.min.apply(null, hoursArr);
             const maxHour = Math.max.apply(null, hoursArr);
             if (maxHour - minHour + 1 !== selectedCells.length) {
-                alert('Please select consecutive time slots.');
+                ttToast.warning('Please select consecutive time slots.');
                 return;
             }
             openScheduleForm(selectedCells[0].dayKey, minHour, selectedCells.length);

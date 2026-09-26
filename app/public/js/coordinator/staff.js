@@ -79,7 +79,7 @@ document.addEventListener('DOMContentLoaded', function () {
             if (confirmBtn) {
                 const role = row.querySelector('.assign-role-select').value;
                 if (!role) {
-                    alert('Please select a role to assign before confirming.');
+                    ttToast.warning('Please select a role to assign before confirming.');
                     return;
                 }
                 confirmBtn.disabled = true;
@@ -93,12 +93,12 @@ document.addEventListener('DOMContentLoaded', function () {
                         if (data.success) {
                             removeRow(row);
                         } else {
-                            alert(data.message || 'Could not approve this registration.');
+                            ttToast.error(data.message || 'Could not approve this registration.');
                             confirmBtn.disabled = false;
                         }
                     })
                     .catch(function () {
-                        alert('Something went wrong. Please try again.');
+                        ttToast.error('Something went wrong. Please try again.');
                         confirmBtn.disabled = false;
                     });
                 return;
@@ -118,12 +118,12 @@ document.addEventListener('DOMContentLoaded', function () {
                         if (data.success) {
                             removeRow(row);
                         } else {
-                            alert(data.message || 'Could not reject this registration.');
+                            ttToast.error(data.message || 'Could not reject this registration.');
                             rejectBtn.disabled = false;
                         }
                     })
                     .catch(function () {
-                        alert('Something went wrong. Please try again.');
+                        ttToast.error('Something went wrong. Please try again.');
                         rejectBtn.disabled = false;
                     });
             }
@@ -203,6 +203,7 @@ document.addEventListener('DOMContentLoaded', function () {
             submitBtn.textContent = 'Create account';
             form.hidden = false;
             done.hidden = true;
+            document.getElementById('addStaffCredPassword').textContent = '';
         }
 
         function openAdd() {
@@ -230,6 +231,12 @@ document.addEventListener('DOMContentLoaded', function () {
         document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && !addPanel.hidden) closeAdd(); });
         document.getElementById('addStaffFinish').addEventListener('click', closeAdd);
         document.getElementById('addStaffAnother').addEventListener('click', function () { resetForm(); emailInput.focus(); });
+        document.getElementById('addStaffCopy').addEventListener('click', function () {
+            const password = document.getElementById('addStaffCredPassword').textContent;
+            navigator.clipboard.writeText(password)
+                .then(function () { ttToast('Password copied'); })
+                .catch(function () { ttToast.error('Could not copy — select the password and copy it manually.'); });
+        });
 
         form.addEventListener('submit', function (e) {
             e.preventDefault();
@@ -262,11 +269,16 @@ document.addEventListener('DOMContentLoaded', function () {
                     const roleLabel = roleInput.value === 'lecturer' ? 'Lecturer' : 'Junior Staff';
                     document.getElementById('addStaffDoneTitle').textContent =
                         roleLabel + ' account created — ' + data.code;
-                    document.getElementById('addStaffDoneSub').textContent = data.invited
-                        ? 'We emailed ' + email + ' with how to set a password.'
-                        : data.demo
-                            ? 'Demo mode: no email was sent. ' + email + ' can set a password with "Forgot password" on the sign-in page.'
-                            : 'The account exists, but the email could not be sent. Ask them to use "Forgot password" on the sign-in page with ' + email + '.';
+
+                    // Emailed → one line. Otherwise the server hands the
+                    // temporary password back once, for the coordinator to pass on.
+                    const sub = document.getElementById('addStaffDoneSub');
+                    const creds = document.getElementById('addStaffCreds');
+                    sub.hidden = !data.invited;
+                    sub.textContent = data.invited ? 'Sign-in details sent to ' + data.email : '';
+                    creds.hidden = !data.temporaryPassword;
+                    document.getElementById('addStaffCredEmail').textContent = data.email;
+                    document.getElementById('addStaffCredPassword').textContent = data.temporaryPassword || '';
                     form.hidden = true;
                     done.hidden = false;
                     document.getElementById('addStaffFinish').focus();
@@ -338,14 +350,14 @@ document.addEventListener('DOMContentLoaded', function () {
                     .then(function (data) {
                         statusBtn.disabled = false;
                         if (!data.success) {
-                            alert(data.message || 'Could not change this account.');
+                            ttToast.error(data.message || 'Could not change this account.');
                             return;
                         }
                         setRowStatus(row, statusBtn, isDeactivating ? 'inactive' : 'active');
                     })
                     .catch(function () {
                         statusBtn.disabled = false;
-                        alert('Something went wrong. Please try again.');
+                        ttToast.error('Something went wrong. Please try again.');
                     });
                 return;
             }

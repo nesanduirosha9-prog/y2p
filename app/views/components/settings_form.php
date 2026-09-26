@@ -109,6 +109,58 @@ $initials = ViewHelpers::currentAvatarCode();
 
         <div style="height: 20px;"></div>
 
+        <!-- Password: a 6-digit code goes to the member's own email, then the
+             new password is set with it. js/settings.js (initPasswordChange)
+             drives it; SettingsController::sendPasswordCode()/changePassword(). -->
+        <div class="sys-card" id="passwordCard">
+            <div class="sys-card-header">
+                <h3><i class="fa-solid fa-lock"></i> Password</h3>
+            </div>
+
+            <div class="sys-card-body">
+                <div class="sys-password-row" id="pwStart">
+                    <div class="sys-password-info">
+                        <p>Change password</p>
+                        <span><?= htmlspecialchars($profile['email'] ?? '') ?></span>
+                    </div>
+                    <button type="button" class="sys-btn sys-btn-secondary" id="pwSendCode">
+                        <i class="fa-solid fa-key"></i> Change Password
+                    </button>
+                </div>
+
+                <form id="pwForm" hidden novalidate onsubmit="return false;">
+                    <div class="sys-form-grid">
+                        <div class="sys-form-group full-width">
+                            <div class="sys-label-row">
+                                <label class="sys-label" for="pwCode">Verification Code</label>
+                                <button type="button" class="sys-link-btn" id="pwResend">Resend code</button>
+                            </div>
+                            <input type="text" class="sys-input sys-code-input" id="pwCode" maxlength="6" inputmode="numeric" autocomplete="one-time-code" placeholder="000000">
+                        </div>
+
+                        <div class="sys-form-group">
+                            <label class="sys-label" for="pwNew">New Password</label>
+                            <input type="password" class="sys-input" id="pwNew" autocomplete="new-password" placeholder="Min. 8 characters">
+                        </div>
+
+                        <div class="sys-form-group">
+                            <label class="sys-label" for="pwConfirm">Confirm Password</label>
+                            <input type="password" class="sys-input" id="pwConfirm" autocomplete="new-password" placeholder="Repeat password">
+                        </div>
+                    </div>
+                </form>
+            </div>
+
+            <div class="sys-card-footer" id="pwFooter" hidden>
+                <button type="button" class="sys-btn sys-btn-secondary" id="pwCancel">Cancel</button>
+                <button type="button" class="sys-btn sys-btn-primary" id="pwSubmit">
+                    <i class="fa-solid fa-check"></i> Update Password
+                </button>
+            </div>
+        </div>
+
+        <div style="height: 20px;"></div>
+
         <!-- Theme: decorative only -->
         <div class="sys-card">
             <div class="sys-card-header">

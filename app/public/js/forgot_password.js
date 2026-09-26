@@ -10,17 +10,10 @@
 // 3. Step 3 (new password): live match validation, then POST /forgot-password
 //    with {email, password} — AuthController::resetPassword() rejects this
 //    unless step 2's verification is still valid for this same email.
-// Feedback goes through the system toast (window.ttToast, js/instructor/common.js).
+// Feedback goes through the system toast (window.ttToast, js/toast.js).
 document.addEventListener('DOMContentLoaded', function() {
 
-    // Toast helper — long server messages stay up a little longer.
-    function notify(message, isError) {
-        window.ttToast(message, {
-            type: isError ? 'error' : undefined,
-            icon: isError ? 'fa-circle-exclamation' : 'fa-circle-check',
-            duration: message.length > 80 ? 6000 : 4000
-        });
-    }
+    const notify = (message, isError) => isError ? ttToast.error(message) : ttToast(message);
 
     // UI Elements
     const step1Content = document.getElementById('step-1-content');

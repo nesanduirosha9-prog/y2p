@@ -339,6 +339,13 @@ $router->get('/settings', function (Request $request, Response $response) {
     return (new SettingsController())->index($request);
 });
 $router->post('/settings', $settingsUpdate);
+// Settings → Password: email a code to yourself, then change the password with it.
+$router->post('/settings/password/code', function (Request $request, Response $response) {
+    return (new SettingsController())->sendPasswordCode($request, $response);
+});
+$router->post('/settings/password', function (Request $request, Response $response) {
+    return (new SettingsController())->changePassword($request, $response);
+});
 
 // --- Settings > Handover ---------------------------------------------------
 // Reassigning a key role (Coordinator, In-Charge, Timetable Officer) to another

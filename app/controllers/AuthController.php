@@ -7,8 +7,7 @@ use app\core\Request;
 use app\core\Response;
 use app\core\StaffEmail;
 use app\models\StaffModel;
-use app\models\OtpCodeModel;
-use app\services\EmailService;
+use app\services\OtpService;
 
 // AuthController: login / signup / forgot-password.
 // 1. *View methods (loginView, signupView, forgotPasswordView) — GET, render
@@ -26,7 +25,7 @@ use app\services\EmailService;
 //    only), but only for an email verifySignupOtp() just verified; a
 //    Coordinator assigns the role later from the Staff screen.
 // 6. sendOtp() — POST /forgot-password/send-otp. Emails a 6-digit code via
-//    EmailService, rate-limited per email (60s cooldown, 5/hour cap). Always
+//    OtpService, rate-limited per email (60s cooldown, 5/hour cap). Always
 //    returns the same generic response whether or not the email exists, so
 //    the endpoint can't be used to enumerate accounts.
 // 7. verifyOtp() — POST /forgot-password/verify-otp. Checks the code against
@@ -38,8 +37,9 @@ use app\services\EmailService;
 //    signupView(), login(), and the `/` route in index.php.
 // 11. jsonResponse() — private helper every action above returns through.
 //
-// DEMO_AUTH (config.php) simulates every OTP step: nothing is emailed and any
-// 6-digit code verifies. Who may sign up is enforced in both modes.
+// DEMO_AUTH (config.php) simulates every OTP step (see app/services/OtpService.php):
+// nothing is emailed and any 6-digit code verifies. Who may sign up is
+// enforced in both modes.
 class AuthController extends Controller
 {
     public function __construct()
@@ -189,27 +189,12 @@ class AuthController extends Controller
             return $this->jsonResponse($response, ['success' => false, 'message' => 'Email is already registered. Sign in instead.'], 409);
         }
 
-        $sent = ['success' => true, 'message' => 'A verification code has been sent to your email.'];
-
-        if (defined('DEMO_AUTH') && DEMO_AUTH) {
-            return $this->jsonResponse($response, $sent);
+        $refused = OtpService::send($email, 'signup');
+        if ($refused !== null) {
+            return $this->jsonResponse($response, ['success' => false, 'message' => $refused[0]], $refused[1]);
         }
 
-        $otpModel = new OtpCodeModel();
-        if ($otpModel->countRequestsSince($email, 'signup', 60) > 0) {
-            return $this->jsonResponse($response, ['success' => false, 'message' => 'Please wait a minute before requesting another code.'], 429);
-        }
-        if ($otpModel->countRequestsSince($email, 'signup', 3600) >= 5) {
-            return $this->jsonResponse($response, ['success' => false, 'message' => 'Too many requests. Please try again later.'], 429);
-        }
-
-        $otp = str_pad((string) random_int(0, 999999), 6, '0', STR_PAD_LEFT);
-        if (!EmailService::sendOtpEmail($email, $otp, 'signup')) {
-            return $this->jsonResponse($response, ['success' => false, 'message' => 'Could not send the code. Please try again.'], 500);
-        }
-        $otpModel->create($email, 'signup', $otp);
-
-        return $this->jsonResponse($response, $sent);
+        return $this->jsonResponse($response, ['success' => true, 'message' => 'A verification code has been sent to your email.']);
     }
 
     // POST /signup/verify-otp — step 2; on success signup() will accept this
@@ -233,31 +218,19 @@ class AuthController extends Controller
             return $this->jsonResponse($response, ['success' => false, 'message' => 'Enter a valid email address'], 400);
         }
 
-        if (defined('DEMO_AUTH') && DEMO_AUTH) {
-            return $this->jsonResponse($response, ['success' => true, 'message' => 'If this email is registered, a code has been sent.']);
-        }
-
-        $otpModel = new OtpCodeModel();
-        if ($otpModel->countRequestsSince($email, 'password_reset', 60) > 0) {
-            return $this->jsonResponse($response, ['success' => false, 'message' => 'Please wait a minute before requesting another code.'], 429);
-        }
-        if ($otpModel->countRequestsSince($email, 'password_reset', 3600) >= 5) {
-            return $this->jsonResponse($response, ['success' => false, 'message' => 'Too many requests. Please try again later.'], 429);
-        }
-
         $generic = ['success' => true, 'message' => 'If this email is registered, a code has been sent.'];
 
-        $user = (new StaffModel())->findByEmail($email);
-        if (!$user) {
+        // An unknown email gets the same answer and no code. It also never
+        // hits a rate limit (it has no otp_codes rows), so a 429 can't
+        // reveal which emails are registered either.
+        if (!(new StaffModel())->findByEmail($email)) {
             return $this->jsonResponse($response, $generic);
         }
 
-        $otp = str_pad((string) random_int(0, 999999), 6, '0', STR_PAD_LEFT);
-        if (!EmailService::sendOtpEmail($email, $otp, 'password_reset')) {
-            // Don't store a code that was never actually delivered.
-            return $this->jsonResponse($response, ['success' => false, 'message' => 'Could not send the code. Please try again.'], 500);
+        $refused = OtpService::send($email, 'password_reset');
+        if ($refused !== null) {
+            return $this->jsonResponse($response, ['success' => false, 'message' => $refused[0]], $refused[1]);
         }
-        $otpModel->create($email, 'password_reset', $otp);
 
         return $this->jsonResponse($response, $generic);
     }
@@ -280,26 +253,11 @@ class AuthController extends Controller
         $email = trim($body['email'] ?? '');
         $otp = trim($body['otp'] ?? '');
 
-        if (!preg_match('/^\d{6}$/', $otp)) {
-            return $this->jsonResponse($response, ['success' => false, 'message' => 'Enter the 6-digit code'], 400);
+        $error = OtpService::verify($email, $purpose, $otp);
+        if ($error !== null) {
+            return $this->jsonResponse($response, ['success' => false, 'message' => $error], 400);
         }
 
-        if (defined('DEMO_AUTH') && DEMO_AUTH) {
-            $_SESSION[$sessionKey] = ['email' => $email, 'until' => time() + 300];
-            return $this->jsonResponse($response, ['success' => true]);
-        }
-
-        $otpModel = new OtpCodeModel();
-        $row = $otpModel->findLatestActive($email, $purpose);
-        if (!$row) {
-            return $this->jsonResponse($response, ['success' => false, 'message' => 'Invalid or expired code'], 400);
-        }
-        if (!password_verify($otp, $row['otp_hash'])) {
-            $otpModel->decrementAttempts($row['id']);
-            return $this->jsonResponse($response, ['success' => false, 'message' => 'Incorrect code'], 400);
-        }
-
-        $otpModel->markConsumed($row['id']);
         $_SESSION[$sessionKey] = ['email' => $email, 'until' => time() + 300];
         return $this->jsonResponse($response, ['success' => true]);
     }

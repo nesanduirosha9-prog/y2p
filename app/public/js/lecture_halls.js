@@ -109,7 +109,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 row.remove();
                 applySearch();
             })
-            .catch(function (err) { alert(err.message); });
+            .catch(function (err) { ttToast.error(err.message); });
     }
 
     // --- Save (Add or Edit) ---

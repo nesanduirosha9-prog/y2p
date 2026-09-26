@@ -234,8 +234,6 @@
 
     // Export is a report the backend will render; say so rather than pretending.
     el('evalExportBtn').addEventListener('click', () => {
-        const msg = 'Export needs the backend — not wired up yet.';
-        if (window.ttToast) window.ttToast(msg);
-        else alert(msg);
+        ttToast.info('Export needs the backend — not wired up yet.');
     });
 })();

@@ -93,11 +93,11 @@ document.addEventListener('DOMContentLoaded', () => {
         const enteredWeeks = parseInt(detailWeeks.value);
 
         if (enteredWeeks > currentWeeks) {
-            alert(`You can only reduce weeks to ${currentWeeks} or fewer, not increase it.`);
+            ttToast.warning(`You can only reduce weeks to ${currentWeeks} or fewer, not increase it.`);
             return;
         }
         if (enteredWeeks < 1 || isNaN(enteredWeeks)) {
-            alert('Please enter a valid number of weeks.');
+            ttToast.warning('Please enter a valid number of weeks.');
             return;
         }
 
@@ -116,18 +116,18 @@ document.addEventListener('DOMContentLoaded', () => {
 
             if (response.ok) {
                 window.location.reload();
-                // alert('Request updated successfully!');
+                // ttToast('Request updated successfully!');
                 // detailPanel.classList.remove('open');
                 // Optional: refresh the description shown on the block(s) without a full reload
                 if (currentDetailGroup) {
                     currentDetailGroup.forEach(s => { s.description = payload.description; s.weeks = payload.for_how_many_weeks; });
                 }
             } else {
-                alert('Error updating request.');
+                ttToast.error('Error updating request.');
             }
         } catch (error) {
             console.error('Update error:', error);
-            alert('Error updating request.');
+            ttToast.error('Error updating request.');
         }
     });
 
@@ -146,7 +146,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             if (response.ok) {
                 window.location.reload();
-                //alert('Request cancelled.');
+                //ttToast('Request cancelled.');
                 //detailPanel.classList.remove('open');
 
                 // Remove the now-deleted blocks and their connecting line(s) from the DOM
@@ -157,11 +157,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
                 location.reload(); // simplest reliable way to resync grid + lines after a delete
             } else {
-                alert('Error cancelling request.');
+                ttToast.error('Error cancelling request.');
             }
         } catch (error) {
             console.error('Delete error:', error);
-            alert('Error cancelling request.');
+            ttToast.error('Error cancelling request.');
         }
     });
 
@@ -220,7 +220,7 @@ document.addEventListener('DOMContentLoaded', () => {
             });
 
             if (response.ok) {
-                // alert('Request submitted successfully!');
+                // ttToast('Request submitted successfully!');
                 window.location.reload();
                 requestPanel.classList.remove('open');
                 requestForm.reset();
@@ -229,7 +229,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 document.querySelectorAll('.available-slot').forEach(el => el.remove());
                 document.getElementById('connectionLines').innerHTML = '';
             } else {
-                alert('Error submitting request.');
+                ttToast.error('Error submitting request.');
             }
         } catch (error) {
             console.error('Submission error:', error);
@@ -477,7 +477,7 @@ document.addEventListener('DOMContentLoaded', () => {
         };
 
         console.log('Assign payload (dummy, not sent yet):', payload);
-        alert(`Assigned ${selectedIds.length} staff member(s). (Not yet wired to backend)`);
+        ttToast.info(`Assigned ${selectedIds.length} staff member(s). (Not yet wired to backend)`);
 
         staffPanel.classList.remove('open');
 

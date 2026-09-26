@@ -42,7 +42,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function toast(message, isError) {
-        window.ttToast?.(message, { icon: isError ? 'fa-circle-exclamation' : 'fa-circle-check' });
+        isError ? ttToast.error(message) : ttToast(message);
     }
 
     /** fetch() + JSON, resolving to { success, message, ... } even on a network or parse failure. */
@@ -486,7 +486,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
 
         renderPerDayCoverCards();
-        window.ttToast?.(`Applied ${firstCover.name} as cover for all selected days.`, { icon: 'fa-circle-check' });
+        ttToast(`Applied ${firstCover.name} as cover for all selected days.`);
     });
 
     document.getElementById('lvPrevMonth').addEventListener('click', () => {

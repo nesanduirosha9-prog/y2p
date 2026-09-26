@@ -7,9 +7,7 @@
 //    the error as a system toast (window.ttToast) and re-enable the button.
 document.addEventListener('DOMContentLoaded', function() {
 
-    function showError(message) {
-        window.ttToast(message, { type: 'error', icon: 'fa-circle-exclamation', duration: message.length > 80 ? 6000 : 4000 });
-    }
+    const showError = message => ttToast.error(message);
 
     // Grab the login form element using its ID
     const loginForm = document.getElementById('loginForm');

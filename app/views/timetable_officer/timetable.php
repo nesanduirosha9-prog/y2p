@@ -253,12 +253,6 @@ sort($lecturers);
     </div>
 </div>
 
-<!-- Toast Feedback Notification -->
-<div class="tt-toast" id="ttToast" hidden>
-    <i class="fa-solid fa-circle-check" id="toastIcon"></i>
-    <span id="toastMsg">Timetable published successfully!</span>
-</div>
-
 <script>
     window.__ttCourses = <?= json_encode($courses) ?>;
     window.__ttRooms = <?= json_encode($allRooms) ?>;

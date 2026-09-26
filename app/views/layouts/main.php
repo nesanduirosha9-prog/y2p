@@ -17,6 +17,8 @@ use app\core\Application;
     <link rel="stylesheet" href="/css/tokens.css">
     <link rel="stylesheet" href="/css/components.css">
     <link rel="stylesheet" href="/css/style.css">
+    <!-- System toast (window.ttToast) -->
+    <script src="/js/toast.js"></script>
     <link rel="manifest" href="/manifest.json">
     <meta name="theme-color" content="#1f2937">
 

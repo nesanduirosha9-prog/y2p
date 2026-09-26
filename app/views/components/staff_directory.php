@@ -228,8 +228,10 @@ $currentUserPosition = $_SESSION['position'] ?? '';
         </div>
     </div>
 
-    <!-- Add staff: email + role is all that is needed. The member sets their
-         own password (Forgot Password) and fills in their name from Settings.
+    <!-- Add staff: email + role. The account gets a random temporary password
+         emailed to the member (DEMO_AUTH: the shared demo password, nothing
+         emailed or shown); the member changes it and fills in their profile
+         from Settings.
          Opens from the right, like every other panel in the system. -->
     <div class="side-panel-backdrop" id="addStaffBackdrop" hidden></div>
     <aside class="side-panel" id="addStaffPanel" hidden role="dialog" aria-modal="true" aria-labelledby="addStaffTitle">
@@ -237,7 +239,6 @@ $currentUserPosition = $_SESSION['position'] ?? '';
             <div>
                 <span class="side-panel-tag">Staff Details</span>
                 <h3 class="side-panel-title" id="addStaffTitle">Add staff</h3>
-                <p class="side-panel-sub">An email and a role is all it takes.</p>
             </div>
             <button type="button" class="side-panel-close" data-add-close aria-label="Close"><i class="fa-solid fa-xmark"></i></button>
         </div>
@@ -275,10 +276,6 @@ $currentUserPosition = $_SESSION['position'] ?? '';
                     <p class="form-error" id="addStaffRoleError" hidden></p>
                 </fieldset>
 
-                <p class="add-staff-note">
-                    <i class="fa-solid fa-envelope-circle-check"></i>
-                    They'll get an email telling them how to set a password. They add their name and phone number themselves from Settings.
-                </p>
                 <p class="form-error" id="addStaffError" hidden></p>
             </div>
 
@@ -293,7 +290,24 @@ $currentUserPosition = $_SESSION['position'] ?? '';
             <div class="side-panel-body">
                 <div class="add-staff-done-icon"><i class="fa-solid fa-circle-check"></i></div>
                 <p class="add-staff-done-title" id="addStaffDoneTitle"></p>
-                <p class="add-staff-done-sub" id="addStaffDoneSub"></p>
+                <p class="add-staff-done-sub" id="addStaffDoneSub" hidden></p>
+
+                <!-- Sign-in details: only when a real (non-demo) email failed to send -->
+                <dl class="add-staff-creds" id="addStaffCreds" hidden>
+                    <div class="add-staff-cred">
+                        <dt>Email</dt>
+                        <dd id="addStaffCredEmail"></dd>
+                    </div>
+                    <div class="add-staff-cred">
+                        <dt>Temporary password</dt>
+                        <dd>
+                            <code id="addStaffCredPassword"></code>
+                            <button type="button" class="add-staff-copy" id="addStaffCopy" aria-label="Copy password" title="Copy password">
+                                <i class="fa-regular fa-copy"></i>
+                            </button>
+                        </dd>
+                    </div>
+                </dl>
             </div>
             <div class="side-panel-foot">
                 <button type="button" class="btn-cancel" id="addStaffAnother">Add another</button>

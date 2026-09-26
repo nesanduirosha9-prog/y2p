@@ -863,3 +863,67 @@ select.ss-native { display: none !important; }
     color: #94a3b8;
     text-align: center;
 }
+
+/* ---------- Toast ----------
+ * The system's one notification toast — window.ttToast() in js/toast.js,
+ * loaded by every layout. Dark pill with a coloured icon per type; stacks
+ * top-right, full width on phones. z-index sits above every modal/drawer.
+ */
+.tt-toast-host {
+    position: fixed;
+    top: 20px;
+    right: 24px;
+    z-index: 10000;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 8px;
+    pointer-events: none;
+}
+
+.tt-toast {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    max-width: 380px;
+    background: var(--color-navy);
+    color: #fff;
+    font-family: var(--font-sans);
+    font-size: 13px;
+    font-weight: 500;
+    line-height: 1.45;
+    padding: 12px 16px;
+    border-radius: 10px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.25);
+    opacity: 0;
+    transform: translateY(-8px);
+    transition: opacity 0.2s, transform 0.2s;
+}
+
+.tt-toast.show {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.tt-toast i {
+    flex: 0 0 auto;
+    font-size: 14px;
+}
+
+.tt-toast-success i { color: #00d492; }
+.tt-toast-error i   { color: #ff6467; }
+.tt-toast-warning i { color: #fbbf24; }
+.tt-toast-info i    { color: #60a5fa; }
+
+@media (max-width: 480px) {
+    .tt-toast-host {
+        top: 12px;
+        left: 12px;
+        right: 12px;
+        align-items: stretch;
+    }
+
+    .tt-toast {
+        max-width: none;
+    }
+}

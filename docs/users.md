@@ -6,6 +6,8 @@ These are the built-in login accounts created by the seed data for local testing
 
 This is the same password documented in [database/README.md](database/README.md).
 
+Accounts a Coordinator or In-Charge adds from **Staff Details → Add staff** while `DEMO_AUTH` is on get this password too. With `DEMO_AUTH` off they get a random temporary password by email instead, and change it from **Settings → Password**.
+
 ## Accounts
 
 | Role / position | Dashboard | Email | Name |
