@@ -1,10 +1,13 @@
 // login.js — wires up app/views/auth/login.php's single-step sign-in form.
-// 1. On submit: validate email/password aren't empty, then check the
-//    @ucsc.cmb.ac.lk domain client-side.
+// 1. On submit: validate email/password aren't empty. No domain check here —
+//    only accounts that got past signup's server-side check exist to log in
+//    to, and that check also admits config.php's AUTH_BYPASS_EMAILS.
 // 2. POST the credentials to /login as JSON (AuthController::login()).
 // 3. On success, redirect to the URL the server returns; on failure, show
-//    the error and re-enable the button.
+//    the error as a system toast (window.ttToast) and re-enable the button.
 document.addEventListener('DOMContentLoaded', function() {
+
+    const showError = message => ttToast.error(message);
 
     // Grab the login form element using its ID
     const loginForm = document.getElementById('loginForm');
@@ -23,21 +26,14 @@ document.addEventListener('DOMContentLoaded', function() {
 
             // 1. Basic Validation: Check if fields are empty
             if (emailInput === '' || passwordInput === '') {
-                alert('Please fill in both your email and password.');
+                showError('Please fill in both your email and password.');
                 return; // Stop the function here
             }
 
-            // 2. Format Validation: Check if the email ends with the correct UCSC domain
-            // This is optional, but a great security/UX feature for a closed system!
-            if (!emailInput.endsWith('@ucsc.cmb.ac.lk')) {
-                alert('Access denied: Please use a valid UCSC staff email address.');
-                return; 
-            }
-
-            // 3. Send the login request to the backend
+            // 2. Send the login request to the backend
             const btnSubmit = loginForm.querySelector('button[type="submit"]');
             const originalText = btnSubmit.innerHTML;
-            btnSubmit.innerHTML = 'Logging in...';
+            btnSubmit.innerHTML = 'Signing in...';
             btnSubmit.disabled = true;
 
             fetch('/login', {
@@ -53,17 +49,16 @@ document.addEventListener('DOMContentLoaded', function() {
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
-                    alert('Login successful! Redirecting to dashboard...');
                     window.location.href = data.redirect || '/dashboard';
                 } else {
-                    alert('Login failed: ' + data.message);
+                    showError(data.message || 'Could not sign you in. Please try again.');
                     btnSubmit.innerHTML = originalText;
                     btnSubmit.disabled = false;
                 }
             })
             .catch(error => {
                 console.error('Error:', error);
-                alert('An error occurred. Please try again.');
+                showError('Could not reach the server. Please try again.');
                 btnSubmit.innerHTML = originalText;
                 btnSubmit.disabled = false;
             });

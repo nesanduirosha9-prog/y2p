@@ -39,6 +39,9 @@
         });
     }
 
+    // Person is a long list of staff, so it gets the searchable dropdown.
+    if (window.SearchableSelect) SearchableSelect.enhance(page);
+
     const DATA = JSON.parse(dataEl.textContent);
     const ENTRIES = DATA.entries;              // newest first, already authorised
     const ACTIONS = DATA.actions;              // 'leave.approved' -> {label, category}
@@ -506,7 +509,10 @@
         el('audDateRow').hidden = true;
         el('audFrom').value = '';
         el('audTo').value = '';
-        if (el('audPerson')) el('audPerson').value = '';
+        if (el('audPerson')) {
+            el('audPerson').value = '';
+            SearchableSelect.refresh(el('audPerson'));
+        }
         render();
     }
 

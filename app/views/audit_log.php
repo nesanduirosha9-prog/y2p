@@ -22,7 +22,6 @@
 //   - nothing is hover-only, and every control has a visible label.
 //
 // $scope      'system' | 'own'
-// $ownLogUrl  link to the reader's own record, on the system screen only
 // $auditData  the payload (AuditPrototypeData::feed)
 
 $isSystem = ($scope ?? 'own') === 'system';
@@ -30,29 +29,18 @@ $isSystem = ($scope ?? 'own') === 'system';
 
 <div class="aud-page" id="auditPage" data-scope="<?= htmlspecialchars($scope) ?>">
 
-    <div class="page-head">
-        <div>
-            <?php if (!$isSystem): ?>
+    <?php if (!$isSystem): ?>
+        <div class="page-head">
+            <div>
                 <!-- Reached from the profile menu, so no sidebar item leads back.
                      audit.js turns this into history.back() when the reader
                      came from another StaffSync page. -->
                 <a href="/timetable" class="aud-back" id="audBack">
                     <i class="fa-solid fa-arrow-left"></i> Back
                 </a>
-            <?php endif; ?>
+            </div>
         </div>
-        <div class="page-head-actions">
-            <?php if ($isSystem && !empty($ownLogUrl)): ?>
-                <a href="<?= htmlspecialchars($ownLogUrl) ?>" class="aud-btn-outline">
-                    <i class="fa-solid fa-user"></i> My own record
-                </a>
-            <?php endif; ?>
-            <button type="button" class="aud-btn-outline" id="audExportBtn"
-                    title="Downloads exactly the entries you are looking at, as a spreadsheet file">
-                <i class="fa-solid fa-file-arrow-down"></i> Download these entries
-            </button>
-        </div>
-    </div>
+    <?php endif; ?>
 
     <!-- ---------------------------------------------------------------- Filters -->
     <div class="dir-card aud-filters">
@@ -90,7 +78,7 @@ $isSystem = ($scope ?? 'own') === 'system';
             <?php if ($isSystem): ?>
                 <div class="aud-field">
                     <label class="aud-label" for="audPerson">Person</label>
-                    <select class="aud-select" id="audPerson">
+                    <select class="aud-select" id="audPerson" data-searchable data-search-placeholder="Search a name or code…">
                         <option value="">Everyone</option>
                         <?php foreach ($auditData['actors'] as $code => $actor): ?>
                             <option value="<?= htmlspecialchars($code) ?>">
@@ -123,12 +111,19 @@ $isSystem = ($scope ?? 'own') === 'system';
             <div class="aud-chips" id="audChips"></div>
         </div>
 
-        <!-- What is filtered, in words, with one way out. -->
+        <!-- What is filtered, in words, with one way out — and the download of
+             exactly those entries. -->
         <div class="aud-summary">
             <p class="aud-summary-text" id="audSummary"></p>
-            <button type="button" class="aud-btn-ghost" id="audClear" hidden>
-                <i class="fa-solid fa-xmark"></i> Clear all filters
-            </button>
+            <div class="aud-summary-actions">
+                <button type="button" class="aud-btn-ghost" id="audClear" hidden>
+                    <i class="fa-solid fa-xmark"></i> Clear all filters
+                </button>
+                <button type="button" class="aud-btn-outline aud-btn-sm" id="audExportBtn"
+                        title="Downloads exactly the entries you are looking at, as a spreadsheet file">
+                    <i class="fa-solid fa-file-arrow-down"></i> Download these entries
+                </button>
+            </div>
         </div>
     </div>
 
@@ -192,4 +187,5 @@ $isSystem = ($scope ?? 'own') === 'system';
 // rest of the page. JSON.parse reads the < escapes back unchanged.
 ?>
 <script type="application/json" id="audData"><?= json_encode($auditData, JSON_HEX_TAG | JSON_HEX_AMP | JSON_UNESCAPED_UNICODE) ?></script>
+<script src="/js/searchable_select.js"></script>
 <script src="/js/audit.js"></script>

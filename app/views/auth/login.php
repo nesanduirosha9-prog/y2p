@@ -2,6 +2,7 @@
      AuthController::loginView() inside the 'auth' layout.
      1. .left-panel  — dark branding panel (marketing copy, feature list).
      2. .right-panel — "Welcome back" card: email + password + passkey button.
+     Layout skeleton shared with signup/forgot password — see css/global.css.
      JS: /js/login.js handles validation and the POST /login submit. -->
 <main class="login-layout-container">
 
@@ -14,10 +15,6 @@
             </div>
         </div>
 
-        <!-- Logo stays pinned to the top; this block takes the remaining
-             height and centers itself in it, rather than the whole panel
-             sitting top-left with a huge dead area below on tall/wide
-             screens. -->
         <div class="left-content">
             <div class="feature-title">
                 <h2>Staff Management<br><span class="gradient-text">Made Effortless</span></h2>
@@ -35,57 +32,70 @@
                 <li><i class="fa-solid fa-bell"></i> Real-time conflict notifications</li>
             </ul>
         </div>
+
+        <footer class="left-footer">
+            <p>Secure access for UCSC academic and administrative staff.</p>
+        </footer>
     </aside>
 
     <section class="right-panel">
-        <nav class="top-nav">
-            <span>New to UCSC?</span> <a href="/signup">Create account</a>
-        </nav>
+        <header class="auth-header">
+            <a href="/login" class="branding branding--compact" aria-label="StaffSync home">
+                <i class="fa-solid fa-graduation-cap logo-icon"></i>
+                <span class="logo-text">
+                    <span class="logo-name">StaffSync</span>
+                    <span class="logo-sub">University of Colombo</span>
+                </span>
+            </a>
+            <nav class="top-nav">
+                <span>New to UCSC?</span> <a href="/signup">Create account</a>
+            </nav>
+        </header>
 
-        <div class="login-main">
-            <div class="welcome-text">
-                <h2>Welcome back</h2>
-                <p>Sign in with your staff credentials to continue.</p>
-            </div>
-        
-            <div class="login-card">
-                <form id="loginForm" action="/login" method="POST">
-
-                    <div class="form-group">
-                        <label for="username">Staff Email Address</label>
-                        <input type="email" id="username" name="username" required placeholder="you@ucsc.cmb.ac.lk">
-                    </div>
-                
-                    <div class="form-group">
-                        <div class="label-wrapper">
-                            <label for="password">Password</label>
-                            <a href="/forgot-password" class="forgot-password">Forgot password?</a>
-                        </div>
-                        <input type="password" id="password" name="password" required placeholder="Enter your password">
-                    </div>
-                
-                    <button type="submit" class="btn-primary">Sign In</button>
-                </form>
-            
-                <div class="divider-wrapper">
-                    <span class="divider-text">or</span>
+        <div class="auth-main">
+            <div class="login-main">
+                <div class="welcome-text">
+                    <h2>Welcome back</h2>
+                    <p>Sign in with your staff credentials to continue.</p>
                 </div>
-            
-                <button class="btn-passkey" type="button">
-                    <span class="passkey-icon"><i class="fa-solid fa-fingerprint"></i></span>
-                    Sign in with Passkey
-                    <span class="passkey-hint">Face ID · Touch ID</span>
-                </button>
-            </div>
 
-            <p class="agreement-text">
-                By signing in you agree to the University's <a href="#">Terms of Use</a> and <a href="#">Privacy Policy</a>.
-            </p>
+                <div class="login-card">
+                    <form id="loginForm" action="/login" method="POST" novalidate>
+
+                        <div class="form-group">
+                            <label for="username">Staff Email Address</label>
+                            <input type="email" id="username" name="username" required autocomplete="username" placeholder="you@ucsc.cmb.ac.lk">
+                        </div>
+
+                        <div class="form-group">
+                            <div class="label-wrapper">
+                                <label for="password">Password</label>
+                                <a href="/forgot-password" class="forgot-password">Forgot password?</a>
+                            </div>
+                            <input type="password" id="password" name="password" required autocomplete="current-password" placeholder="Enter your password">
+                        </div>
+
+                        <button type="submit" class="btn-primary">Sign In</button>
+                    </form>
+
+                    <div class="divider-wrapper">or</div>
+
+                    <button class="btn-passkey" type="button">
+                        <span class="passkey-icon"><i class="fa-solid fa-fingerprint"></i></span>
+                        <span class="passkey-label">Sign in with Passkey</span>
+                        <span class="passkey-hint">Face ID · Touch ID</span>
+                    </button>
+                </div>
+
+                <p class="agreement-text">
+                    By signing in you agree to the University's <a href="#">Terms of Use</a> and <a href="#">Privacy Policy</a>.
+                </p>
+            </div>
         </div>
 
         <footer class="right-footer">
             <p>&copy; <?= date('Y') ?> University of Colombo. All rights reserved.</p>
-            <p class="version">v2.4.1</p>
+            <p>v2.4.1</p>
         </footer>
     </section>
 

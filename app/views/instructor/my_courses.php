@@ -373,7 +373,11 @@ $totalInstructors = count($assignedInstructors ?? []);
                                     <?php if ($missed): ?>
                                         <span class="text-muted">&mdash;</span>
                                     <?php else: ?>
-                                        <strong><?= (int)round((float)$h['rating']) ?></strong> / 5
+                                        <?php
+                                        $score = (int)round((float)$h['rating']);
+                                        $band = $score >= 4 ? 'high' : ($score === 3 ? 'mid' : 'low');
+                                        ?>
+                                        <span class="eval-score-pill score-<?= $band ?>"><?= $score ?> / 5</span>
                                     <?php endif; ?>
                                 </td>
                                 <td style="font-size: 12.5px; color: #334155; line-height: 1.45;">

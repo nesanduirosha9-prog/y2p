@@ -224,6 +224,12 @@
     color: #007a55;
 }
 
+/* A deactivated member (left the university): kept for history, greyed out.
+   Only the identity cells fade, so the Reactivate button stays readable. */
+.dir-table tr.is-inactive td:not(:last-child) {
+    opacity: 0.55;
+}
+
 .assign-role-select {
     height: 34px;
     border: 1px solid #dde3ee;
@@ -286,23 +292,58 @@
 .role-option input:checked + .role-option-card > i { background: #1a3a6b; color: #fff; }
 .role-option input:focus-visible + .role-option-card { box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.25); }
 
-.add-staff-note {
-    display: flex;
-    gap: 9px;
-    font-size: 12px;
-    line-height: 1.5;
-    color: #6b7c96;
-    background: #f8fafc;
-    border-radius: 8px;
-    padding: 10px 12px;
-}
-.add-staff-note i { color: #2563eb; margin-top: 2px; }
-
 .add-staff-pane[hidden] { display: none; }
 .add-staff-done .side-panel-body { text-align: center; padding-top: 48px; }
 .add-staff-done-icon { font-size: 40px; color: #16a34a; margin-bottom: 10px; }
 .add-staff-done-title { font-size: 15px; font-weight: 700; color: #0f1c2e; }
-.add-staff-done-sub { font-size: 12.5px; color: #6b7c96; margin-top: 6px; line-height: 1.5; }
+.add-staff-done-sub { font-size: 13px; color: #6b7c96; margin-top: 6px; line-height: 1.5; }
+
+/* Sign-in details card (only when they could not be emailed) */
+.add-staff-creds {
+    margin: 22px 0 0;
+    text-align: left;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    background: #f8fafc;
+}
+.add-staff-creds[hidden] { display: none; }
+.add-staff-cred { padding: 11px 14px; }
+.add-staff-cred + .add-staff-cred { border-top: 1px solid #e2e8f0; }
+.add-staff-cred dt {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.4px;
+    text-transform: uppercase;
+    color: #6b7c96;
+    margin-bottom: 3px;
+}
+.add-staff-cred dd {
+    margin: 0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    font-size: 14px;
+    color: #0f1c2e;
+    word-break: break-all;
+}
+.add-staff-cred code {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 15px;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+}
+.add-staff-copy {
+    flex: 0 0 auto;
+    width: 32px;
+    height: 32px;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    background: #fff;
+    color: #475569;
+    cursor: pointer;
+}
+.add-staff-copy:hover { background: #f1f5f9; color: #0f1c2e; }
 
 @media (max-width: 768px) {
     .staff-add-btn { margin-left: 0; flex: 1 1 100%; }

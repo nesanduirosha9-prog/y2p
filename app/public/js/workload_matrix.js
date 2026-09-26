@@ -357,7 +357,7 @@
         if (!load[code]) return;
         const why = blockReason(load[code], c, medianLoad(load));
         if (why) {
-            toast(code + ' can’t be assigned to ' + c.code + ': ' + why.toLowerCase());
+            toast(code + ' can’t be assigned to ' + c.code + ': ' + why.toLowerCase(), 'warning');
             return;
         }
         c.instructors.push(code);
@@ -393,19 +393,8 @@
         } }));
     }
 
-    function toast(msg) {
-        if (window.ttToast) { window.ttToast(msg); return; }
-        let t = document.getElementById('wmToast');
-        if (!t) {
-            t = document.createElement('div');
-            t.id = 'wmToast';
-            t.className = 'wm-toast';
-            document.body.appendChild(t);
-        }
-        t.textContent = msg;
-        t.classList.add('show');
-        clearTimeout(t._timer);
-        t._timer = setTimeout(() => t.classList.remove('show'), 2200);
+    function toast(msg, type) {
+        ttToast(msg, { type: type });
     }
 
     // --------------------------------------------------------------- drawers

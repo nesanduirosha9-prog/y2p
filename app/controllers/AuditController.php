@@ -52,7 +52,6 @@ class AuditController extends Controller
             'active'       => 'audit',
             'pageTitle'    => 'Activity Log',
             'scope'        => 'system',
-            'ownLogUrl'    => '/audit/me',
             // See app/core/AuditPrototypeData.php — same seam as the workload
             // screens. Swapping the fixture for an AuditLogModel is a change to
             // this one line, plus passing the filters through to SQL so the
@@ -78,7 +77,6 @@ class AuditController extends Controller
             'active'       => 'audit-me',
             'pageTitle'    => 'My Activity',
             'scope'        => 'own',
-            'ownLogUrl'    => null,
             'auditData'    => AuditPrototypeData::feed($this->viewer(), 'own'),
         ]);
     }

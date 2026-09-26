@@ -5,6 +5,7 @@ namespace app\controllers\in_charge;
 use app\core\Controller;
 use app\core\Request;
 use app\core\Response;
+use app\core\StaffEmail;
 use app\models\NotificationModel;
 use app\models\StaffModel;
 use app\services\EmailService;
@@ -12,9 +13,11 @@ use app\services\EmailService;
 // In-Charge "Accounts" / Role Assignment screen — pulled from Figma node
 // 34:5044 (canvas "In_Charge"): a 4-step handover flow (pick seat -> search
 // replacement -> OTP verify -> success) to reassign the Coordinator(s) and
-// In-Charge seats. The Timetable Officer is not a seat: it is its own account,
-// and when the officer changes it is that account's details that change, so
-// there is no handover for it. Only `position = 'in_charge'` may
+// In-Charge seats. The Timetable Officer is not a seat: it is its own account
+// (code TMO), so handing it over keeps the account and its history and only
+// changes the login email — the new officer then sets a password with Forgot
+// password and fills in their profile from Settings (see
+// StaffModel::handOverTimetableOfficer()). Only `position = 'in_charge'` may
 // open this screen (confirmed with the user — not shared with Timetable
 // Officer, even though the Figma mockup's sidebar profile card said "TO").
 //
@@ -245,6 +248,11 @@ class AccountsController extends Controller
         $fromCode = $body['fromCode'] ?? '';
         $toCode = $body['toCode'] ?? '';
 
+        if ($position === 'timetable_officer') {
+            $this->startOfficerHandover($response, $fromCode, strtolower(trim((string)($body['newEmail'] ?? ''))));
+            return;
+        }
+
         // An empty fromCode means "add another holder" — only for multi seats.
         $isAdd = $fromCode === '';
         if (!in_array($position, self::SEATS, true) || $toCode === ''
@@ -287,6 +295,49 @@ class AccountsController extends Controller
         $response->json(['success' => true, 'redirect' => '/settings/handover/verify']);
     }
 
+    /**
+     * selectSubmit() for the Timetable Officer: the account stays, so instead
+     * of a replacement there is a new email, and the code goes to that address
+     * so the new officer proves they own it.
+     */
+    private function startOfficerHandover(Response $response, string $code, string $newEmail): void
+    {
+        $staffModel = new StaffModel();
+        $officer = $staffModel->findByCode($code);
+        if (!$officer || ($officer['role'] ?? '') !== 'timetable_officer') {
+            $response->json(['success' => false, 'message' => 'That is not the Timetable Officer account.'], 400);
+            return;
+        }
+        if (!filter_var($newEmail, FILTER_VALIDATE_EMAIL) || !StaffEmail::isAllowed($newEmail)) {
+            $response->json(['success' => false, 'message' => 'Use the new officer\'s @' . StaffEmail::domain() . ' email.'], 400);
+            return;
+        }
+        if ($staffModel->findByEmail($newEmail)) {
+            $response->json(['success' => false, 'message' => 'That email already belongs to an account.'], 409);
+            return;
+        }
+
+        $otp = str_pad((string) random_int(0, 999999), 6, '0', STR_PAD_LEFT);
+        $demo = defined('DEMO_AUTH') && DEMO_AUTH;
+
+        if (!$demo && !EmailService::sendOtpEmail($newEmail, $otp, 'role_handover')) {
+            $response->json(['success' => false, 'message' => 'Could not send the verification code. Please try again.'], 500);
+            return;
+        }
+
+        $_SESSION['handover'] = [
+            'position' => 'timetable_officer',
+            'from_code' => $code,
+            'to_code' => '',
+            'new_email' => $newEmail,
+            'otp' => $otp,
+            'demo' => $demo,
+            'expires_at' => time() + 300, // 5 minutes
+        ];
+
+        $response->json(['success' => true, 'redirect' => '/settings/handover/verify']);
+    }
+
     /** GET /settings/handover/verify */
     public function verifyView(Request $request)
     {
@@ -308,7 +359,9 @@ class AccountsController extends Controller
         return $this->render('in_charge/accounts_verify', array_merge($this->commonViewData(), [
             'title' => 'Verify OTP',
             'pageTitle' => 'Verify Role Change',
-            'toStaff' => $staffModel->findByCode($handover['to_code']),
+            'toStaff' => $handover['position'] === 'timetable_officer'
+                ? ['name' => 'New Timetable Officer', 'email' => $handover['new_email']]
+                : $staffModel->findByCode($handover['to_code']),
         ]));
     }
 
@@ -342,7 +395,9 @@ class AccountsController extends Controller
         }
 
         $staffModel = new StaffModel();
-        if ($handover['from_code'] === '') {
+        if ($handover['position'] === 'timetable_officer') {
+            $ok = $staffModel->handOverTimetableOfficer($handover['from_code'], $handover['new_email']);
+        } elseif ($handover['from_code'] === '') {
             $ok = $staffModel->assignPosition($handover['to_code'], $handover['position']);
         } else {
             $ok = $staffModel->reassignPosition($handover['from_code'], $handover['to_code'], $handover['position']);

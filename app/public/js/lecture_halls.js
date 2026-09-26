@@ -8,10 +8,8 @@ document.addEventListener('DOMContentLoaded', function () {
     if (!view) return;
 
     const TYPE_LABELS = {
-        lab: 'Laboratory',
         lecture_hall: 'Lecture Hall',
-        tutorial_room: 'Tutorial Room',
-        other: 'Other',
+        lab: 'Laboratory',
     };
 
     // fetch() wrapper. Always JSON: Request::getBody() only parses PUT/DELETE
@@ -111,7 +109,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 row.remove();
                 applySearch();
             })
-            .catch(function (err) { alert(err.message); });
+            .catch(function (err) { ttToast.error(err.message); });
     }
 
     // --- Save (Add or Edit) ---

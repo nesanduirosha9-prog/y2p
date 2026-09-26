@@ -196,16 +196,19 @@ $panel = fn(string ...$t) => in_array($tab, $t, true) ? '' : 'hidden';
                 <div class="wm-drawer-body" id="wmLoadBody"></div>
             </aside>
 
-            <!-- Rebalance suggestions -->
-            <div class="modal-overlay" id="wmBalanceModal" hidden>
-                <div class="modal wm-balance-modal">
-                    <div class="modal-head">
-                        <h3>Suggested rebalance</h3>
-                        <button type="button" class="modal-close" id="wmBalanceClose" aria-label="Close"><i class="fa-solid fa-xmark"></i></button>
+            <!-- Rebalance suggestions (side drawer — components.css) -->
+            <div class="side-drawer-overlay" id="wmBalanceModal" hidden>
+                <div class="side-drawer" role="dialog" aria-modal="true" aria-labelledby="wmBalanceTitle">
+                    <div class="side-drawer-header">
+                        <div>
+                            <h3 class="side-drawer-title" id="wmBalanceTitle">Suggested rebalance</h3>
+                            <p class="side-drawer-subtitle">Moves that even out the weekly load</p>
+                        </div>
+                        <button type="button" class="side-drawer-close" id="wmBalanceClose" aria-label="Close"><i class="fa-solid fa-xmark"></i></button>
                     </div>
-                    <div class="modal-body" id="wmBalanceBody"></div>
-                    <div class="modal-foot">
-                        <button type="button" class="btn-outline" id="wmBalanceDismiss">Close</button>
+                    <div class="side-drawer-body" id="wmBalanceBody"></div>
+                    <div class="side-drawer-footer">
+                        <button type="button" class="btn-drawer-cancel" id="wmBalanceDismiss">Close</button>
                     </div>
                 </div>
             </div>
@@ -257,7 +260,7 @@ $panel = fn(string ...$t) => in_array($tab, $t, true) ? '' : 'hidden';
                         <p class="page-head-sub">Tick the ones to run this week. Approving moves them onto the board and allocates them in one step.</p>
                     </div>
                     <div class="sched-batch-actions">
-                        <button type="button" class="btn-batch-start" id="batchApproveBtn" disabled>
+                        <button type="button" class="btn-primary" id="batchApproveBtn" disabled>
                             <i class="fa-solid fa-play"></i> Approve &amp; allocate (<span id="selectedCount">0</span>)
                         </button>
                     </div>
@@ -323,48 +326,58 @@ $panel = fn(string ...$t) => in_array($tab, $t, true) ? '' : 'hidden';
             </div>
         </section>
 
-        <!-- Allocation explanation: why these people, and who was ruled out -->
-        <div class="modal-overlay" id="allocModal" hidden>
-            <div class="modal sched-modal">
-                <div class="modal-head">
-                    <h3 id="allocModalTitle">Allocation result</h3>
-                    <button type="button" class="modal-close" id="allocModalClose" aria-label="Close"><i class="fa-solid fa-xmark"></i></button>
+        <!-- The three panels below are side drawers (components.css).
+             Allocation explanation: why these people, and who was ruled out -->
+        <div class="side-drawer-overlay" id="allocModal" hidden>
+            <div class="side-drawer" role="dialog" aria-modal="true" aria-labelledby="allocModalTitle">
+                <div class="side-drawer-header">
+                    <div>
+                        <h3 class="side-drawer-title" id="allocModalTitle">Allocation result</h3>
+                        <p class="side-drawer-subtitle">Who was picked, and who was ruled out</p>
+                    </div>
+                    <button type="button" class="side-drawer-close" id="allocModalClose" aria-label="Close"><i class="fa-solid fa-xmark"></i></button>
                 </div>
-                <div class="modal-body" id="allocModalBody"></div>
-                <div class="modal-foot">
-                    <button type="button" class="btn-outline" id="allocModalDismiss">Close</button>
+                <div class="side-drawer-body" id="allocModalBody"></div>
+                <div class="side-drawer-footer">
+                    <button type="button" class="btn-drawer-cancel" id="allocModalDismiss">Close</button>
                 </div>
             </div>
         </div>
 
         <!-- Manual add/remove picker -->
-        <div class="modal-overlay" id="swapModal" hidden>
-            <div class="modal sched-modal">
-                <div class="modal-head">
-                    <h3 id="swapModalTitle">Add staff</h3>
-                    <button type="button" class="modal-close" id="swapModalClose" aria-label="Close"><i class="fa-solid fa-xmark"></i></button>
+        <div class="side-drawer-overlay" id="swapModal" hidden>
+            <div class="side-drawer" role="dialog" aria-modal="true" aria-labelledby="swapModalTitle">
+                <div class="side-drawer-header">
+                    <div>
+                        <h3 class="side-drawer-title" id="swapModalTitle">Add staff</h3>
+                        <p class="side-drawer-subtitle">Free and least-busy staff first</p>
+                    </div>
+                    <button type="button" class="side-drawer-close" id="swapModalClose" aria-label="Close"><i class="fa-solid fa-xmark"></i></button>
                 </div>
-                <div class="modal-body" id="swapModalBody"></div>
-                <div class="modal-foot">
-                    <button type="button" class="btn-outline" id="swapModalDismiss">Done</button>
+                <div class="side-drawer-body" id="swapModalBody"></div>
+                <div class="side-drawer-footer">
+                    <button type="button" class="btn-drawer-submit" id="swapModalDismiss">Done</button>
                 </div>
             </div>
         </div>
 
         <!-- Invite preview — the spreadsheet's previewEmail(), shown honestly -->
-        <div class="modal-overlay" id="inviteModal" hidden>
-            <div class="modal sched-modal sched-modal-wide">
-                <div class="modal-head">
-                    <h3>Invite preview</h3>
-                    <button type="button" class="modal-close" id="inviteModalClose" aria-label="Close"><i class="fa-solid fa-xmark"></i></button>
+        <div class="side-drawer-overlay" id="inviteModal" hidden>
+            <div class="side-drawer side-drawer--wide" role="dialog" aria-modal="true" aria-labelledby="inviteModalTitle">
+                <div class="side-drawer-header">
+                    <div>
+                        <h3 class="side-drawer-title" id="inviteModalTitle">Invite preview</h3>
+                        <p class="side-drawer-subtitle">The email and calendar invite the assigned staff will get</p>
+                    </div>
+                    <button type="button" class="side-drawer-close" id="inviteModalClose" aria-label="Close"><i class="fa-solid fa-xmark"></i></button>
                 </div>
-                <div class="modal-body" id="inviteModalBody"></div>
-                <div class="modal-foot sched-invite-foot">
+                <div class="side-drawer-body" id="inviteModalBody"></div>
+                <div class="side-drawer-footer sched-invite-foot">
                     <p class="sched-invite-note">
                         <i class="fa-solid fa-circle-info"></i>
                         Preview only — sending mail and creating the calendar event are backend work, not wired up yet.
                     </p>
-                    <button type="button" class="btn-outline" id="inviteModalDismiss">Close</button>
+                    <button type="button" class="btn-drawer-cancel" id="inviteModalDismiss">Close</button>
                 </div>
             </div>
         </div>

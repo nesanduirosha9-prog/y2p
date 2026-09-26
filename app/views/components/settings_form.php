@@ -9,6 +9,7 @@
 //   $isInCharge  — bool, optional flag for Department In-Charge role
 //   $roleHolders — array, optional list of role holders for In-Charge handover tab
 
+use app\core\StaffEmail;
 use app\core\ViewHelpers;
 
 $isInCharge = $isInCharge ?? (($_SESSION['position'] ?? '') === 'in_charge');
@@ -108,6 +109,58 @@ $initials = ViewHelpers::currentAvatarCode();
 
         <div style="height: 20px;"></div>
 
+        <!-- Password: a 6-digit code goes to the member's own email, then the
+             new password is set with it. js/settings.js (initPasswordChange)
+             drives it; SettingsController::sendPasswordCode()/changePassword(). -->
+        <div class="sys-card" id="passwordCard">
+            <div class="sys-card-header">
+                <h3><i class="fa-solid fa-lock"></i> Password</h3>
+            </div>
+
+            <div class="sys-card-body">
+                <div class="sys-password-row" id="pwStart">
+                    <div class="sys-password-info">
+                        <p>Change password</p>
+                        <span><?= htmlspecialchars($profile['email'] ?? '') ?></span>
+                    </div>
+                    <button type="button" class="sys-btn sys-btn-secondary" id="pwSendCode">
+                        <i class="fa-solid fa-key"></i> Change Password
+                    </button>
+                </div>
+
+                <form id="pwForm" hidden novalidate onsubmit="return false;">
+                    <div class="sys-form-grid">
+                        <div class="sys-form-group full-width">
+                            <div class="sys-label-row">
+                                <label class="sys-label" for="pwCode">Verification Code</label>
+                                <button type="button" class="sys-link-btn" id="pwResend">Resend code</button>
+                            </div>
+                            <input type="text" class="sys-input sys-code-input" id="pwCode" maxlength="6" inputmode="numeric" autocomplete="one-time-code" placeholder="000000">
+                        </div>
+
+                        <div class="sys-form-group">
+                            <label class="sys-label" for="pwNew">New Password</label>
+                            <input type="password" class="sys-input" id="pwNew" autocomplete="new-password" placeholder="Min. 8 characters">
+                        </div>
+
+                        <div class="sys-form-group">
+                            <label class="sys-label" for="pwConfirm">Confirm Password</label>
+                            <input type="password" class="sys-input" id="pwConfirm" autocomplete="new-password" placeholder="Repeat password">
+                        </div>
+                    </div>
+                </form>
+            </div>
+
+            <div class="sys-card-footer" id="pwFooter" hidden>
+                <button type="button" class="sys-btn sys-btn-secondary" id="pwCancel">Cancel</button>
+                <button type="button" class="sys-btn sys-btn-primary" id="pwSubmit">
+                    <i class="fa-solid fa-check"></i> Update Password
+                </button>
+            </div>
+        </div>
+
+        <div style="height: 20px;"></div>
+
         <!-- Theme: decorative only -->
         <div class="sys-card">
             <div class="sys-card-header">
@@ -175,13 +228,11 @@ $initials = ViewHelpers::currentAvatarCode();
         ?>
         <?php
         // The Timetable Officer is its own account, not a seat handed between
-        // staff: when the officer changes, the account's details change, so
-        // that row has no Change button.
-        $positionLabels = ['coordinator' => 'Coordinator', 'in_charge' => 'In-Charge'];
+        // staff: its Change keeps the account (and its history) and only
+        // moves the login to the new officer's email.
+        $positionLabels = ['coordinator' => 'Coordinator', 'in_charge' => 'In-Charge', 'timetable_officer' => 'Timetable Officer'];
         ?>
         <div class="settings-panel" id="settings-panel-handover" role="tabpanel" aria-labelledby="tab-handover" hidden>
-          <div class="ho-layout" id="hoLayout">
-           <div class="ho-main">
             <div class="dir-card">
                 <div class="handover-head">
                     <div>
@@ -255,56 +306,66 @@ $initials = ViewHelpers::currentAvatarCode();
             <p class="accounts-note">
                 Giving someone a role needs a verification code from them. Revoking a Coordinator takes effect straight away.
             </p>
-           </div>
 
-            <!-- Change / Add panel, docked on the right like Request Leave.
+            <!-- Change / Add panel — the app's side drawer (components.css).
                  js/settings.js (initHandoverPanel) fills it and walks through
                  the two steps: pick the new holder, then enter their code. -->
-            <aside class="ho-side-panel" id="hoPanel" hidden aria-labelledby="hoPanelTitle">
-                <div class="ho-panel-header">
-                    <h2 id="hoPanelTitle">Change role</h2>
-                    <button type="button" class="ho-panel-close" id="hoPanelClose" aria-label="Close"><i class="fa-solid fa-xmark"></i></button>
-                </div>
-
-                <!-- Step 1: who takes the seat -->
-                <div class="ho-panel-body" id="hoStepPick">
-                    <div class="ho-field" id="hoCurrentRow">
-                        <p class="ho-label">Current holder</p>
-                        <div class="ho-person" id="hoCurrent"></div>
-                    </div>
-
-                    <div class="ho-field">
-                        <label class="ho-label" for="hoSearch">New holder</label>
-                        <div class="search-box handover-search">
-                            <i class="fa-solid fa-magnifying-glass"></i>
-                            <input type="text" id="hoSearch" placeholder="Search by name or email…" autocomplete="off">
+            <div class="side-drawer-overlay" id="hoPanel" hidden>
+                <div class="side-drawer" role="dialog" aria-modal="true" aria-labelledby="hoPanelTitle">
+                    <div class="side-drawer-header">
+                        <div>
+                            <h3 class="side-drawer-title" id="hoPanelTitle">Change role</h3>
+                            <p class="side-drawer-subtitle" id="hoPanelSubtitle">Pick who takes the role</p>
                         </div>
-                        <div class="candidate-list" id="hoCandidates"></div>
-                        <p class="dir-empty" id="hoCandidatesEmpty" hidden>Nobody matches.</p>
+                        <button type="button" class="side-drawer-close" id="hoPanelClose" aria-label="Close"><i class="fa-solid fa-xmark"></i></button>
                     </div>
 
-                    <p class="form-error" id="hoPickError" hidden></p>
-                </div>
+                    <!-- Step 1: who takes the seat -->
+                    <div class="side-drawer-body" id="hoStepPick">
+                        <div class="form-row" id="hoCurrentRow">
+                            <p class="form-label">Current holder</p>
+                            <div class="ho-person" id="hoCurrent"></div>
+                        </div>
 
-                <!-- Step 2: the code sent to the new holder -->
-                <div class="ho-panel-body" id="hoStepVerify" hidden>
-                    <div class="ho-field">
-                        <p class="ho-label">Code sent to</p>
-                        <div class="ho-person" id="hoTarget"></div>
-                    </div>
-                    <div class="ho-field">
-                        <label class="ho-label" for="hoOtp">6-digit code</label>
-                        <input type="text" id="hoOtp" maxlength="6" inputmode="numeric" autocomplete="one-time-code" placeholder="000000">
-                    </div>
-                    <p class="form-error" id="hoOtpError" hidden></p>
-                </div>
+                        <!-- Timetable Officer only: the account stays, the login moves -->
+                        <div class="form-row" id="hoEmailRow" hidden>
+                            <label class="form-label" for="hoNewEmail">New officer's email</label>
+                            <input type="email" id="hoNewEmail" placeholder="name@<?= htmlspecialchars(StaffEmail::domain()) ?>" autocomplete="off">
+                            <p class="ho-hint">The account, its timetable and its history stay. The new officer sets a password with <b>Forgot password</b> and fills in their profile from Settings. The current officer is signed out.</p>
+                        </div>
 
-                <div class="ho-panel-footer">
-                    <button type="button" class="btn-secondary" id="hoBack">Cancel</button>
-                    <button type="button" class="btn-primary" id="hoNext" disabled>Send code</button>
+                        <div class="form-row" id="hoPickRow">
+                            <label class="form-label" for="hoSearch">New holder</label>
+                            <div class="search-box handover-search">
+                                <i class="fa-solid fa-magnifying-glass"></i>
+                                <input type="text" id="hoSearch" placeholder="Search by name or email…" autocomplete="off">
+                            </div>
+                            <div class="candidate-list" id="hoCandidates"></div>
+                            <p class="dir-empty" id="hoCandidatesEmpty" hidden>Nobody matches.</p>
+                        </div>
+
+                        <p class="form-error" id="hoPickError" hidden></p>
+                    </div>
+
+                    <!-- Step 2: the code sent to the new holder -->
+                    <div class="side-drawer-body" id="hoStepVerify" hidden>
+                        <div class="form-row">
+                            <p class="form-label">Code sent to</p>
+                            <div class="ho-person" id="hoTarget"></div>
+                        </div>
+                        <div class="form-row">
+                            <label class="form-label" for="hoOtp">6-digit code</label>
+                            <input type="text" id="hoOtp" maxlength="6" inputmode="numeric" autocomplete="one-time-code" placeholder="000000">
+                        </div>
+                        <p class="form-error" id="hoOtpError" hidden></p>
+                    </div>
+
+                    <div class="side-drawer-footer">
+                        <button type="button" class="btn-drawer-cancel" id="hoBack">Cancel</button>
+                        <button type="button" class="btn-drawer-submit" id="hoNext" disabled>Send code</button>
+                    </div>
                 </div>
-            </aside>
-          </div>
+            </div>
         </div>
     <?php endif; ?>
 

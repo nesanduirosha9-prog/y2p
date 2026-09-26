@@ -53,13 +53,13 @@ document.addEventListener('DOMContentLoaded', function () {
                         if (data.success) {
                             window.location.href = data.redirect || '/settings/handover/verify';
                         } else {
-                            alert(data.message || 'Could not start the role change.');
+                            ttToast.error(data.message || 'Could not start the role change.');
                             confirmBtn.disabled = false;
                             confirmBtn.textContent = 'Confirm';
                         }
                     })
                     .catch(function () {
-                        alert('Something went wrong. Please try again.');
+                        ttToast.error('Something went wrong. Please try again.');
                         confirmBtn.disabled = false;
                         confirmBtn.textContent = 'Confirm';
                     });

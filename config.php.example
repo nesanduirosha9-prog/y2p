@@ -21,5 +21,14 @@ define('SMTP_USERNAME', 'you@gmail.com');
 define('SMTP_APP_PASSWORD', '');
 
 // Demo mode: OTP delivery and verification are simulated. No code is emailed
-// and any 6-digit entry is accepted. Set false + fill SMTP creds for real auth.
+// and any 6-digit entry is accepted. Set false + fill SMTP creds for real auth
+// — signup, forgot password, role handover and staff invites all switch over.
 define('DEMO_AUTH', true);
+
+// Only addresses on this domain may sign up.
+define('STAFF_EMAIL_DOMAIN', 'ucsc.cmb.ac.lk');
+
+// Comma-separated addresses that may sign up despite not being on
+// STAFF_EMAIL_DOMAIN — e.g. a Gmail you can actually receive codes at, for
+// demoing real auth. Leave empty in production.
+define('AUTH_BYPASS_EMAILS', '');

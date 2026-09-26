@@ -65,8 +65,9 @@ $panels = [
                                 <th style="width: 90px;">Staff</th>
                                 <th>Name</th>
                                 <th>Type</th>
-                                <th>Dates</th>
-                                <th>Cover staff</th>
+                                <th>Hours</th>
+                                <th>Days</th>
+                                <th>Cover</th>
                                 <th>Reason</th>
                             </tr>
                         </thead>

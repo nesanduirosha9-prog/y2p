@@ -1,7 +1,8 @@
 // forgot_password.js — drives the 3-step reset wizard in
 // app/views/auth/forgot_password.php. Same shape as signup.js:
-// 1. Step 1 (email): domain check, then POST /forgot-password/send-otp;
-//    advances to step 2 only once the server confirms a code was sent.
+// 1. Step 1 (email): format check, then POST /forgot-password/send-otp;
+//    advances to step 2 only once the server confirms a code was sent. No
+//    domain check — the server only ever emails existing accounts.
 // 2. Step 2 (OTP): 6-digit boxes, paste support; submit concatenates them
 //    and POSTs /forgot-password/verify-otp; advances to step 3 only on a
 //    verified match (AuthController::verifyOtp() checks it server-side and
@@ -9,16 +10,18 @@
 // 3. Step 3 (new password): live match validation, then POST /forgot-password
 //    with {email, password} — AuthController::resetPassword() rejects this
 //    unless step 2's verification is still valid for this same email.
+// Feedback goes through the system toast (window.ttToast, js/toast.js).
 document.addEventListener('DOMContentLoaded', function() {
+
+    const notify = (message, isError) => isError ? ttToast.error(message) : ttToast(message);
 
     // UI Elements
     const step1Content = document.getElementById('step-1-content');
     const step2Content = document.getElementById('step-2-content');
     const step3Content = document.getElementById('step-3-content');
 
-    const step1Indicator = document.getElementById('step-1-indicator');
-    const step2Indicator = document.getElementById('step-2-indicator');
-    const step3Indicator = document.getElementById('step-3-indicator');
+    // Dark tracker (brand panel) + light tracker (tablet/phone) — components/auth_stepper.php
+    const trackers = document.querySelectorAll('.progress-tracker');
 
     const emailForm = document.getElementById('emailForm');
     const otpForm = document.getElementById('otpForm');
@@ -28,23 +31,14 @@ document.addEventListener('DOMContentLoaded', function() {
     const btnBackToStep2 = document.getElementById('btn-back-to-step2');
 
     // --- Timeline UI Updater ---
+    // Steps before the current one are completed (green), the current one is active.
     function updateProgressUI(currentStep) {
-        step1Indicator.className = 'step';
-        step2Indicator.className = 'step';
-        step3Indicator.className = 'step';
-
-        if (currentStep === 1) {
-            step1Indicator.classList.add('active');
-        } 
-        else if (currentStep === 2) {
-            step1Indicator.classList.add('completed'); // Adds green styling
-            step2Indicator.classList.add('active');
-        } 
-        else if (currentStep === 3) {
-            step1Indicator.classList.add('completed');
-            step2Indicator.classList.add('completed');
-            step3Indicator.classList.add('active');
-        }
+        trackers.forEach(tracker => {
+            tracker.querySelectorAll('.step').forEach((step, index) => {
+                step.classList.toggle('completed', index + 1 < currentStep);
+                step.classList.toggle('active', index + 1 === currentStep);
+            });
+        });
     }
 
     // --- STEP 1: Real-time Email Validation ---
@@ -56,7 +50,7 @@ document.addEventListener('DOMContentLoaded', function() {
             const emailValue = this.value.trim();
             const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
             
-            if (emailRegex.test(emailValue) && emailValue.endsWith('@ucsc.cmb.ac.lk')) {
+            if (emailRegex.test(emailValue)) {
                 btnSendOtp.classList.add('active-btn'); 
             } else {
                 btnSendOtp.classList.remove('active-btn'); 
@@ -78,7 +72,7 @@ document.addEventListener('DOMContentLoaded', function() {
             event.preventDefault();
             const emailValue = emailInput.value.trim();
 
-            if (!emailValue.endsWith('@ucsc.cmb.ac.lk')) return; // Extra check
+            if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailValue)) return;
 
             const originalText = btnSendOtp.innerHTML;
             btnSendOtp.innerHTML = 'Sending...';
@@ -90,10 +84,11 @@ document.addEventListener('DOMContentLoaded', function() {
                     btnSendOtp.disabled = false;
 
                     if (!data.success) {
-                        alert(data.message || 'Could not send the code. Please try again.');
+                        notify(data.message || 'Could not send the code. Please try again.', true);
                         return;
                     }
 
+                    notify(data.message || 'If this email is registered, a code has been sent.');
                     step1Content.style.display = 'none';
                     step2Content.style.display = 'block';
                     updateProgressUI(2);
@@ -103,7 +98,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     console.error('Error:', error);
                     btnSendOtp.innerHTML = originalText;
                     btnSendOtp.disabled = false;
-                    alert('An error occurred. Please try again.');
+                    notify('Could not reach the server. Please try again.', true);
                 });
         });
     }
@@ -183,7 +178,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 btnVerifyOtp.disabled = false;
 
                 if (!data.success) {
-                    alert(data.message || 'Incorrect code. Please try again.');
+                    notify(data.message || 'Incorrect code. Please try again.', true);
                     otpInputs.forEach(input => input.value = '');
                     otpInputs[0].focus();
                     checkOtpValidity();
@@ -198,7 +193,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 console.error('Error:', error);
                 btnVerifyOtp.innerHTML = originalText;
                 btnVerifyOtp.disabled = false;
-                alert('An error occurred. Please try again.');
+                notify('Could not reach the server. Please try again.', true);
             });
         });
     }
@@ -211,11 +206,12 @@ document.addEventListener('DOMContentLoaded', function() {
             const emailValue = emailInput.value.trim();
             requestOtp(emailValue)
                 .then(data => {
-                    alert(data.success ? 'A new code has been sent.' : (data.message || 'Could not resend the code.'));
+                    if (data.success) notify('A new code has been sent.');
+                    else notify(data.message || 'Could not resend the code.', true);
                 })
                 .catch(error => {
                     console.error('Error:', error);
-                    alert('An error occurred. Please try again.');
+                    notify('Could not reach the server. Please try again.', true);
                 });
         });
     }
@@ -283,17 +279,18 @@ document.addEventListener('DOMContentLoaded', function() {
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
-                    alert("Password reset successful! You can now sign in with your new password.");
+                    // Shown on the login page after the redirect.
+                    window.ttToast.flash('Password reset successful. You can now sign in with your new password.', { duration: 5000 });
                     window.location.href = data.redirect || '/login';
                 } else {
-                    alert("Password reset failed: " + data.message);
+                    notify(data.message || 'Password reset failed. Please try again.', true);
                     btnComplete.innerHTML = originalText;
                     btnComplete.disabled = false;
                 }
             })
             .catch(error => {
                 console.error('Error:', error);
-                alert("An error occurred. Please try again.");
+                notify('Could not reach the server. Please try again.', true);
                 btnComplete.innerHTML = originalText;
                 btnComplete.disabled = false;
             });

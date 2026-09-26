@@ -79,13 +79,12 @@ class CoursesController extends Controller
             return;
         }
 
-        [$course, $lecturers, $instructors, $error] = $this->readCourse($request);
+        [$course, $lecturers, $instructors, $error] = $this->readCourse($request, $params['code'] ?? '');
         if ($error !== null) {
             $response->json(['success' => false, 'message' => $error], 400);
             return;
         }
 
-        $course['code'] = $params['code'] ?? '';
         $model = new CourseModel();
         if (!$model->findByCode($course['code'])) {
             $response->json(['success' => false, 'message' => 'Course not found.'], 404);
@@ -135,12 +134,14 @@ class CoursesController extends Controller
      * Reads + validates the drawer's JSON body.
      * Returns [course, lecturers, instructors, errorMessageOrNull], where
      * course has exactly the keys CourseModel::create()/update() bind.
+     * $urlCode is the code from PUT /courses/{code}; when given it replaces
+     * any code in the body, so the URL is the only source on an edit.
      */
-    private function readCourse(Request $request): array
+    private function readCourse(Request $request, ?string $urlCode = null): array
     {
         $b = $request->getBody();
         $course = [
-            'code'          => strtoupper(trim((string)($b['code'] ?? ''))),
+            'code'          => strtoupper(trim((string)($urlCode ?? $b['code'] ?? ''))),
             'title'         => trim((string)($b['title'] ?? '')),
             'credits'       => filter_var($b['credits'] ?? null, FILTER_VALIDATE_INT),
             'department'    => strtolower((string)($b['program'] ?? '')),

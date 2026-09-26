@@ -1,76 +1,16 @@
-/* ==============================
-   Left Panel Content Styles
-   ============================== */
-.left-panel {
-    /* Adding padding to push content away from the edges */
-    padding: 80px 60px;
-    color: #ffffff;
-    box-sizing: border-box;
-    /* Ensures padding doesn't break the 40% width */
-}
+/* ==========================================================
+   Login page — only what's unique to this page. Layout, form controls
+   and the card all come from global.css.
+   ========================================================== */
 
-/* Branding Section */
-.branding {
-    display: flex;
-    align-items: center;
-    gap: 15px;
-    margin-bottom: 40px;
-    flex-shrink: 0;
-}
-
-/* Takes up the remaining height below the logo and centers the marketing
-   copy inside it, instead of everything sitting top-left with a large
-   empty area under it on tall/wide screens. */
-.left-content {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    max-width: 460px;
-}
-
-.logo-icon {
-    font-size: 36px;
-    color: #3b82f6;
-    /* Accent blue */
-}
-
-.logo-text h1 {
-    font-size: 24px;
-    margin: 0;
-    font-weight: 700;
-}
-
-.logo-text p {
-    font-size: 14px;
-    margin: 5px 0 0;
-    color: #94a3b8;
-}
-
-/* Typography for Features */
-.feature-title h2 {
-    font-size: 40px;
-    margin: 0;
-    line-height: 1.2;
-}
-
-.feature-description {
-    font-size: 16px;
-    margin: 20px 0 40px;
-    line-height: 1.6;
-    color: #cbd5e1;
-}
-
-/* Feature List */
+/* ---------- Left panel feature list ---------- */
 .feature-list {
     list-style: none;
-    /* Removes default bullet points */
     padding: 0;
     margin: 0;
     display: flex;
     flex-direction: column;
-    gap: 15px;
-    /* Spaces out the list items */
+    gap: 14px;
 }
 
 .feature-list li {
@@ -95,159 +35,44 @@
     border-radius: 8px;
 }
 
-/* ==============================
-   Right Panel Content Styles
-   ============================== */
-.right-panel {
-    padding: 40px 60px;
-    box-sizing: border-box;
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-    /* Pushes nav up, footer down, form center */
-}
-
-.top-nav {
-    text-align: right;
-    font-size: 14px;
-}
-
-.top-nav span {
-    color: #6b7c96;
-}
-
-.top-nav a {
-    color: var(--color-primary);
-    text-decoration: none;
-    font-weight: 600;
-}
-
-.login-main {
-    max-width: 400px;
-    margin: 0 auto;
-    /* Centers the form horizontally */
-    width: 100%;
-}
-
-.welcome-text h2 {
-    font-family: var(--font-display);
-    font-weight: 800;
-    font-size: 27px;
-    margin: 0 0 4px;
-    color: var(--color-navy);
-    letter-spacing: -0.02em;
-}
-
-.welcome-text p {
-    font-size: 14px;
-    margin: 0 0 26px;
-    color: #6b7c96;
-}
-
-/* The white card effect */
-.login-card {
-    background-color: #ffffff;
-    border: 1px solid #dde3ee;
-    border-radius: 15px;
-    padding: 28px;
-    box-shadow: 0 1px 1.5px rgba(0, 0, 0, 0.1), 0 1px 1px rgba(0, 0, 0, 0.1);
-}
-
-.form-group {
-    margin-bottom: 18px;
-}
-
-.label-wrapper {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 6px;
-}
-
-label {
-    font-size: 14px;
-    font-weight: 500;
-    color: #374151;
-    display: block;
-    /* Ensures label sits above input */
-    margin-bottom: 6px;
-}
-
-.label-wrapper label {
-    margin-bottom: 0;
-}
-
+/* ---------- Form extras ---------- */
 .forgot-password {
     font-size: 12px;
     font-weight: 500;
     color: var(--color-primary);
     text-decoration: none;
+    white-space: nowrap;
 }
 
-/* Inputs and Selects */
-input[type="email"],
-input[type="password"],
-input.pw-input,
-select {
-    width: 100%;
-    padding: 10px 14px;
-    font-size: 14px;
-    color: var(--color-text-dark);
-    border: 1px solid #dde3ee;
-    border-radius: 8px;
-    box-sizing: border-box;
-    background-color: #ffffff;
+.forgot-password:hover {
+    text-decoration: underline;
 }
 
-input::placeholder {
-    color: #9ca3af;
-}
-
-input:focus,
-select:focus {
-    border-color: var(--color-primary);
-    outline: none;
-    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
-}
-
-/* Full-width auth CTA — navy, matching the Figma AuthLeftPanel accent;
-   base shape shared via components.css */
-.btn-primary {
-    width: 100%;
-    padding: 11px;
-    font-size: 14px;
-    margin-top: 6px;
-    background: #1a3a6b;
-    border-radius: 8px;
-    box-shadow: 0 1px 1.5px rgba(0, 0, 0, 0.1), 0 1px 1px rgba(0, 0, 0, 0.1);
-}
-
-.btn-primary:hover {
-    background: #142d54;
-}
-
-/* 'Or' Divider trick */
+/* "or" divider — a flex row with a hairline either side. */
 .divider-wrapper {
-    margin: 15px 0;
-    text-align: center;
-    border-bottom: 1px solid #eef1f6;
-    line-height: 0.1em;
-}
-
-.divider-text {
-    background: #ffffff;
-    padding: 0 11px;
+    display: flex;
+    align-items: center;
+    gap: 11px;
+    margin: 16px 0;
     color: #b0bac9;
     font-size: 12px;
 }
 
-/* Passkey Button */
+.divider-wrapper::before,
+.divider-wrapper::after {
+    content: "";
+    flex: 1;
+    height: 1px;
+    background: #eef1f6;
+}
+
 .btn-passkey {
     width: 100%;
     padding: 10px 16px;
     border: 1px solid #dde3ee;
     border-radius: 8px;
     background-color: #ffffff;
+    font-family: inherit;
     font-size: 14px;
     font-weight: 500;
     cursor: pointer;
@@ -255,6 +80,7 @@ select:focus {
     align-items: center;
     gap: 11px;
     color: #374151;
+    text-align: left;
     transition: background-color 0.2s, border-color 0.2s;
 }
 
@@ -276,17 +102,23 @@ select:focus {
     font-size: 13px;
 }
 
+.passkey-label {
+    white-space: nowrap;
+}
+
 .passkey-hint {
     margin-left: auto;
     font-size: 12px;
     font-weight: 400;
     color: #9ca3af;
+    white-space: nowrap;
 }
 
 .agreement-text {
     font-size: 12px;
+    line-height: 1.5;
     color: #9ca3af;
-    margin-top: 22px;
+    margin: 20px 0 0;
     text-align: center;
 }
 
@@ -295,54 +127,13 @@ select:focus {
     text-decoration: none;
 }
 
-.right-footer {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    font-size: 12px;
-    color: #b0bac9;
-    margin-top: 20px;
-    padding-top: 16px;
-    border-top: 1px solid #dde3ee;
+.agreement-text a:hover {
+    text-decoration: underline;
 }
 
-.right-footer .version {
-    font-family: var(--font-mono);
-}
-
-
-/* ==============================
-   Responsive (1024px/480px per tokens.css). 
-   ============================== */
-@media (max-width: 1024px) {
-
-    /* Hide the left panel on tablet and mobile to prevent stacking/distortion */
-    .left-panel {
+/* On narrow phones the Face ID hint would crowd the label — drop it. */
+@media (max-width: 380px) {
+    .passkey-hint {
         display: none;
-    }
-
-    /* Make the right panel take the full width of the screen */
-    .right-panel {
-        width: 100%;
-        padding: 32px 48px;
-    }
-}
-
-@media (max-width: 480px) {
-
-    /* Left panel is already hidden by the rule above. 
-       Just adjust the right panel's padding for small phone screens. */
-    .right-panel {
-        padding: 24px 20px;
-    }
-
-    .login-card {
-        padding: 20px;
-    }
-
-    .right-footer {
-        flex-direction: column;
-        gap: 6px;
-        text-align: center;
     }
 }

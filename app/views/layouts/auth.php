@@ -25,6 +25,9 @@ use app\core\Application;
     <?php if (isset($css_file)): ?>
         <link rel="stylesheet" href="<?= $css_file ?>">
     <?php endif; ?>
+
+    <!-- System toast (window.ttToast) -->
+    <script src="/js/toast.js"></script>
 </head>
 <body>
 

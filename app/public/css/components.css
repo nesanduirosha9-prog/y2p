@@ -29,8 +29,13 @@
     transition: background-color 0.2s ease;
 }
 
-.btn-primary:hover {
+.btn-primary:hover:not(:disabled) {
     background: var(--color-primary-dark);
+}
+
+.btn-primary:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
 }
 
 .btn-primary-sm {
@@ -206,10 +211,45 @@
     content: "— ";
 }
 
+/* ---------- Evaluation score pill ----------
+ * "4 / 5" coloured by band: 4–5 green, 3 amber, 1–2 red. Used on the
+ * Evaluations page, the lecturer's evaluation history and My Workload.
+ *   <span class="eval-score-pill score-high">5 / 5</span>
+ */
+.eval-score-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 700;
+    white-space: nowrap;
+}
+
+.score-high {
+    background: #ecfdf5;
+    color: #059669;
+    border: 1px solid #a7f3d0;
+}
+
+.score-mid {
+    background: #fffbeb;
+    color: #b45309;
+    border: 1px solid #fde68a;
+}
+
+.score-low {
+    background: #fef2f2;
+    color: #b91c1c;
+    border: 1px solid #fecaca;
+}
+
 /* ---------- Side panel ----------
- * The right-hand slide-in panel. Same look as the Workload Matrix's assign
- * drawer (.wm-drawer): white head, soft grey close button that reads as "←"
- * on phones, where the panel is full-width and covers its backdrop.
+ * Add Staff's right-hand panel. Its markup predates .side-drawer (below), but
+ * it takes the same placement and look: inset 16px over a dimmed + blurred
+ * page, rounded, white header with a quiet close. Full-screen on phones,
+ * where the close reads as "←".
  *
  *   <div class="side-panel-backdrop" hidden></div>
  *   <aside class="side-panel" hidden>
@@ -221,41 +261,39 @@
 .side-panel-backdrop {
     position: fixed;
     inset: 0;
-    background: rgba(15, 28, 46, 0.35);
+    background: rgba(15, 28, 46, 0.45);
+    backdrop-filter: blur(2px);
     z-index: 1400;
+    animation: drawerOverlayFadeIn 0.22s ease-out;
 }
 
 .side-panel {
     position: fixed;
-    top: 0;
-    right: 0;
-    bottom: 0;
+    top: 16px;
+    right: 16px;
+    bottom: 16px;
     width: 420px;
-    max-width: 100%;
+    max-width: calc(100vw - 32px);
     background: #fff;
-    border-left: 1px solid #e2e8f0;
-    box-shadow: -12px 0 32px rgba(15, 28, 46, 0.12);
+    border-radius: 18px;
+    box-shadow: 0 16px 40px rgba(15, 28, 46, 0.16), 0 2px 10px rgba(0, 0, 0, 0.06);
+    overflow: hidden;
     z-index: 1450;
     display: flex;
     flex-direction: column;
-    animation: sidePanelIn 0.2s ease-out;
+    animation: drawerSlideIn 0.28s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .side-panel-backdrop[hidden],
 .side-panel[hidden] { display: none; }
-
-@keyframes sidePanelIn {
-    from { transform: translateX(24px); opacity: 0; }
-    to   { transform: translateX(0); opacity: 1; }
-}
 
 .side-panel-head {
     display: flex;
     align-items: flex-start;
     justify-content: space-between;
     gap: 12px;
-    padding: 18px 20px 14px;
-    border-bottom: 1px solid #eef1f6;
+    padding: 22px 24px 18px;
+    border-bottom: 1px solid #edf2f7;
 }
 
 .side-panel-tag {
@@ -266,8 +304,15 @@
     color: #2563eb;
 }
 
-.side-panel-title { font-size: 15px; font-weight: 700; color: #0f1c2e; margin-top: 4px; }
-.side-panel-sub { font-size: 11.5px; color: #6b7c96; margin-top: 3px; }
+.side-panel-title {
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-size: 1.15rem;
+    font-weight: 700;
+    color: #0f172a;
+    margin-top: 4px;
+    line-height: 1.25;
+}
+.side-panel-sub { font-size: 0.82rem; color: #64748b; margin-top: 4px; }
 
 .side-panel-close {
     flex-shrink: 0;
@@ -275,9 +320,9 @@
     height: 32px;
     border: none;
     border-radius: 8px;
-    background: #f1f5f9;
-    color: #475569;
-    font-size: 15px;
+    background: none;
+    color: #64748b;
+    font-size: 16px;
     cursor: pointer;
     display: inline-flex;
     align-items: center;
@@ -285,19 +330,19 @@
     transition: background 0.15s ease, color 0.15s ease;
 }
 
-.side-panel-close:hover { background: #e2e8f0; color: #0f1c2e; }
+.side-panel-close:hover { background: #f1f5f9; color: #0f172a; }
 
-.side-panel-body { flex: 1; overflow-y: auto; padding: 18px 20px; }
+.side-panel-body { flex: 1; overflow-y: auto; padding: 20px 24px; }
 
 .side-panel-foot {
     display: flex;
-    gap: 10px;
-    padding: 14px 20px;
-    border-top: 1px solid #eef1f6;
+    gap: 12px;
+    padding: 16px 24px 20px;
+    border-top: 1px solid #edf2f7;
 }
 
-@media (max-width: 600px) {
-    .side-panel { width: 100%; border-left: none; }
+@media (max-width: 640px) {
+    .side-panel { top: 0; right: 0; bottom: 0; width: 100%; max-width: none; border-radius: 0; }
     .side-panel-close .fa-xmark::before { content: "\f060"; }
 }
 
@@ -423,6 +468,286 @@ body:has(.floating-panel:not([hidden]))::after {
 }
 
 /* ==========================================================================
+   Side drawer — THE panel for the whole app (media_1790082539024.png): slides
+   in from the right over a dimmed + blurred page, inset 16px, with a white
+   header (title + subtitle + close), a scrolling body and a Cancel / primary
+   footer. Every add / edit / detail panel uses it:
+
+     <div class="side-drawer-overlay" id="…" hidden>          ← backdrop; toggle `hidden`
+       <div class="side-drawer" role="dialog" aria-modal="true">
+         <div class="side-drawer-header"> <div>title + subtitle</div> close </div>
+         <div class="side-drawer-body"> … </div>
+         <div class="side-drawer-footer"> .btn-drawer-cancel  .btn-drawer-submit </div>
+       </div>
+     </div>
+
+   A click on the overlay itself (e.target === overlay) should close it.
+   `.side-drawer--wide` is for content that needs the room (an email preview).
+   .side-panel (Add Staff), .wm-drawer (Workload) and .floating-panel keep
+   their own markup but take the same placement.
+   ========================================================================== */
+
+.side-drawer-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(15, 28, 46, 0.45);
+    backdrop-filter: blur(2px);
+    z-index: 1000;
+    display: flex;
+    justify-content: flex-end;
+    align-items: stretch;
+    animation: drawerOverlayFadeIn 0.22s ease-out;
+}
+
+.side-drawer-overlay[hidden] {
+    display: none !important;
+}
+
+.side-drawer {
+    position: fixed;
+    top: 16px;
+    right: 16px;
+    bottom: 16px;
+    width: 420px;
+    max-width: calc(100vw - 32px);
+    height: calc(100vh - 32px);
+    background: #ffffff;
+    border-radius: 18px;
+    box-shadow: 0 16px 40px rgba(15, 28, 46, 0.16), 0 2px 10px rgba(0, 0, 0, 0.06);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    z-index: 1001;
+    animation: drawerSlideIn 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.side-drawer--wide {
+    width: 640px;
+}
+
+/* Multi-step drawers swap bodies / rows with `hidden`; .side-drawer-body's
+   display:flex would otherwise beat it. */
+.side-drawer [hidden] {
+    display: none !important;
+}
+
+@keyframes drawerOverlayFadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes drawerSlideIn {
+    from {
+        transform: translateX(100%);
+        opacity: 0.7;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+.side-drawer-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    padding: 22px 24px 18px;
+    border-bottom: 1px solid #edf2f7;
+    background: #ffffff;
+    border-top-left-radius: 18px;
+    border-top-right-radius: 18px;
+}
+
+.side-drawer-header > div {
+    flex: 1;
+    padding-right: 12px;
+}
+
+.side-drawer-title {
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-size: 1.15rem;
+    font-weight: 700;
+    color: #0f172a;
+    margin: 0;
+    line-height: 1.25;
+}
+
+.side-drawer-subtitle {
+    font-size: 0.82rem;
+    color: #64748b;
+    margin: 4px 0 0;
+}
+
+.side-drawer-close {
+    background: none;
+    border: none;
+    color: #64748b;
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.15s ease;
+    flex-shrink: 0;
+}
+
+.side-drawer-close:hover {
+    background: #f1f5f9;
+    color: #0f172a;
+}
+
+.side-drawer-body {
+    padding: 20px 24px;
+    overflow-y: auto;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    background: #ffffff;
+}
+
+.side-drawer-body .form-row {
+    margin-bottom: 0;
+}
+
+.side-drawer-body .form-row label,
+.side-drawer-body .form-label {
+    display: block;
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    color: #64748b;
+    margin-bottom: 6px;
+}
+
+.side-drawer-body input[type="text"],
+.side-drawer-body input[type="email"],
+.side-drawer-body input[type="number"],
+.side-drawer-body select,
+.side-drawer-body textarea {
+    width: 100%;
+    border: 1.5px solid #dde3ee;
+    border-radius: 10px;
+    padding: 10px 14px;
+    font-size: 0.88rem;
+    color: #0f172a;
+    background: #ffffff;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.side-drawer-body input[type="text"]:focus,
+.side-drawer-body input[type="email"]:focus,
+.side-drawer-body input[type="number"]:focus,
+.side-drawer-body select:focus,
+.side-drawer-body textarea:focus {
+    outline: none;
+    border-color: #00bc7d;
+    box-shadow: 0 0 0 3px rgba(0, 188, 125, 0.14);
+}
+
+/* A .search-box inside a drawer keeps room for its magnifier icon. */
+.side-drawer-body .search-box input[type="text"] {
+    padding-left: 36px;
+}
+
+.side-drawer-body input:disabled {
+    background: #f8fafc;
+    color: #64748b;
+    border-color: #e2e8f0;
+    cursor: not-allowed;
+}
+
+.side-drawer-body .section-label {
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    color: #64748b;
+    margin: 8px 0 0;
+}
+
+.side-drawer-footer {
+    display: flex;
+    gap: 12px;
+    padding: 16px 24px 20px;
+    border-top: 1px solid #edf2f7;
+    background: #ffffff;
+    border-bottom-left-radius: 18px;
+    border-bottom-right-radius: 18px;
+}
+
+.btn-drawer-cancel {
+    flex: 1;
+    padding: 11px 18px;
+    border-radius: 10px;
+    border: 1.5px solid #dde3ee;
+    background: #ffffff;
+    color: #334155;
+    font-size: 0.88rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    text-align: center;
+}
+
+.btn-drawer-cancel:hover {
+    background: #f8fafc;
+    border-color: #cbd5e1;
+    color: #0f172a;
+}
+
+.btn-drawer-submit {
+    flex: 1;
+    padding: 11px 18px;
+    border-radius: 10px;
+    border: none;
+    background: #00bc7d;
+    color: #ffffff;
+    font-size: 0.88rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+}
+
+.btn-drawer-submit:hover {
+    background: #00a86f;
+    box-shadow: 0 4px 12px rgba(0, 188, 125, 0.28);
+}
+
+.btn-drawer-submit:disabled {
+    background: #a7f3d0;
+    color: #ffffff;
+    cursor: not-allowed;
+    box-shadow: none;
+}
+
+@media (max-width: 640px) {
+    .side-drawer {
+        top: 0;
+        right: 0;
+        bottom: 0;
+        width: 100vw;
+        max-width: 100vw;
+        height: 100vh;
+        border-radius: 0;
+    }
+    .side-drawer-header {
+        border-radius: 0;
+    }
+    .side-drawer-footer {
+        border-radius: 0;
+    }
+}
+
+/* ==========================================================================
    Searchable select (js/searchable_select.js) — the Workload staff picker's
    searchable dropdown (.sched-combo) as a drop-in for any <select
    data-searchable>. The trigger keeps the select's own classes, so its box
@@ -537,4 +862,68 @@ select.ss-native { display: none !important; }
     font-size: 12.5px;
     color: #94a3b8;
     text-align: center;
+}
+
+/* ---------- Toast ----------
+ * The system's one notification toast — window.ttToast() in js/toast.js,
+ * loaded by every layout. Dark pill with a coloured icon per type; stacks
+ * top-right, full width on phones. z-index sits above every modal/drawer.
+ */
+.tt-toast-host {
+    position: fixed;
+    top: 20px;
+    right: 24px;
+    z-index: 10000;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 8px;
+    pointer-events: none;
+}
+
+.tt-toast {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    max-width: 380px;
+    background: var(--color-navy);
+    color: #fff;
+    font-family: var(--font-sans);
+    font-size: 13px;
+    font-weight: 500;
+    line-height: 1.45;
+    padding: 12px 16px;
+    border-radius: 10px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.25);
+    opacity: 0;
+    transform: translateY(-8px);
+    transition: opacity 0.2s, transform 0.2s;
+}
+
+.tt-toast.show {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.tt-toast i {
+    flex: 0 0 auto;
+    font-size: 14px;
+}
+
+.tt-toast-success i { color: #00d492; }
+.tt-toast-error i   { color: #ff6467; }
+.tt-toast-warning i { color: #fbbf24; }
+.tt-toast-info i    { color: #60a5fa; }
+
+@media (max-width: 480px) {
+    .tt-toast-host {
+        top: 12px;
+        left: 12px;
+        right: 12px;
+        align-items: stretch;
+    }
+
+    .tt-toast {
+        max-width: none;
+    }
 }

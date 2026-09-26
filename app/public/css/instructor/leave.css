@@ -333,9 +333,11 @@
 
 .lv-day:hover { background: #eff6ff; color: #1d4ed8; }
 .lv-day.lv-day-empty { visibility: hidden; cursor: default; }
-/* Past days cannot be picked — LeaveController refuses them too. */
+/* Past days and weekends cannot be picked — LeaveController refuses them too. */
 .lv-day.lv-day-past,
-.lv-day.lv-day-past:hover { color: #cbd5e1; background: transparent; cursor: not-allowed; }
+.lv-day.lv-day-past:hover,
+.lv-day.lv-day-weekend,
+.lv-day.lv-day-weekend:hover { color: #cbd5e1; background: transparent; cursor: not-allowed; }
 .lv-day.lv-day-selected {
     background: linear-gradient(135deg, #1a3a6b 0%, #2563eb 100%) !important;
     color: #ffffff !important;

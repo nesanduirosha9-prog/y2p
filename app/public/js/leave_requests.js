@@ -47,7 +47,8 @@
             <td>${cells.badge(r.requester_code, r.requester_rank, r.requester_name)}</td>
             <td><span class="leave-name">${esc(r.requester_name)}</span></td>
             <td>${cells.type(r)}</td>
-            <td>${cells.dates(r, TODAY)}</td>
+            <td>${cells.hours(r)}</td>
+            <td>${cells.days(r, TODAY)}</td>
             <td>${cells.covers(r)}</td>
             <td>${cells.reason(r)}</td>
         </tr>`;

@@ -42,7 +42,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function toast(message, isError) {
-        window.ttToast?.(message, { icon: isError ? 'fa-circle-exclamation' : 'fa-circle-check' });
+        isError ? ttToast.error(message) : ttToast(message);
     }
 
     /** fetch() + JSON, resolving to { success, message, ... } even on a network or parse failure. */
@@ -58,7 +58,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function cellsOf(l) {
         return `<td>${cells.type(l)}</td>
-                <td>${cells.dates(l, TODAY)}</td>
+                <td>${cells.hours(l)}</td>
+                <td>${cells.days(l, TODAY)}</td>
                 <td>${cells.covers(l)}</td>
                 <td>${cells.reason(l)}</td>`;
     }
@@ -227,14 +228,16 @@ document.addEventListener('DOMContentLoaded', () => {
             const classes = ['lv-day'];
             if (selectedDates.includes(dateStr)) classes.push('lv-day-selected');
             if (dateStr === TODAY) classes.push('lv-day-today');
-            // Leave cannot be requested for a past date (the server refuses it too).
+            // Leave cannot be requested for a past date or a weekend (the server refuses them too).
             const past = dateStr < TODAY;
+            const weekend = dateObj.getDay() === 0 || dateObj.getDay() === 6;
             if (past) classes.push('lv-day-past');
-            html += `<button type="button" class="${classes.join(' ')}" data-date="${dateStr}"${past ? ' disabled' : ''}>${d}</button>`;
+            if (weekend) classes.push('lv-day-weekend');
+            html += `<button type="button" class="${classes.join(' ')}" data-date="${dateStr}"${past || weekend ? ' disabled' : ''}>${d}</button>`;
         }
         grid.innerHTML = html;
 
-        grid.querySelectorAll('.lv-day:not(.lv-day-empty):not(.lv-day-past)').forEach(btn => {
+        grid.querySelectorAll('.lv-day:not(.lv-day-empty):not(.lv-day-past):not(.lv-day-weekend)').forEach(btn => {
             btn.addEventListener('click', () => {
                 const dateStr = btn.dataset.date;
                 const idx = selectedDates.indexOf(dateStr);
@@ -483,7 +486,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
 
         renderPerDayCoverCards();
-        window.ttToast?.(`Applied ${firstCover.name} as cover for all selected days.`, { icon: 'fa-circle-check' });
+        ttToast(`Applied ${firstCover.name} as cover for all selected days.`);
     });
 
     document.getElementById('lvPrevMonth').addEventListener('click', () => {

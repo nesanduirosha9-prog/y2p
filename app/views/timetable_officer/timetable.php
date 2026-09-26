@@ -14,14 +14,10 @@ function ttUrl(string $dept, int $sem, int $year): string
     return '/timetable?dept=' . urlencode($dept) . '&sem=' . $sem . '&year=' . $year;
 }
 
-// Map each occupied (day, hour) cell to the session that starts there, or 'busy' for
-// a continuation cell so the grid knows what NOT to render as clickable/free.
-$occupied = [];
-foreach ($sessions as $s) {
-    for ($i = 0; $i < $s['duration']; $i++) {
-        $occupied[$s['day']][$s['start'] + $i] = $i === 0 ? $s : 'busy';
-    }
-}
+// Every session starting in each (day, hour) slot — more than one when sessions
+// overlap, and those share the slot side by side in lanes — plus which hours
+// are covered, so the grid knows what NOT to render as a clickable free cell.
+$layout = ViewHelpers::timetableLanes($sessions);
 
 // Filter options come from the database, not from what happens to be on the
 // grid: every hall/lab in `rooms` (so one added under Lecture Halls shows up
@@ -141,14 +137,13 @@ sort($lecturers);
                     <?php foreach ($hours as $rowIndex => $h): ?>
                         <div class="tt-grid-time" style="grid-column: 1; grid-row: <?= $rowIndex + 2 ?>;"><?= ViewHelpers::hourLabel($h) ?></div>
                         <?php foreach ($days as $dayKey => $dayLabel):
-                            $cell = $occupied[$dayKey][$h] ?? null;
+                            $starting = $layout['starts'][$dayKey][$h] ?? [];
                             $isLunch = $h === 12;
                         ?>
-                            <?php if ($cell === 'busy'): ?>
-                                <?php // continuation row of a multi-hour session above ?>
-                            <?php elseif (is_array($cell)): ?>
-                                <div class="tt-block type-<?= $cell['type'] ?>"
-                                     style="grid-column: <?= array_search($dayKey, array_keys($days)) + 2 ?>; grid-row: <?= $rowIndex + 2 ?> / span <?= $cell['duration'] ?>;"
+                            <?php if ($starting): ?>
+                                <?php foreach ($starting as $cell): $lane = ViewHelpers::laneAttrs($cell); ?>
+                                <div class="tt-block type-<?= $cell['type'] ?><?= $lane['class'] ?>"
+                                     style="grid-column: <?= array_search($dayKey, array_keys($days)) + 2 ?>; grid-row: <?= $rowIndex + 2 ?> / span <?= $cell['duration'] ?>;<?= $lane['style'] ?>"
                                      data-code="<?= htmlspecialchars($cell['code']) ?>"
                                      data-title="<?= htmlspecialchars($cell['title']) ?>"
                                      data-location="<?= htmlspecialchars($cell['location']) ?>"
@@ -163,6 +158,9 @@ sort($lecturers);
                                     <p class="tt-block-title"><?= htmlspecialchars($cell['title']) ?></p>
                                     <p class="tt-block-loc"><?= htmlspecialchars($cell['location']) ?></p>
                                 </div>
+                                <?php endforeach; ?>
+                            <?php elseif (isset($layout['covered'][$dayKey][$h])): ?>
+                                <?php // continuation row of a multi-hour session above ?>
                             <?php else: ?>
                                 <div class="tt-cell <?= $isLunch ? 'tt-cell-lunch' : '' ?>"
                                      style="grid-column: <?= array_search($dayKey, array_keys($days)) + 2 ?>; grid-row: <?= $rowIndex + 2 ?>;"
@@ -180,7 +178,9 @@ sort($lecturers);
             </div>
 
             <!-- Slide-out Side Panel for Session Details (View / Edit / Delete / Schedule).
-                 .floating-panel (components.css) opens it over the page like the Add Course drawer. -->
+                 .floating-panel (components.css) opens it over the page like the Add Course drawer.
+                 Both ways of adding a session — clicking a free slot, and Schedule Course →
+                 select slots → Confirm — open the same Schedule Session form here. -->
             <aside class="tt-side-panel floating-panel" id="ttSidePanel" hidden>
                 <div class="tsp-header">
                     <div class="tsp-header-left">
@@ -220,76 +220,6 @@ sort($lecturers);
     </div>
 </div>
 
-<!-- Schedule Course Session modal (for multi-slot selection flow) -->
-<div class="tt-modal-overlay" id="scheduleModal" hidden>
-    <div class="tt-modal">
-        <div class="tt-modal-header">
-            <div>
-                <h2>Schedule Course Session</h2>
-                <p id="modalSubtitle"><?= strtoupper(htmlspecialchars($dept)) ?> &middot; Year <?= $year ?> &middot; Sem <?= $sem ?></p>
-            </div>
-            <button type="button" class="modal-close" id="closeScheduleModal"><i class="fa-solid fa-xmark"></i></button>
-        </div>
-
-        <div class="tt-modal-body">
-            <div class="selected-slots-card">
-                <div class="selected-slots-icon"><i class="fa-regular fa-clock"></i></div>
-                <div>
-                    <p class="field-label">Selected Time Slots</p>
-                    <p class="selected-slots-range" id="selectedSlotsRange">&mdash;</p>
-                    <p class="selected-slots-total" id="selectedSlotsTotal"></p>
-                </div>
-            </div>
-
-            <div class="form-field">
-                <label for="courseModule">Course Module</label>
-                <div class="select-wrap">
-                    <i class="fa-solid fa-book"></i>
-                    <select id="courseModule" data-searchable data-search-placeholder="Search by code or title…">
-                        <option value="">Select a course&hellip;</option>
-                        <?php foreach ($courses as $code => $c): ?>
-                            <option value="<?= htmlspecialchars($code) ?>" data-lecturer="<?= htmlspecialchars($c['lecturer']) ?>">
-                                <?= htmlspecialchars($code) ?> &mdash; <?= htmlspecialchars($c['title']) ?>
-                            </option>
-                        <?php endforeach; ?>
-                    </select>
-                </div>
-                <p class="field-hint" id="lecturerHint">&nbsp;</p>
-            </div>
-
-            <div class="form-field">
-                <label>Session Type</label>
-                <div class="type-toggle" id="sessionTypeToggle">
-                    <button type="button" class="type-btn active" data-type="lecture">Lecture</button>
-                    <button type="button" class="type-btn" data-type="tutorial">Tutorial</button>
-                    <button type="button" class="type-btn" data-type="lab">Lab</button>
-                    <button type="button" class="type-btn" data-type="practical">Practical</button>
-                </div>
-            </div>
-
-            <div class="form-field">
-                <label for="venueInput">Venue</label>
-                <div class="select-wrap">
-                    <i class="fa-solid fa-location-dot"></i>
-                    <select id="venueInput" data-searchable data-search-placeholder="Search halls / labs…">
-                        <option value="">Select a hall / lab&hellip;</option>
-                        <?php foreach ($allRooms as $r): ?>
-                            <option value="<?= htmlspecialchars($r['code']) ?>">
-                                <?= htmlspecialchars($r['code']) ?> (<?= htmlspecialchars(ucwords(str_replace('_', ' ', $r['type']))) ?>, cap: <?= $r['capacity'] ?>)
-                            </option>
-                        <?php endforeach; ?>
-                    </select>
-                </div>
-            </div>
-        </div>
-
-        <div class="tt-modal-footer">
-            <button type="button" class="btn-outline" id="modalBackBtn">Back</button>
-            <button type="button" class="btn-primary-sm" id="addToTimetableBtn">Add to Timetable</button>
-        </div>
-    </div>
-</div>
-
 <!-- Publish Confirmation Modal -->
 <div class="tt-modal-overlay" id="publishModal" hidden>
     <div class="tt-modal tt-modal-sm">
@@ -321,12 +251,6 @@ sort($lecturers);
             </button>
         </div>
     </div>
-</div>
-
-<!-- Toast Feedback Notification -->
-<div class="tt-toast" id="ttToast" hidden>
-    <i class="fa-solid fa-circle-check" id="toastIcon"></i>
-    <span id="toastMsg">Timetable published successfully!</span>
 </div>
 
 <script>

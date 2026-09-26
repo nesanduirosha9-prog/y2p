@@ -285,7 +285,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     row.remove();
                     applyFilters();
                 })
-                .catch(function (err) { alert(err.message); });
+                .catch(function (err) { ttToast.error(err.message); });
         }
     });
 
@@ -348,7 +348,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 closeModal();
                 applyFilters();
             })
-            .catch(function (err) { alert(err.message); })
+            .catch(function (err) { ttToast.error(err.message); })
             .finally(refreshSubmitState);
     });
 });

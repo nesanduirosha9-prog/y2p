@@ -15,6 +15,8 @@ use PDOException;
 //
 // Staff side (instructor/LeaveController):
 //   forRequester() read   create() create   updateUpcoming() update   deleteOwn() delete
+// My Workload overview (instructor/WorkloadController):
+//   forRequester() + coveredBy() read — leave taken and covers owed
 // Coordinator / In-Charge side (coordinator/LeaveRequestsController):
 //   all() read — the Upcoming / History tabs of the Leave Requests page
 //
@@ -35,6 +37,19 @@ class LeaveRequestModel
     public function forRequester(string $code): array
     {
         return $this->fetch('WHERE r.requester_code = :code', ['code' => $code]);
+    }
+
+    /**
+     * Leave that $code is covering on at least one day, newest first. `days`
+     * still lists every day of the leave; the caller picks out the ones whose
+     * cover_code is $code.
+     */
+    public function coveredBy(string $code): array
+    {
+        return $this->fetch(
+            'WHERE r.id IN (SELECT leave_id FROM leave_days WHERE cover_code = :code)',
+            ['code' => $code]
+        );
     }
 
     /** Every request from every staff member, newest first. */

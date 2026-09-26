@@ -89,14 +89,13 @@ $titleSuffix = $isInstructor ? 'StaffSync - Instructor' : 'StaffSync';
     <link rel="stylesheet" href="/css/components.css">
     <link rel="stylesheet" href="/css/dashboard.css">
     <link rel="stylesheet" href="/css/notifications.css">
-    <?php if ($isInstructor): ?>
-        <link rel="stylesheet" href="/css/instructor/common.css">
-    <?php endif; ?>
     <?php foreach ((array)($css_file ?? []) as $cssHref): ?>
-        <link rel="stylesheet" href="<?= htmlspecialchars($cssHref) ?>">
+        <link rel="stylesheet" href="<?= htmlspecialchars(\app\core\ViewHelpers::asset($cssHref)) ?>">
     <?php endforeach; ?>
     <!-- In <head>, not beside dashboard.js: page scripts inside $content call codeBadge() while they render. -->
     <script src="/js/code_badge.js"></script>
+    <!-- System toast (window.ttToast) — every role, every page -->
+    <script src="/js/toast.js"></script>
 </head>
 <body>
 
@@ -165,8 +164,5 @@ $titleSuffix = $isInstructor ? 'StaffSync - Instructor' : 'StaffSync';
 
     <script src="/js/notifications.js"></script>
     <script src="/js/dashboard.js"></script>
-    <?php if ($isInstructor): ?>
-        <script src="/js/instructor/common.js"></script>
-    <?php endif; ?>
 </body>
 </html>

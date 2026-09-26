@@ -1,8 +1,19 @@
 /* ==========================================================
-   Shared base styles + two-panel auth layout scaffold.
-   login.css and signup.css build on top of this (they only define
-   the parts specific to their own page); forgot_password.css is
-   fully self-contained and overrides all of this by design.
+   Shared auth layout — login, signup and forgot password all use the
+   same markup skeleton, so every rule for layout, forms and the step
+   tracker lives here. login.css / signup.css / forgot_password.css only
+   hold the few pieces unique to their page.
+
+   Skeleton:
+     main.login-layout-container
+       aside.left-panel            brand panel (desktop only)
+         .branding / .left-content / .left-footer
+       section.right-panel
+         header.auth-header        compact logo (tablet/mobile) + .top-nav
+         .auth-main > .login-main  the form, centred in the leftover space
+         footer.right-footer
+
+   Breakpoints (tokens.css): 1024px hides the brand panel, 480px is phone.
    ========================================================== */
 
 * {
@@ -12,26 +23,31 @@
 body, html {
     margin: 0;
     padding: 0;
-    height: 100%;
     font-family: var(--font-sans);
+    background-color: var(--color-bg);
 }
 
 .login-layout-container {
     display: flex;
     min-height: 100vh;
+    min-height: 100dvh;
     width: 100%;
 }
 
-/* ===== Left branding panel =====
-   Diagonal navy gradient + three soft glow blooms (positioned as
-   percentages of the panel so they hold their place at any viewport) plus
-   a faint 40px grid — reproduces the Figma AuthLeftPanel treatment without
-   extra DOM nodes. */
+/* ==============================
+   Left brand panel
+   Pinned to the viewport height (sticky) so a long form on the right
+   scrolls while the brand panel stays put. Logo on top, marketing copy
+   centred in the middle, footer at the bottom.
+   ============================== */
 .left-panel {
-    position: relative;
-    flex: 0 0 55%;
-    min-height: 100vh;
-    padding: 60px;
+    position: sticky;
+    top: 0;
+    flex: 0 0 44%;
+    max-width: 680px;
+    height: 100vh;
+    height: 100dvh;
+    padding: 48px 56px;
     background:
         radial-gradient(circle at 16% 13%, rgba(26, 58, 107, 0.45) 0%, rgba(26, 58, 107, 0) 32%),
         radial-gradient(circle at 78% 78%, rgba(37, 99, 235, 0.22) 0%, rgba(37, 99, 235, 0) 30%),
@@ -42,15 +58,18 @@ body, html {
     color: #ffffff;
     display: flex;
     flex-direction: column;
-    justify-content: space-between;
-    overflow: hidden;
+    /* Very short windows: scroll the panel rather than clip its copy. */
+    overflow-x: hidden;
+    overflow-y: auto;
 }
 
 .branding {
     display: flex;
     align-items: center;
     gap: 12px;
-    margin-bottom: 40px;
+    flex-shrink: 0;
+    text-decoration: none;
+    color: inherit;
 }
 
 .logo-icon {
@@ -67,7 +86,9 @@ body, html {
     box-shadow: 0 10px 15px -3px rgba(28, 57, 142, 0.5), 0 4px 6px -2px rgba(28, 57, 142, 0.5);
 }
 
-.logo-text h1 {
+.logo-text h1,
+.logo-text .logo-name {
+    display: block;
     font-family: var(--font-display);
     font-size: 15px;
     margin: 0;
@@ -75,18 +96,29 @@ body, html {
     letter-spacing: -0.01em;
 }
 
-.logo-text p {
+.logo-text p,
+.logo-text .logo-sub {
+    display: block;
     font-size: 11px;
     margin: 3px 0 0;
     color: #7db4ff;
 }
 
+.left-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    max-width: 460px;
+    padding: 40px 0;
+}
+
 .feature-title h2 {
     font-family: var(--font-display);
     font-weight: 800;
-    font-size: 34px;
-    margin: 0 0 15px;
-    line-height: 1.25;
+    font-size: clamp(28px, 2.6vw, 38px);
+    margin: 0 0 16px;
+    line-height: 1.2;
     letter-spacing: -0.02em;
 }
 
@@ -99,68 +131,607 @@ body, html {
 
 .feature-description {
     font-size: 15px;
-    margin: 0 0 40px;
+    margin: 0 0 36px;
     line-height: 1.6;
     color: rgba(190, 219, 255, 0.8);
-    max-width: 400px;
+    max-width: 420px;
 }
 
 .left-footer {
-    position: relative;
+    flex-shrink: 0;
     font-size: 11px;
     color: rgba(81, 162, 255, 0.6);
-    padding-top: 22px;
+    padding-top: 20px;
     border-top: 1px solid rgba(255, 255, 255, 0.1);
 }
 
-/* ===== Right form panel ===== */
-.right-panel {
-    flex: 1;
-    background-color: var(--color-bg);
-    padding: 40px 60px;
+.left-footer p {
+    margin: 0;
+}
+
+/* ==============================
+   Step tracker (signup / forgot password, left panel)
+   Three equal-width columns; the connecting line is drawn as two
+   pseudo-elements per column so segments meet at column boundaries.
+   ============================== */
+.progress-label {
+    font-size: 11px;
+    font-weight: 600;
+    color: rgba(81, 162, 255, 0.7);
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    margin: 0 0 20px;
+}
+
+.progress-tracker {
+    display: flex;
+    align-items: flex-start;
+    width: 100%;
+}
+
+.step {
+    position: relative;
     display: flex;
     flex-direction: column;
+    align-items: center;
+    flex: 1 1 0;
+    min-width: 0;
+}
+
+.step::before,
+.step::after {
+    content: "";
+    position: absolute;
+    top: 15px; /* vertical centre of the 30px circle */
+    height: 1px;
+    width: calc(50% - 15px);
+    background-color: rgba(25, 60, 184, 0.6);
+    z-index: 0;
+    transition: background-color 0.3s ease;
+}
+
+.step::before { left: 0; }
+.step::after { right: 0; }
+
+.step:first-child::before,
+.step:last-child::after {
+    display: none;
+}
+
+.step-circle {
+    position: relative;
+    z-index: 1;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    border: 2px solid #1447e6;
+    background-color: transparent;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 12px;
+    font-weight: 700;
+    color: #2b7fff;
+    transition: all 0.3s ease;
+}
+
+.step-check {
+    display: none;
+    font-size: 12px;
+}
+
+.step-text {
+    font-size: 11px;
+    color: #2b7fff;
+    text-align: center;
+    margin-top: 8px;
+    font-weight: 500;
+    transition: color 0.3s ease;
+}
+
+.step.active .step-circle {
+    background-color: #ffffff;
+    border-color: #ffffff;
+    color: #1a3a6b;
+}
+
+.step.active .step-text {
+    color: #ffffff;
+}
+
+.step.completed .step-circle {
+    background-color: #00d492;
+    border-color: #00d492;
+    color: #ffffff;
+}
+
+.step.completed .step-text { color: #5ee9b5; }
+.step.completed .step-num { display: none; }
+.step.completed .step-check { display: block; }
+
+.step.completed::after,
+.step.completed + .step::before {
+    background-color: rgba(0, 212, 146, 0.7);
+}
+
+/* Light variant — the copy above the form on tablet/phone. Same states,
+   recoloured for the pale background: grey pending, navy current (with a
+   soft halo), green done. */
+.progress-tracker--light .step::before,
+.progress-tracker--light .step::after {
+    top: 12px; /* vertical centre of the 26px circle */
+    height: 2px;
+    width: calc(50% - 19px); /* stops 6px short of each circle */
+    background-color: #dde3ee;
+}
+
+.progress-tracker--light .step-circle {
+    width: 26px;
+    height: 26px;
+    font-size: 11px;
+    color: #9ca3af;
+    background-color: #ffffff;
+    border: 2px solid #dde3ee;
+}
+
+.progress-tracker--light .step-check {
+    font-size: 11px;
+}
+
+.progress-tracker--light .step-text {
+    margin-top: 6px;
+    color: #9ca3af;
+}
+
+.progress-tracker--light .step.active .step-circle {
+    color: #ffffff;
+    background-color: #1a3a6b;
+    border-color: #1a3a6b;
+    box-shadow: 0 0 0 4px rgba(26, 58, 107, 0.12);
+}
+
+.progress-tracker--light .step.active .step-text {
+    color: var(--color-navy);
+    font-weight: 600;
+}
+
+.progress-tracker--light .step.completed .step-circle {
+    color: #ffffff;
+    background-color: var(--color-success);
+    border-color: var(--color-success);
+}
+
+.progress-tracker--light .step.completed .step-text {
+    color: var(--color-success-dark);
+}
+
+.progress-tracker--light .step.completed::after,
+.progress-tracker--light .step.completed + .step::before {
+    background-color: var(--color-success);
+}
+
+/* ==============================
+   Right form panel
+   ============================== */
+.right-panel {
+    flex: 1;
+    min-width: 0;
+    min-height: 100vh;
+    min-height: 100dvh;
+    padding: 32px 56px;
+    display: flex;
+    flex-direction: column;
+    background-color: var(--color-bg);
+}
+
+.auth-header {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 16px;
+    min-height: 40px;
+}
+
+/* The compact logo only appears once the brand panel is hidden. */
+.branding--compact {
+    display: none;
+}
+
+.branding--compact .logo-icon {
+    width: 34px;
+    height: 34px;
+    font-size: 15px;
+    border-radius: 10px;
+    box-shadow: 0 6px 12px -4px rgba(28, 57, 142, 0.45);
+}
+
+.branding--compact .logo-name {
+    color: var(--color-navy);
+}
+
+.branding--compact .logo-sub {
+    color: #6b7c96;
+}
+
+.top-nav {
+    font-size: 14px;
+    color: #6b7c96;
+    text-align: right;
+}
+
+.top-nav a {
+    color: var(--color-primary);
+    text-decoration: none;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.top-nav a:hover {
+    text-decoration: underline;
+}
+
+/* Takes all the height between header and footer; the form sits in the
+   middle of it. margin:auto (rather than justify-content:center) keeps a
+   tall form from being clipped at the top on short screens. */
+.auth-main {
+    flex: 1;
+    display: flex;
+    padding: 40px 0;
+}
+
+.login-main {
+    width: 100%;
+    max-width: 400px;
+    margin: auto;
+}
+
+/* Wizard pages (signup / forgot password): the mobile stepper and the
+   step blocks are centred together as one column. */
+.auth-flow {
+    width: 100%;
+    max-width: 400px;
+    margin: auto;
+}
+
+.auth-flow .login-main {
+    margin: 0;
+}
+
+.mobile-stepper {
+    display: none;
+    margin-bottom: 28px;
+}
+
+.step-badge {
+    margin-bottom: 16px;
+}
+
+.welcome-text h2 {
+    font-family: var(--font-display);
+    font-weight: 800;
+    font-size: 27px;
+    line-height: 1.2;
+    margin: 0 0 6px;
+    color: var(--color-navy);
+    letter-spacing: -0.02em;
+}
+
+.welcome-text p {
+    font-size: 14px;
+    line-height: 1.5;
+    margin: 0 0 24px;
+    color: #6b7c96;
+}
+
+.login-card {
+    background-color: #ffffff;
+    border: 1px solid #dde3ee;
+    border-radius: 15px;
+    padding: 28px;
+    box-shadow: 0 1px 2px rgba(15, 28, 46, 0.06), 0 4px 16px -8px rgba(15, 28, 46, 0.12);
 }
 
 .right-footer {
-    font-size: 11px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    font-size: 12px;
     color: #b0bac9;
-    text-align: center;
-    margin-top: 20px;
+    padding-top: 16px;
+    border-top: 1px solid #dde3ee;
 }
 
-.right-footer span.version,
-.right-footer p.version {
+.right-footer p {
+    margin: 0;
+}
+
+.right-footer p:last-child {
     font-family: var(--font-mono);
 }
 
 /* ==============================
-   Responsive — stack the two panels below 1024px (tablet/mobile per
-   tokens.css) instead of squeezing them side by side. login.css/signup.css
-   redefine most panel cosmetics (padding, card, feature text) after this
-   file loads, so their own page-specific overrides carry the matching
-   padding/font-size rules for those breakpoints — this file only owns the
-   structural reset (flex-basis/min-height) that neither page redefines.
+   Form controls
    ============================== */
-@media (max-width: 1024px) {
-    .login-layout-container {
-        flex-direction: column;
-        min-height: auto;
+.form-group {
+    margin-bottom: 18px;
+}
+
+label {
+    font-size: 14px;
+    font-weight: 500;
+    color: #374151;
+    display: block;
+    margin-bottom: 6px;
+}
+
+.label-wrapper {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 6px;
+}
+
+.label-wrapper label {
+    margin-bottom: 0;
+}
+
+input[type="email"],
+input[type="password"],
+input.pw-input {
+    width: 100%;
+    padding: 10px 14px;
+    font-size: 14px;
+    font-family: inherit;
+    color: var(--color-text-dark);
+    border: 1px solid #dde3ee;
+    border-radius: 8px;
+    background-color: #ffffff;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+input::placeholder {
+    color: #9ca3af;
+}
+
+input:focus {
+    border-color: var(--color-primary);
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+}
+
+/* Full-width navy CTA; base shape from components.css. */
+.btn-primary {
+    width: 100%;
+    padding: 11px;
+    font-size: 14px;
+    margin-top: 6px;
+    background: #1a3a6b;
+    border-radius: 8px;
+    box-shadow: 0 1px 1.5px rgba(0, 0, 0, 0.1), 0 1px 1px rgba(0, 0, 0, 0.1);
+}
+
+.btn-primary:hover:not(:disabled) {
+    background: #142d54;
+}
+
+/* Wizard CTAs stay dimmed until their step's input is valid (the page
+   JS adds .active-btn). */
+#btn-send-otp,
+#btn-verify-otp,
+#btn-complete {
+    opacity: 0.5;
+    cursor: not-allowed;
+    pointer-events: none;
+    transition: opacity 0.3s ease, box-shadow 0.3s ease, background-color 0.2s ease;
+}
+
+#btn-send-otp.active-btn,
+#btn-verify-otp.active-btn,
+#btn-complete.active-btn {
+    opacity: 1;
+    cursor: pointer;
+    pointer-events: auto;
+    box-shadow: 0 4px 12px rgba(26, 58, 107, 0.3);
+}
+
+#btn-send-otp.active-btn:disabled,
+#btn-verify-otp.active-btn:disabled,
+#btn-complete.active-btn:disabled {
+    opacity: 0.7;
+    cursor: progress;
+}
+
+.btn-back,
+.btn-back-link {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 6px;
+    width: 100%;
+    padding: 10px;
+    margin-top: 4px;
+    background: none;
+    border: none;
+    color: #6b7c96;
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: 500;
+    text-decoration: none;
+    cursor: pointer;
+    transition: color 0.2s;
+}
+
+.btn-back:hover,
+.btn-back-link:hover {
+    color: var(--color-navy);
+}
+
+/* ---------- OTP boxes ---------- */
+.otp-input-group {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    margin-top: 10px;
+}
+
+.otp-input {
+    width: 44px;
+    min-width: 0;
+    height: 48px;
+    flex: 0 1 44px;
+    font-family: inherit;
+    font-size: 19px;
+    font-weight: 700;
+    text-align: center;
+    border: 2px solid #dde3ee;
+    border-radius: 8px;
+    background-color: #ffffff;
+    color: var(--color-text-dark);
+    transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+}
+
+.otp-input:focus {
+    border-color: var(--color-primary);
+    outline: none;
+    box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.15);
+    transform: translateY(-2px);
+}
+
+.resend-wrapper {
+    text-align: center;
+    font-size: 14px;
+    margin: 16px 0 18px;
+    color: #6b7c96;
+}
+
+.resend-link {
+    color: var(--color-primary);
+    text-decoration: none;
+    font-weight: 500;
+}
+
+/* ---------- Passkey info row (signup toggle / reset update) ---------- */
+.passkey-box {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 12px 16px;
+    background-color: var(--color-bg);
+    border: 1px solid #dde3ee;
+    border-radius: 11px;
+    margin: 14px 0 18px;
+}
+
+.passkey-info {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    min-width: 0;
+}
+
+.passkey-info i {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 26px;
+    height: 26px;
+    flex: 0 0 auto;
+    font-size: 13px;
+    color: #374151;
+    background: #ffffff;
+    border: 1px solid #dde3ee;
+    border-radius: 8px;
+}
+
+.passkey-info div {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+}
+
+.passkey-info strong {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--color-navy);
+}
+
+.passkey-info span {
+    font-size: 12px;
+    color: #6b7c96;
+}
+
+/* ==============================
+   Tablet & below (< 1024px): drop the brand panel, show the compact
+   logo in the header instead, and keep the form centred.
+   ============================== */
+@media (max-width: 1023px) {
+    .left-panel {
+        display: none;
     }
 
-    .left-panel {
-        flex: 0 0 auto;
-        min-height: auto;
+    .right-panel {
+        padding: 24px 40px;
+    }
+
+    .auth-header {
+        justify-content: space-between;
+    }
+
+    .branding--compact {
+        display: flex;
+    }
+
+    /* The stepper replaces the "Step X of 3" pill, which would repeat it. */
+    .mobile-stepper {
+        display: block;
+    }
+
+    .auth-flow .step-badge {
+        display: none;
     }
 }
 
+/* ==============================
+   Phone (<= 480px): logo on top, form, then the "sign in / create account"
+   prompt under the form (where thumbs reach it), then the footer.
+   ============================== */
 @media (max-width: 480px) {
-    .feature-title h2 {
-        font-size: 26px;
+    .right-panel {
+        padding: 20px 16px;
     }
 
-    .feature-description {
-        font-size: 14px;
-        margin-bottom: 24px;
+    .auth-header {
+        display: contents;
+    }
+
+    .branding--compact { order: 0; }
+    .auth-main        { order: 1; padding: 28px 0; }
+    .top-nav          { order: 2; text-align: center; margin-bottom: 24px; }
+    .right-footer     { order: 3; }
+
+    .welcome-text h2 {
+        font-size: 24px;
+    }
+
+    .login-card {
+        padding: 20px;
+    }
+
+    .right-footer {
+        flex-direction: column;
+        gap: 4px;
+        text-align: center;
+    }
+
+    .otp-input-group {
+        gap: 6px;
+    }
+
+    .otp-input {
+        height: 44px;
+        font-size: 17px;
     }
 }

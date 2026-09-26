@@ -82,6 +82,12 @@ $router->get('/signup', function (Request $request, Response $response) {
 $router->post('/signup', function (Request $request, Response $response) {
     return (new AuthController())->signup($request, $response);
 });
+$router->post('/signup/send-otp', function (Request $request, Response $response) {
+    return (new AuthController())->sendSignupOtp($request, $response);
+});
+$router->post('/signup/verify-otp', function (Request $request, Response $response) {
+    return (new AuthController())->verifySignupOtp($request, $response);
+});
 
 $router->get('/forgot-password', function (Request $request, Response $response) {
     return (new AuthController())->forgotPasswordView();
@@ -205,6 +211,12 @@ $router->post('/staff/{code}/approve', function (Request $request, Response $res
 $router->post('/staff/{code}/reject', function (Request $request, Response $response, array $params) {
     return (new StaffController())->reject($request, $response, $params);
 });
+$router->post('/staff/{code}/deactivate', function (Request $request, Response $response, array $params) {
+    return (new StaffController())->deactivate($request, $response, $params);
+});
+$router->post('/staff/{code}/activate', function (Request $request, Response $response, array $params) {
+    return (new StaffController())->activate($request, $response, $params);
+});
 
 // --- Lecture halls ---------------------------------------------------------
 // Already role-free before this refactor; timetable officer only. Full CRUD:
@@ -327,6 +339,13 @@ $router->get('/settings', function (Request $request, Response $response) {
     return (new SettingsController())->index($request);
 });
 $router->post('/settings', $settingsUpdate);
+// Settings → Password: email a code to yourself, then change the password with it.
+$router->post('/settings/password/code', function (Request $request, Response $response) {
+    return (new SettingsController())->sendPasswordCode($request, $response);
+});
+$router->post('/settings/password', function (Request $request, Response $response) {
+    return (new SettingsController())->changePassword($request, $response);
+});
 
 // --- Settings > Handover ---------------------------------------------------
 // Reassigning a key role (Coordinator, In-Charge, Timetable Officer) to another
