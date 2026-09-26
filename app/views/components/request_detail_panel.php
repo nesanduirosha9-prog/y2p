@@ -79,18 +79,18 @@
         cursor: pointer;
     }
     #requestDetailPanel .btn-update {
-        background: #2a9d8f;
+        background: #000000ff;
         color: white;
     }
     #requestDetailPanel .btn-update:hover {
-        background: #21867a;
+        background: #000000ff;
     }
     #requestDetailPanel .btn-cancel {
-        background: #e63946;
+        background: #f00418ff;
         color: white;
     }
     #requestDetailPanel .btn-cancel:hover {
-        background: #c62e3a;
+        background: #f00418ff;
     }
 
     @media (max-width: 768px) {

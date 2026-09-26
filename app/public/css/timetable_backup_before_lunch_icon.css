@@ -410,6 +410,79 @@
 
 
 
+/*ssign----------------------*/
+/* Floating Staff Assign Button */
+#staffFab {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    background: #fff;
+    border: none;
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.25);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    z-index: 9997;
+    /* below panels (9999) but above grid content */
+    transition: transform 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
+    transform: scale(0.8) !important;
+
+}
+
+#staffFab i {
+    font-size: 1.4rem;
+    color: #333;
+}
+
+#staffFab:hover {
+    transform: scale(1.06);
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.3);
+}
+
+.clicked-in-assign-mode {
+    color: white;
+    background-color: black;
+    border: none;
+}
+
+#staffFab:active {
+    transform: scale(0.96);
+}
+
+/* Active state: assign mode is ON, waiting for a session click */
+#staffFab.active {
+    color: white;
+    background: #000000;
+}
+
+#staffFab.active i {
+    color: #fff;
+}
+
+/* Hint cursor over session blocks while assign mode is active */
+.tt-block.assign-mode-active {
+    cursor: crosshair !important;
+    outline: 2px dashed #070909;
+    outline-offset: -2px;
+}
+
+/* Mobile: keep it clear of safe-area / thumb reach */
+@media (max-width: 768px) {
+    #staffFab {
+        bottom: 20px;
+        right: 16px;
+        width: 52px;
+        height: 52px;
+    }
+
+    #staffFab i {
+        font-size: 1.25rem;
+    }
+}
 
 
 
@@ -419,32 +492,22 @@
 /*-------------------------------------------------*/
 
 /* --- Gemini-style floating search bar --- */
-/* Docked in the lunch row of the grid, not fixed to viewport */
 #staffFabContainer {
-    position: relative;
-    height: 100%;
-    /* stretch to fill the lunch row's grid height */
-    width: 100%;
-    /* stretch to fill the spanned columns */
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    z-index: 9997;
     display: flex;
     align-items: center;
-    justify-content: center;
-    z-index: 65;
-    pointer-events: none;
-
+    justify-content: flex-end;
+    transform: translateX(0);
+    transition: transform 0.3s ease;
 }
 
-#staffFabContainer>* {
-    pointer-events: auto;
-    /* re-enable on the actual button/bar */
-}
-
-
-
-/* Collapsed round FAB, centered in the lunch row */
+/* Collapsed round FAB */
 #staffFab {
-    width: 44px;
-    height: 44px;
+    width: 56px;
+    height: 56px;
     border-radius: 50%;
     background: #fff;
     border: none;
@@ -453,21 +516,18 @@
     align-items: center;
     justify-content: center;
     cursor: pointer;
-    transition: transform 0.15s ease, box-shadow 0.15s ease;
+    transition: transform 0.15s ease, box-shadow 0.15s ease, opacity 0.2s ease;
 }
 
-
-
 #staffFab i {
-    font-size: 1.2rem;
+    font-size: 1.4rem;
     color: #333;
 }
 
 #staffFab:hover {
-    transform: scale(1.08);
+    transform: scale(1.06);
     box-shadow: 0 4px 14px rgba(0, 0, 0, 0.3);
 }
-
 
 #staffFab:active {
     transform: scale(0.96);
@@ -477,8 +537,7 @@
     display: none;
 }
 
-
-/* Search bar fills the lunch row width, expanding from center */
+/* Expanded pill-shaped search bar */
 #staffSearchBar {
     display: flex;
     align-items: center;
@@ -486,19 +545,19 @@
     background: #fff;
     border-radius: 999px;
     box-shadow: 0 3px 14px rgba(0, 0, 0, 0.28);
-    padding: 4px 4px 4px 4px;
-    width: 70%;
-    height: 50px;
-    box-sizing: border-box;
-    transform-origin: center;
-    transform: scaleX(0);
+    padding: 6px 6px 6px 6px;
+    width: 540px;
+    max-width: calc(100vw - 48px);
     opacity: 0;
-    transition: transform 0.28s ease, opacity 0.2s ease;
+    transform: scale(0.9);
+    pointer-events: none;
+    transition: opacity 0.3s ease, transform 0.3s ease;
 }
 
 #staffSearchBar.open {
-    transform: scaleX(1);
     opacity: 1;
+    transform: scale(1);
+    pointer-events: auto;
 }
 
 #staffSearchBar.collapsed {
@@ -509,13 +568,11 @@
     flex: 1;
     border: none;
     outline: none;
-    font-size: 0.9rem;
-    padding: 8px 4px;
+    font-size: 0.95rem;
+    padding: 10px 4px;
     background: transparent;
     color: #333;
     min-width: 0;
-    padding-left: 30px;
-    font-family: monospace;
 }
 
 #staffSearchInput::placeholder {
@@ -525,8 +582,8 @@
 /* Round black buttons on either side, Gemini-style */
 #staffSearchCancel,
 #staffSearchSend {
-    width: 43px;
-    height: 43px;
+    width: 40px;
+    height: 40px;
     border-radius: 50%;
     background: #000;
     border: none;
@@ -541,13 +598,13 @@
 #staffSearchCancel i,
 #staffSearchSend i {
     color: #fff;
-    font-size: 0.9rem;
+    font-size: 1rem;
 }
 
 #staffSearchCancel:hover,
 #staffSearchSend:hover {
     background: #222;
-    transform: scale(1.06);
+    transform: scale(1.05);
 }
 
 #staffSearchCancel:active,
@@ -571,7 +628,6 @@
     }
 
     #staffFab {
-        opacity: 0;
         width: 52px;
         height: 52px;
     }
@@ -579,34 +635,4 @@
     #staffSearchBar {
         width: 100%;
     }
-}
-
-.clicked-in-assign-mode {
-    color: white;
-    background-color: black;
-}
-
-
-
-
-/* Dummy/suggested slots shown after clicking staffSearchSend */
-.tt-block.staff-suggested-slot {
-    border: 2px dashed;
-    border-radius: 6px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    z-index: 55;
-    /* above connection lines (50), below active session blocks if needed */
-    background: rgba(255, 255, 255, 1);
-    font-weight: 600;
-    font-size: 0.85rem;
-    transition: border-color 0.15s ease, color 0.15s ease, background 0.15s ease;
-}
-
-.tt-block.staff-suggested-slot.staff-slot-selected {
-    background: #000 !important;
-    color: #fff !important;
-    border-style: solid;
 }

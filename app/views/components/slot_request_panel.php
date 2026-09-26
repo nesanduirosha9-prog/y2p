@@ -48,19 +48,36 @@
         border-radius: 4px;
         font-size: 1rem;
     }
-    .btn-submit {
-        background: #2a9d8f;
-        color: white;
-        padding: 10px;
-        border: none;
-        border-radius: 4px;
-        font-size: 1rem;
-        cursor: pointer;
-        margin-top: 10px;
-    }
-    .btn-submit:hover {
-        background: #21867a;
-    }
+  /*----------------------------------------------------- */
+.btn-submit {
+    background: #1f2937;
+    color: #ffffff;
+    padding: 10px 18px;
+    border: none;
+    border-radius: 6px;
+    font-size: 0.95rem;
+    font-weight: 600;
+    cursor: pointer;
+    margin-top: 10px;
+    transition: all 0.2s ease;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.15);
+}
+
+.btn-submit:hover {
+    background: #111827;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+    transform: translateY(-1px);
+}
+
+.btn-submit:active {
+    background: #0f172a;
+    transform: translateY(0);
+}
+
+.btn-submit:focus-visible {
+    outline: 2px solid #64748b;
+    outline-offset: 2px;
+}
     /* Responsive for mobile landscape */
     @media (max-width: 768px) {
         #slotRequestPanel {

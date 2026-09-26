@@ -95,16 +95,53 @@ $requestGroups = array_values($requestGroups); // reindex to a plain numeric arr
                     <?php else: ?>
                         <div class="tt-cell <?= $isLunch ? 'tt-cell-lunch' : '' ?>"
                              style="grid-column: <?= array_search($dayKey, array_keys($days)) + 2 ?>; grid-row: <?= $rowIndex + 2 ?>;">
-                            <?= $isLunch && $dayKey === 'wed' ? '<span class="lunch-label">Lunch</span>' : '' ?>
+                           
                         </div>
                     <?php endif; ?>
                 <?php endforeach; ?>
             <?php endforeach; ?>
+
+                    <!------------------------------>
+
+            <?php
+                $lunchRowIndex = array_search(12, $hours) + 2;
+                $dayColumnSpan = count($days);
+            ?>
+            <div id="staffFabContainer"
+                 style="grid-column: 2 / span <?= $dayColumnSpan ?>; grid-row: <?= $lunchRowIndex ?>;">
+                <button type="button" id="staffFab" title="Assign Staff" aria-label="Assign Staff">
+                    <i class="fa-solid fa-user-tie"></i>
+                </button>
+
+                <div id="staffSearchBar" class="collapsed">
+                    <button type="button" id="staffSearchCancel" aria-label="Cancel">
+                        <i class="fa-solid fa-xmark"></i>
+                    </button>
+                    <input type="text" id="staffSearchInput" placeholder="Click a session to assign staff...">
+                    <button type="button" id="staffSearchSend" aria-label="Confirm">
+                        <i class="fa-solid fa-arrow-right"></i>
+                    </button>
+                </div>
+            </div>
         </div>
     </div>
-    <button type="button" id="staffFab" title="Assign Staff" aria-label="Assign Staff">
-    <i class="fa-solid fa-user-tie"></i>
-</button>
+    <!-- <div id="staffFabContainer"> -->
+    <!-- Collapsed state: round icon button -->
+    <!-- <button type="button" id="staffFab" title="Assign Staff" aria-label="Assign Staff">
+        <i class="fa-solid fa-user-tie"></i>
+    </button> -->
+
+    <!-- Expanded state: search-bar style -->
+    <!-- <div id="staffSearchBar" class="collapsed">
+        <button type="button" id="staffSearchCancel" aria-label="Cancel">
+            <i class="fa-solid fa-xmark"></i>
+        </button>
+        <input type="text" id="staffSearchInput" placeholder="Click a session to assign staff...">
+        <button type="button" id="staffSearchSend" aria-label="Confirm">
+            <i class="fa-solid fa-arrow-right"></i>
+        </button>
+    </div>
+</div> -->
 
 <?php require_once \app\core\Application::$ROOT_DIR . '/views/components/staff_assign_panel.php'; ?>
 </div>
@@ -117,6 +154,7 @@ $requestGroups = array_values($requestGroups); // reindex to a plain numeric arr
 </script>
 <?php require_once \app\core\Application::$ROOT_DIR . '/views/components/slot_request_panel.php'; ?>
 <?php require_once \app\core\Application::$ROOT_DIR . '/views/components/request_detail_panel.php'; ?>
+<?php require_once \app\core\Application::$ROOT_DIR . '/views/components/staff_slot_info_modal.php'; ?>
 
 <script src="/js/instructor/timetable.js"></script>
 <script src="/js/instructor/mini-calendar.js"></script>

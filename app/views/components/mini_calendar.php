@@ -67,12 +67,13 @@
     .mc-day.mc-today {
         border: 1px solid #2a9d8f;
     }
-    .mc-day.mc-selected {
-        background: #2a9d8f;
-        color: #fff;
-    }
+
     .mc-day.mc-weekend {
         color: #bbb;
+    }
+        .mc-day.mc-selected {
+        background: #000000ff;
+        color: #fff;
     }
 </style>
 
