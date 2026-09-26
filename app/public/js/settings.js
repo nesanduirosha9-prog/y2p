@@ -78,6 +78,9 @@ function initHandoverPanel() {
         state.step = step;
         $('hoStepPick').hidden = step !== 'pick';
         $('hoStepVerify').hidden = step !== 'verify';
+        $('hoPanelSubtitle').textContent = step === 'verify'
+            ? 'Enter the code they received'
+            : state.officer ? 'Move the account to the new officer' : 'Pick who takes the role';
         back.textContent = step === 'pick' ? 'Cancel' : 'Back';
         next.textContent = step === 'pick' ? 'Send code' : 'Confirm change';
         updateNext();
@@ -104,7 +107,6 @@ function initHandoverPanel() {
         showStep('pick');
 
         panel.hidden = false;
-        document.body.classList.add('ho-panel-open');
 
         if (officer) {
             $('hoNewEmail').focus();
@@ -126,7 +128,6 @@ function initHandoverPanel() {
 
     function close() {
         panel.hidden = true;
-        document.body.classList.remove('ho-panel-open');
         state = null;
     }
 
@@ -194,6 +195,10 @@ function initHandoverPanel() {
         if (btn) open(btn);
     });
     $('hoPanelClose').addEventListener('click', close);
+    // The panel is a side drawer: a click on its dimmed backdrop closes it.
+    panel.addEventListener('click', e => {
+        if (e.target === panel) close();
+    });
     back.addEventListener('click', () => (state && state.step === 'verify' ? showStep('pick') : close()));
     next.addEventListener('click', () => (state.step === 'pick' ? sendCode() : confirmChange()));
     $('hoSearch').addEventListener('input', renderCandidates);

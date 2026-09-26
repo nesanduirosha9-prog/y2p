@@ -174,10 +174,107 @@ document.addEventListener('DOMContentLoaded', function () {
             [5, 4, 3, 2, 1].map(n => '<option value="' + n + '">' + n + ' — ' + ratingLabels[n] + '</option>').join('');
     }
 
+    /** "4 / 5" as a coloured pill — the Evaluations page's score bands. */
+    function scoreBand(n) {
+        return n >= 4 ? 'high' : n === 3 ? 'mid' : 'low';
+    }
+    function scorePill(n) {
+        n = Math.round(Number(n));
+        return '<span class="eval-score-pill score-' + scoreBand(n) + '">' + n + ' / 5</span>';
+    }
+
+    // This week's submitted evaluations, by staff code: { rating, date, course }.
+    const EVAL_KEY = 'staffsync_eval_week5';
+    function loadEvals() {
+        try { return JSON.parse(sessionStorage.getItem(EVAL_KEY) || '{}'); } catch (e) { return {}; }
+    }
+    function saveEval(code, record) {
+        try {
+            const current = loadEvals();
+            current[code] = record;
+            sessionStorage.setItem(EVAL_KEY, JSON.stringify(current));
+        } catch (e) {}
+    }
+    /** Evaluated for this course this week? */
+    function isDoneFor(evals, code, courseCode) {
+        return !!(evals[code] && evals[code].course === courseCode);
+    }
+
+    /** Tab 2: flip an instructor's pill and button to "Evaluated". */
+    function markInstructorEvaluated(code, rating) {
+        const statusPill = document.getElementById('instStatus_' + code);
+        if (statusPill) {
+            statusPill.className = 'pill pill-active status-pill';
+            statusPill.innerHTML = 'Evaluated (' + Math.round(rating) + ')';
+        }
+        const evalBtn = document.getElementById('btnEval_' + code);
+        if (evalBtn) {
+            evalBtn.className = 'btn-evaluate-instructor btn-evaluated';
+            evalBtn.disabled = true;
+            evalBtn.innerHTML = 'Evaluated';
+        }
+    }
+
+    /** Tab 3: put a just-submitted evaluation at the top of the history. */
+    function addHistoryRow(courseCode, code, instName, rating, comment, dateStr) {
+        const historyTbody = document.getElementById('evaluationHistoryTbody');
+        if (!historyTbody) return;
+        const newRow = document.createElement('tr');
+        newRow.className = 'history-row';
+        newRow.dataset.status = 'evaluated';
+        newRow.dataset.id = 'eval-' + Date.now() + '-' + code;
+        newRow.dataset.weekStart = HISTORY_CAL ? HISTORY_CAL.current : '';
+        newRow.dataset.course = courseCode;
+        newRow.dataset.instructor = code;
+        newRow.dataset.search = (courseCode + ' ' + code + ' ' + instName + ' ' + comment).toLowerCase();
+
+        newRow.innerHTML =
+            '<td>' +
+                '<div style="font-weight: 600; color: #0f1c2e;">' + esc(dateStr) + '</div>' +
+                '<div style="font-size: 11px; color: #64748b;">' + esc(currentWeekLabel()) + '</div>' +
+            '</td>' +
+            '<td>' + codeBadge(courseCode, 'course') + '</td>' +
+            '<td>' +
+                '<div class="lec-identity">' +
+                    codeBadge(code, 'staff', { title: instName }) +
+                    '<span class="lec-name" style="font-size: 13px;">' + esc(instName) + '</span>' +
+                '</div>' +
+            '</td>' +
+            '<td>' + scorePill(rating) + '</td>' +
+            '<td style="font-size: 12.5px; color: #334155; line-height: 1.45;">' +
+                (comment ? esc(comment) : '<span class="text-muted">No observations recorded.</span>') +
+            '</td>' +
+            '<td style="text-align: right;">' +
+                '<span class="pill pill-active" style="background: #e6f9ed; color: #166534; font-size: 11px;">Evaluated</span>' +
+            '</td>';
+
+        historyTbody.insertBefore(newRow, historyTbody.firstChild);
+    }
+
+    /** Tab 1: a course's button reads Evaluate → "Continue (1/3)" → Evaluated. */
+    function refreshCourseButton(btn, evals) {
+        let instructors = [];
+        try { instructors = JSON.parse(btn.dataset.instructors || '[]'); } catch (e) { instructors = []; }
+        const total = instructors.length;
+        const done = instructors.filter(i => isDoneFor(evals, i.code, btn.dataset.courseCode)).length;
+        if (total && done === total) {
+            btn.className = 'btn-evaluate-course btn-evaluated';
+            btn.innerHTML = 'Evaluated';
+        } else {
+            btn.className = 'btn-evaluate-course';
+            btn.innerHTML = done ? 'Continue (' + done + '/' + total + ')' : 'Evaluate';
+        }
+    }
+
+    // The course open in the evaluation view, so it can be redrawn after a
+    // partial submit.
+    let activeCourse = null;
+
     // Open Course Evaluation View (Sliding Master-Detail)
     function openCourseEvaluation(courseCode, courseName, courseYear, courseProg, instructors) {
         if (!flowWrapper) return;
 
+        activeCourse = { code: courseCode, name: courseName, year: courseYear, prog: courseProg, instructors: instructors || [] };
         const count = instructors ? instructors.length : 0;
         if (evalCourseHeading) evalCourseHeading.textContent = courseCode + ' — ' + courseName;
         if (evalCourseYearPill) {
@@ -193,14 +290,24 @@ document.addEventListener('DOMContentLoaded', function () {
             if (count === 0) {
                 evalContainer.innerHTML = '<tr><td colspan="3" class="text-muted">No junior staff are assigned to ' + esc(courseCode) + '.</td></tr>';
             } else {
+                // Staff already evaluated for this course this week show their
+                // score and are locked; the rest can be rated now or later.
+                const evals = loadEvals();
                 evalContainer.innerHTML = instructors.map(function (inst) {
-                    return '<tr class="inst-eval-row" data-inst-code="' + esc(inst.code) + '" data-inst-name="' + esc(inst.name) + '">' +
+                    const identity =
                         '<td>' +
                             '<div class="lec-identity">' +
                                 codeBadge(inst.code, 'staff', { title: inst.name }) +
                                 '<span class="lec-name">' + esc(inst.name) + '</span>' +
                             '</div>' +
-                        '</td>' +
+                        '</td>';
+                    if (isDoneFor(evals, inst.code, courseCode)) {
+                        return '<tr class="inst-eval-done">' + identity +
+                            '<td>' + scorePill(evals[inst.code].rating) + '</td>' +
+                            '<td class="text-muted" style="font-size: 12.5px;">Submitted ' + esc(evals[inst.code].date) + '</td>' +
+                        '</tr>';
+                    }
+                    return '<tr class="inst-eval-row" data-inst-code="' + esc(inst.code) + '" data-inst-name="' + esc(inst.name) + '">' + identity +
                         '<td><select class="form-select inst-rating-select" aria-label="Rating for ' + esc(inst.name) + '">' + ratingOptions() + '</select></td>' +
                         '<td><textarea class="form-textarea inst-comment-textarea" rows="2" aria-label="Comments on ' + esc(inst.name) + '"></textarea></td>' +
                     '</tr>';
@@ -237,106 +344,50 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
+    // Submit whoever has a rating. Unrated staff stay open, so the lecturer can
+    // evaluate one now and the others later in the week.
     if (submitAllBtn) {
         submitAllBtn.addEventListener('click', function () {
-            const cards = evalContainer ? evalContainer.querySelectorAll('.inst-eval-row') : [];
-            if (cards.length === 0) {
+            if (!activeCourse) return;
+            const rows = evalContainer ? Array.from(evalContainer.querySelectorAll('.inst-eval-row')) : [];
+            if (!activeCourse.instructors.length) {
                 notify('There are no junior staff to evaluate on this course.', false);
                 return;
             }
-            const unrated = Array.from(cards).find(card => !card.querySelector('.inst-rating-select').value);
-            if (unrated) {
-                notify('Give ' + unrated.dataset.instName + ' a rating before submitting.', false);
-                unrated.querySelector('.inst-rating-select').focus();
+            const rated = rows.filter(row => row.querySelector('.inst-rating-select').value);
+            if (!rated.length) {
+                notify(rows.length ? 'Give at least one staff member a rating to submit.' : 'Everyone on this course is already evaluated this week.', false);
+                if (rows.length) rows[0].querySelector('.inst-rating-select').focus();
                 return;
             }
 
-            const historyTbody = document.getElementById('evaluationHistoryTbody');
-            const now = new Date();
-            const dateStr = now.toISOString().split('T')[0];
-            const courseCode = evalCourseHeading ? (evalCourseHeading.textContent.split('—')[0] || '').trim() : '';
+            const dateStr = new Date().toISOString().split('T')[0];
+            const courseCode = activeCourse.code;
 
-            cards.forEach(card => {
-                const code = card.dataset.instCode;
-                const instName = card.dataset.instName || code;
-                const rating = parseInt(card.querySelector('.inst-rating-select').value, 10);
-                const commentEl = card.querySelector('.inst-comment-textarea');
+            rated.forEach(row => {
+                const code = row.dataset.instCode;
+                const instName = row.dataset.instName || code;
+                const rating = parseInt(row.querySelector('.inst-rating-select').value, 10);
+                const commentEl = row.querySelector('.inst-comment-textarea');
                 const comment = commentEl ? commentEl.value.trim() : '';
 
-                // Update status pill and evaluate button in Tab 2
-                const statusPill = document.getElementById('instStatus_' + code);
-                if (statusPill) {
-                    statusPill.className = 'pill pill-active status-pill';
-                    statusPill.innerHTML = 'Evaluated (' + Math.round(rating) + ')';
-                }
-                const evalBtn = document.getElementById('btnEval_' + code);
-                if (evalBtn) {
-                    evalBtn.className = 'btn-evaluate-instructor btn-evaluated';
-                    evalBtn.disabled = true;
-                    evalBtn.innerHTML = 'Evaluated';
-                }
-
-                // Store in sessionStorage for Week 5
-                try {
-                    const key = 'staffsync_eval_week5';
-                    const current = JSON.parse(sessionStorage.getItem(key) || '{}');
-                    current[code] = { rating: rating, date: dateStr, course: courseCode };
-                    sessionStorage.setItem(key, JSON.stringify(current));
-                } catch (e) {}
-
-                // Append to history table
-                if (historyTbody) {
-                    const newRow = document.createElement('tr');
-                    newRow.className = 'history-row';
-                    newRow.dataset.status = 'evaluated';
-                    newRow.dataset.id = 'eval-' + Date.now() + '-' + code;
-                    newRow.dataset.weekStart = HISTORY_CAL ? HISTORY_CAL.current : '';
-                    newRow.dataset.course = courseCode;
-                    newRow.dataset.instructor = code;
-                    newRow.dataset.search = (courseCode + ' ' + code + ' ' + instName + ' ' + comment).toLowerCase();
-
-                    newRow.innerHTML = 
-                        '<td>' +
-                            '<div style="font-weight: 600; color: #0f1c2e;">' + esc(dateStr) + '</div>' +
-                            '<div style="font-size: 11px; color: #64748b;">' + esc(currentWeekLabel()) + '</div>' +
-                        '</td>' +
-                        '<td>' +
-                            codeBadge(courseCode, 'course') +
-                        '</td>' +
-                        '<td>' +
-                            '<div class="lec-identity">' +
-                                codeBadge(code, 'staff', { title: instName }) +
-                                '<span class="lec-name" style="font-size: 13px;">' + esc(instName) + '</span>' +
-                            '</div>' +
-                        '</td>' +
-                        '<td><strong>' + Math.round(rating) + '</strong> / 5</td>' +
-                        '<td style="font-size: 12.5px; color: #334155; line-height: 1.45;">' +
-                            (comment ? esc(comment) : '<span class="text-muted">No observations recorded.</span>') +
-                        '</td>' +
-                        '<td style="text-align: right;">' +
-                            '<span class="pill pill-active" style="background: #e6f9ed; color: #166534; font-size: 11px;">' +
-                                'Evaluated' +
-                            '</span>' +
-                        '</td>';
-
-                    historyTbody.insertBefore(newRow, historyTbody.firstChild);
-                }
+                saveEval(code, { rating: rating, date: dateStr, course: courseCode });
+                markInstructorEvaluated(code, rating);
+                addHistoryRow(courseCode, code, instName, rating, comment, dateStr);
             });
 
-            // In Tab 1, update course evaluate button
-            if (coursesTbody && courseCode) {
-                const courseRow = coursesTbody.querySelector('tr.course-row[data-code="' + courseCode + '"]');
-                if (courseRow) {
-                    const cBtn = courseRow.querySelector('.btn-evaluate-course');
-                    if (cBtn) {
-                        cBtn.className = 'btn-evaluate-course btn-evaluated';
-                        cBtn.innerHTML = 'Evaluated';
-                    }
-                }
-            }
+            const courseBtn = coursesTbody ? coursesTbody.querySelector('.btn-evaluate-course[data-course-code="' + courseCode + '"]') : null;
+            if (courseBtn) refreshCourseButton(courseBtn, loadEvals());
 
-            notify('Evaluations for ' + (evalCourseHeading ? evalCourseHeading.textContent : 'course') + ' submitted successfully.');
-            returnToCoursesList();
+            const left = rows.length - rated.length;
+            if (left === 0) {
+                notify('Evaluations for ' + courseCode + ' submitted — everyone is done this week.');
+                returnToCoursesList();
+            } else {
+                notify(rated.length + ' submitted. ' + left + ' still to evaluate — come back any time this week.');
+                const c = activeCourse;
+                openCourseEvaluation(c.code, c.name, c.year, c.prog, c.instructors);
+            }
         });
     }
 
@@ -484,67 +535,13 @@ document.addEventListener('DOMContentLoaded', function () {
             const comment = drawerComment ? drawerComment.value.trim() : '';
             const dateStr = new Date().toISOString().split('T')[0];
 
-            // Update status pill on instructor row
-            const statusPill = document.getElementById('instStatus_' + instCode);
-            if (statusPill) {
-                statusPill.className = 'pill pill-active status-pill';
-                statusPill.innerHTML = 'Evaluated (' + Math.round(rating) + ')';
-            }
+            saveEval(instCode, { rating: rating, date: dateStr, course: courseCode });
+            markInstructorEvaluated(instCode, rating);
+            addHistoryRow(courseCode, instCode, instName, rating, comment, dateStr);
 
-            // Update evaluate button to evaluated on instructor row
-            const evalBtn = document.getElementById('btnEval_' + instCode);
-            if (evalBtn) {
-                evalBtn.className = 'btn-evaluate-instructor btn-evaluated';
-                evalBtn.disabled = true;
-                evalBtn.innerHTML = 'Evaluated';
-            }
-
-            // Persist evaluation state for current week (Week 5)
-            try {
-                const key = 'staffsync_eval_week5';
-                const current = JSON.parse(sessionStorage.getItem(key) || '{}');
-                current[instCode] = { rating: rating, date: dateStr, course: courseCode };
-                sessionStorage.setItem(key, JSON.stringify(current));
-            } catch (e) {}
-
-            // Append row to History table
-            const historyTbody = document.getElementById('evaluationHistoryTbody');
-            if (historyTbody) {
-                const newRow = document.createElement('tr');
-                newRow.className = 'history-row';
-                newRow.dataset.status = 'evaluated';
-                newRow.dataset.id = 'eval-' + Date.now();
-                newRow.dataset.weekStart = HISTORY_CAL ? HISTORY_CAL.current : '';
-                newRow.dataset.course = courseCode;
-                newRow.dataset.instructor = instCode;
-                newRow.dataset.search = (courseCode + ' ' + instCode + ' ' + instName + ' ' + comment).toLowerCase();
-
-                newRow.innerHTML = 
-                    '<td>' +
-                        '<div style="font-weight: 600; color: #0f1c2e;">' + esc(dateStr) + '</div>' +
-                        '<div style="font-size: 11px; color: #64748b;">' + esc(currentWeekLabel()) + '</div>' +
-                    '</td>' +
-                    '<td>' +
-                        codeBadge(courseCode, 'course') +
-                    '</td>' +
-                    '<td>' +
-                        '<div class="lec-identity">' +
-                            codeBadge(instCode, 'staff', { title: instName }) +
-                            '<span class="lec-name" style="font-size: 13px;">' + esc(instName) + '</span>' +
-                        '</div>' +
-                    '</td>' +
-                    '<td><strong>' + Math.round(rating) + '</strong> / 5</td>' +
-                    '<td style="font-size: 12.5px; color: #334155; line-height: 1.45;">' +
-                        (comment ? esc(comment) : '<span class="text-muted">No observations recorded.</span>') +
-                    '</td>' +
-                    '<td style="text-align: right;">' +
-                        '<span class="pill pill-active" style="background: #e6f9ed; color: #166534; font-size: 11px;">' +
-                            'Evaluated' +
-                        '</span>' +
-                    '</td>';
-
-                historyTbody.insertBefore(newRow, historyTbody.firstChild);
-            }
+            // The course's button in Tab 1 counts this evaluation too.
+            const courseBtn = coursesTbody ? coursesTbody.querySelector('.btn-evaluate-course[data-course-code="' + courseCode + '"]') : null;
+            if (courseBtn) refreshCourseButton(courseBtn, loadEvals());
 
             closeInstructorDrawer();
             notify('Performance evaluation for ' + instName + ' submitted successfully.');
@@ -615,24 +612,11 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
-    // Restore Week 5 evaluated state from sessionStorage
-    try {
-        const key = 'staffsync_eval_week5';
-        const current = JSON.parse(sessionStorage.getItem(key) || '{}');
-        Object.keys(current).forEach(code => {
-            const btn = document.getElementById('btnEval_' + code);
-            const pill = document.getElementById('instStatus_' + code);
-            const data = current[code];
-            if (btn) {
-                btn.className = 'btn-evaluate-instructor btn-evaluated';
-                btn.disabled = true;
-                btn.innerHTML = 'Evaluated';
-            }
-            if (pill) {
-                pill.className = 'pill pill-active status-pill';
-                pill.innerHTML = 'Evaluated (' + Math.round(Number(data.rating)) + ')';
-            }
-        });
-    } catch (e) {}
+    // Restore this week's evaluated state from sessionStorage
+    const savedEvals = loadEvals();
+    Object.keys(savedEvals).forEach(code => markInstructorEvaluated(code, savedEvals[code].rating));
+    if (coursesTbody) {
+        coursesTbody.querySelectorAll('.btn-evaluate-course').forEach(btn => refreshCourseButton(btn, savedEvals));
+    }
 
 });

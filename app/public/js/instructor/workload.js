@@ -38,28 +38,21 @@ document.addEventListener('DOMContentLoaded', () => {
         history: document.getElementById('wk-panel-history'),
     };
 
+    function showTab(name) {
+        if (!panels[name]) return;
+        tabs?.querySelectorAll('.wk-tab').forEach(t => t.classList.toggle('active', t.dataset.tab === name));
+        Object.entries(panels).forEach(([key, panel]) => {
+            if (panel) panel.hidden = key !== name;
+        });
+    }
+
     tabs?.addEventListener('click', (e) => {
         const btn = e.target.closest('[data-tab]');
-        if (!btn) return;
-        tabs.querySelectorAll('.wk-tab').forEach(t => t.classList.remove('active'));
-        btn.classList.add('active');
-        Object.entries(panels).forEach(([key, panel]) => {
-            if (panel) panel.hidden = key !== btn.dataset.tab;
-        });
+        if (btn) showTab(btn.dataset.tab);
     });
 
     // Check hash on load (e.g. #assigned)
-    if (window.location.hash) {
-        const hash = window.location.hash.replace('#', '');
-        if (panels[hash]) {
-            tabs?.querySelectorAll('.wk-tab').forEach(t => {
-                t.classList.toggle('active', t.dataset.tab === hash);
-            });
-            Object.entries(panels).forEach(([key, panel]) => {
-                if (panel) panel.hidden = key !== hash;
-            });
-        }
-    }
+    if (window.location.hash) showTab(window.location.hash.replace('#', ''));
 
     const assignedDot = document.getElementById('wkAssignedDot');
     if (assignedDot) assignedDot.classList.add('show');
@@ -464,8 +457,4 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // Reset button in Overview
-    document.getElementById('wkBtnReset')?.addEventListener('click', () => {
-        document.querySelectorAll('.wk-select').forEach(sel => { sel.selectedIndex = 0; });
-    });
 });

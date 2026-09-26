@@ -18,7 +18,8 @@ use app\models\RoomModel;
 //    timetable sessions (see RoomModel::sessionCount()).
 class LectureHallsController extends Controller
 {
-    private const VALID_TYPES = ['lab', 'lecture_hall', 'tutorial_room', 'other'];
+    /** A room is a lecture hall or a lab — see migration 022. */
+    private const VALID_TYPES = ['lecture_hall', 'lab'];
 
     public function __construct()
     {

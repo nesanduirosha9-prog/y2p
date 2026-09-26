@@ -181,8 +181,6 @@ $initials = ViewHelpers::currentAvatarCode();
         $positionLabels = ['coordinator' => 'Coordinator', 'in_charge' => 'In-Charge', 'timetable_officer' => 'Timetable Officer'];
         ?>
         <div class="settings-panel" id="settings-panel-handover" role="tabpanel" aria-labelledby="tab-handover" hidden>
-          <div class="ho-layout" id="hoLayout">
-           <div class="ho-main">
             <div class="dir-card">
                 <div class="handover-head">
                     <div>
@@ -256,63 +254,66 @@ $initials = ViewHelpers::currentAvatarCode();
             <p class="accounts-note">
                 Giving someone a role needs a verification code from them. Revoking a Coordinator takes effect straight away.
             </p>
-           </div>
 
-            <!-- Change / Add panel, docked on the right like Request Leave.
+            <!-- Change / Add panel — the app's side drawer (components.css).
                  js/settings.js (initHandoverPanel) fills it and walks through
                  the two steps: pick the new holder, then enter their code. -->
-            <aside class="ho-side-panel" id="hoPanel" hidden aria-labelledby="hoPanelTitle">
-                <div class="ho-panel-header">
-                    <h2 id="hoPanelTitle">Change role</h2>
-                    <button type="button" class="ho-panel-close" id="hoPanelClose" aria-label="Close"><i class="fa-solid fa-xmark"></i></button>
-                </div>
-
-                <!-- Step 1: who takes the seat -->
-                <div class="ho-panel-body" id="hoStepPick">
-                    <div class="ho-field" id="hoCurrentRow">
-                        <p class="ho-label">Current holder</p>
-                        <div class="ho-person" id="hoCurrent"></div>
-                    </div>
-
-                    <!-- Timetable Officer only: the account stays, the login moves -->
-                    <div class="ho-field" id="hoEmailRow" hidden>
-                        <label class="ho-label" for="hoNewEmail">New officer's email</label>
-                        <input type="email" id="hoNewEmail" placeholder="name@<?= htmlspecialchars(StaffEmail::domain()) ?>" autocomplete="off">
-                        <p class="ho-hint">The account, its timetable and its history stay. The new officer sets a password with <b>Forgot password</b> and fills in their profile from Settings. The current officer is signed out.</p>
-                    </div>
-
-                    <div class="ho-field" id="hoPickRow">
-                        <label class="ho-label" for="hoSearch">New holder</label>
-                        <div class="search-box handover-search">
-                            <i class="fa-solid fa-magnifying-glass"></i>
-                            <input type="text" id="hoSearch" placeholder="Search by name or email…" autocomplete="off">
+            <div class="side-drawer-overlay" id="hoPanel" hidden>
+                <div class="side-drawer" role="dialog" aria-modal="true" aria-labelledby="hoPanelTitle">
+                    <div class="side-drawer-header">
+                        <div>
+                            <h3 class="side-drawer-title" id="hoPanelTitle">Change role</h3>
+                            <p class="side-drawer-subtitle" id="hoPanelSubtitle">Pick who takes the role</p>
                         </div>
-                        <div class="candidate-list" id="hoCandidates"></div>
-                        <p class="dir-empty" id="hoCandidatesEmpty" hidden>Nobody matches.</p>
+                        <button type="button" class="side-drawer-close" id="hoPanelClose" aria-label="Close"><i class="fa-solid fa-xmark"></i></button>
                     </div>
 
-                    <p class="form-error" id="hoPickError" hidden></p>
-                </div>
+                    <!-- Step 1: who takes the seat -->
+                    <div class="side-drawer-body" id="hoStepPick">
+                        <div class="form-row" id="hoCurrentRow">
+                            <p class="form-label">Current holder</p>
+                            <div class="ho-person" id="hoCurrent"></div>
+                        </div>
 
-                <!-- Step 2: the code sent to the new holder -->
-                <div class="ho-panel-body" id="hoStepVerify" hidden>
-                    <div class="ho-field">
-                        <p class="ho-label">Code sent to</p>
-                        <div class="ho-person" id="hoTarget"></div>
-                    </div>
-                    <div class="ho-field">
-                        <label class="ho-label" for="hoOtp">6-digit code</label>
-                        <input type="text" id="hoOtp" maxlength="6" inputmode="numeric" autocomplete="one-time-code" placeholder="000000">
-                    </div>
-                    <p class="form-error" id="hoOtpError" hidden></p>
-                </div>
+                        <!-- Timetable Officer only: the account stays, the login moves -->
+                        <div class="form-row" id="hoEmailRow" hidden>
+                            <label class="form-label" for="hoNewEmail">New officer's email</label>
+                            <input type="email" id="hoNewEmail" placeholder="name@<?= htmlspecialchars(StaffEmail::domain()) ?>" autocomplete="off">
+                            <p class="ho-hint">The account, its timetable and its history stay. The new officer sets a password with <b>Forgot password</b> and fills in their profile from Settings. The current officer is signed out.</p>
+                        </div>
 
-                <div class="ho-panel-footer">
-                    <button type="button" class="btn-secondary" id="hoBack">Cancel</button>
-                    <button type="button" class="btn-primary" id="hoNext" disabled>Send code</button>
+                        <div class="form-row" id="hoPickRow">
+                            <label class="form-label" for="hoSearch">New holder</label>
+                            <div class="search-box handover-search">
+                                <i class="fa-solid fa-magnifying-glass"></i>
+                                <input type="text" id="hoSearch" placeholder="Search by name or email…" autocomplete="off">
+                            </div>
+                            <div class="candidate-list" id="hoCandidates"></div>
+                            <p class="dir-empty" id="hoCandidatesEmpty" hidden>Nobody matches.</p>
+                        </div>
+
+                        <p class="form-error" id="hoPickError" hidden></p>
+                    </div>
+
+                    <!-- Step 2: the code sent to the new holder -->
+                    <div class="side-drawer-body" id="hoStepVerify" hidden>
+                        <div class="form-row">
+                            <p class="form-label">Code sent to</p>
+                            <div class="ho-person" id="hoTarget"></div>
+                        </div>
+                        <div class="form-row">
+                            <label class="form-label" for="hoOtp">6-digit code</label>
+                            <input type="text" id="hoOtp" maxlength="6" inputmode="numeric" autocomplete="one-time-code" placeholder="000000">
+                        </div>
+                        <p class="form-error" id="hoOtpError" hidden></p>
+                    </div>
+
+                    <div class="side-drawer-footer">
+                        <button type="button" class="btn-drawer-cancel" id="hoBack">Cancel</button>
+                        <button type="button" class="btn-drawer-submit" id="hoNext" disabled>Send code</button>
+                    </div>
                 </div>
-            </aside>
-          </div>
+            </div>
         </div>
     <?php endif; ?>
 

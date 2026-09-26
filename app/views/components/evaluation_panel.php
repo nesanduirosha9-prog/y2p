@@ -3,7 +3,9 @@
 // components/evaluation_panel.php — the course evaluation pane on My Courses.
 // One row per junior staff member on the course: a rating and a comment.
 // js/instructor/courses.js fills the heading and the rows when a course's
-// Evaluate button is clicked, and reads them back on submit.
+// Evaluate button is clicked, and reads them back on submit. Only the rows
+// with a rating are submitted — the rest stay open for later in the week, and
+// staff already evaluated show their score, locked.
 ?>
 
 <div class="courses-flow-pane" id="coursesEvalPane">

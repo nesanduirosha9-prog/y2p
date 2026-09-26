@@ -8,10 +8,8 @@ document.addEventListener('DOMContentLoaded', function () {
     if (!view) return;
 
     const TYPE_LABELS = {
-        lab: 'Laboratory',
         lecture_hall: 'Lecture Hall',
-        tutorial_room: 'Tutorial Room',
-        other: 'Other',
+        lab: 'Laboratory',
     };
 
     // fetch() wrapper. Always JSON: Request::getBody() only parses PUT/DELETE

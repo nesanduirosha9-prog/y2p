@@ -125,26 +125,6 @@
     gap: 10px;
 }
 
-.btn-batch-start {
-    background: #f59e0b;
-    color: #ffffff;
-    border: none;
-    border-radius: 8px;
-    padding: 8px 16px;
-    font-size: 13px;
-    font-weight: 700;
-    cursor: pointer;
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
-    transition: background-color 0.15s ease;
-}
-
-.btn-batch-start:hover:not(:disabled) {
-    background: #d97706;
-}
-
 /* Time Slot Chips */
 .time-slots-chips {
     display: grid;
@@ -440,10 +420,10 @@
 .sched-combo-opt.is-selected { background: #eff6ff; }
 .sched-combo-list .dir-empty { margin: 8px; }
 
-/* ---- Modals ---- */
-.sched-modal { max-width: 560px; width: 100%; }
-.sched-modal-wide { max-width: 680px; }
-.sched-modal .modal-body { max-height: 62vh; overflow-y: auto; }
+/* ---- Drawers (allocation result, add staff, invite preview) ----
+   Side drawers from components.css; only their content is styled here. The
+   add-staff list is rows, not form fields, so it drops the body's 16px gap. */
+#swapModalBody { gap: 0; }
 
 /* Allocation explanation */
 .alloc-result {

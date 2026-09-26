@@ -40,9 +40,11 @@
 
     const toRating = n => Math.min(5, Math.max(1, Math.round(n)));
 
+    // 4–5 green, 3 amber, 1–2 red — same bands as the lecturer's history
+    // (js/instructor/courses.js).
     function scoreBand(n) {
-        if (n >= 5) return 'high';
-        if (n >= 4) return 'mid';
+        if (n >= 4) return 'high';
+        if (n === 3) return 'mid';
         return 'low';
     }
 
@@ -114,7 +116,7 @@
                 </td>
                 <td>
                     ${r.sub
-                        ? `<strong>${r.score}</strong> / 5`
+                        ? `<span class="eval-score-pill score-${scoreBand(r.score)}">${r.score} / 5</span>`
                         : '<span class="text-muted">—</span>'}
                 </td>
                 <td style="text-align:right;">

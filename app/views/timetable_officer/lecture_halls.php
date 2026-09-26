@@ -6,11 +6,10 @@
 // (POST /lecture-halls, PUT and DELETE /lecture-halls/{code}), called from
 // lecture_halls.js. The same side drawer serves Add and Edit.
 
+// A room is a lecture hall or a lab (LectureHallsController::VALID_TYPES).
 $typeLabels = [
-    'lab' => 'Laboratory',
     'lecture_hall' => 'Lecture Hall',
-    'tutorial_room' => 'Tutorial Room',
-    'other' => 'Other',
+    'lab' => 'Laboratory',
 ];
 
 $total = count($rooms);

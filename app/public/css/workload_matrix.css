@@ -523,44 +523,45 @@
 .wm-staff-load.band-heavy strong { color: #b45309; }
 .wm-staff-load.band-under strong { color: #94a3b8; }
 
-/* ---- Drawers (assign + staff load) ---- */
+/* ---- Drawers (assign + staff load) ----
+   Same placement and look as the app's side drawer (.side-drawer in
+   components.css): inset 16px over a dimmed + blurred page, rounded, white
+   header with a quiet close. */
 .wm-drawer-backdrop {
     position: fixed;
     inset: 0;
-    background: rgba(15, 28, 46, 0.35);
+    background: rgba(15, 28, 46, 0.45);
+    backdrop-filter: blur(2px);
     z-index: 1400;
+    animation: drawerOverlayFadeIn 0.22s ease-out;
 }
 .wm-drawer-backdrop[hidden] { display: none; }
 
 .wm-drawer {
     position: fixed;
-    top: 0;
-    right: 0;
-    bottom: 0;
-    width: 400px;
-    max-width: 100%;
+    top: 16px;
+    right: 16px;
+    bottom: 16px;
+    width: 420px;
+    max-width: calc(100vw - 32px);
     background: #fff;
-    border-left: 1px solid #e2e8f0;
-    box-shadow: -12px 0 32px rgba(15, 28, 46, 0.12);
+    border-radius: 18px;
+    box-shadow: 0 16px 40px rgba(15, 28, 46, 0.16), 0 2px 10px rgba(0, 0, 0, 0.06);
+    overflow: hidden;
     z-index: 1450;
     display: flex;
     flex-direction: column;
-    animation: wmSlideIn 0.2s ease-out;
+    animation: drawerSlideIn 0.28s cubic-bezier(0.16, 1, 0.3, 1);
 }
 .wm-drawer[hidden] { display: none; }
-
-@keyframes wmSlideIn {
-    from { transform: translateX(24px); opacity: 0; }
-    to   { transform: translateX(0); opacity: 1; }
-}
 
 .wm-drawer-head {
     display: flex;
     align-items: flex-start;
     justify-content: space-between;
     gap: 12px;
-    padding: 18px 20px 14px;
-    border-bottom: 1px solid #eef1f6;
+    padding: 22px 24px 18px;
+    border-bottom: 1px solid #edf2f7;
 }
 .wm-drawer-tag {
     font-size: 10px;
@@ -569,8 +570,15 @@
     text-transform: uppercase;
     color: #2563eb;
 }
-.wm-drawer-title { font-size: 15px; font-weight: 700; color: #0f1c2e; margin-top: 4px; }
-.wm-drawer-sub { font-size: 11.5px; color: #6b7c96; margin-top: 3px; }
+.wm-drawer-title {
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-size: 1.15rem;
+    font-weight: 700;
+    color: #0f172a;
+    margin-top: 4px;
+    line-height: 1.25;
+}
+.wm-drawer-sub { font-size: 0.82rem; color: #64748b; margin-top: 4px; }
 
 /* Own class, not the shared .modal-close: that one is white-on-navy
    (directory.css) and vanished against this white head. */
@@ -580,16 +588,16 @@
     height: 32px;
     border: none;
     border-radius: 8px;
-    background: #f1f5f9;
-    color: #475569;
-    font-size: 15px;
+    background: none;
+    color: #64748b;
+    font-size: 16px;
     cursor: pointer;
     display: inline-flex;
     align-items: center;
     justify-content: center;
     transition: background 0.15s ease, color 0.15s ease;
 }
-.wm-drawer-close:hover { background: #e2e8f0; color: #0f1c2e; }
+.wm-drawer-close:hover { background: #f1f5f9; color: #0f172a; }
 
 /* Load-band filter in the staff load drawer */
 .wm-band-filter { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
@@ -614,10 +622,10 @@
 .wm-band-dot.band-over  { background: #ef4444; }
 .wm-band-dot.band-under { background: #cbd5e1; }
 
-.wm-drawer-search { padding: 14px 20px 10px; border-bottom: 1px solid #eef1f6; }
+.wm-drawer-search { padding: 14px 24px 12px; border-bottom: 1px solid #edf2f7; }
 .wm-drawer-hint { margin-top: 8px; font-size: 11px; color: #94a3b8; }
 
-.wm-drawer-body { flex: 1; overflow-y: auto; padding: 8px 12px 20px; }
+.wm-drawer-body { flex: 1; overflow-y: auto; padding: 8px 16px 20px; }
 
 .wm-cand {
     display: flex;
@@ -668,8 +676,8 @@
 .wm-cand-btn.is-remove { background: none; border-color: transparent; color: #64748b; }
 .wm-cand-btn.is-remove:hover { background: #fef2f2; border-color: #fecaca; color: #dc2626; }
 
-/* ---- Rebalance modal ---- */
-.wm-balance-modal { max-width: 560px; width: 100%; }
+/* ---- Rebalance drawer (.side-drawer) — a list of rows, so no body gap ---- */
+#wmBalanceBody { gap: 0; }
 .wm-balance-intro { font-size: 12.5px; color: #6b7c96; padding: 4px 4px 14px; }
 .wm-balance-row {
     display: flex;
@@ -713,7 +721,10 @@
 /* ---- Responsive ---- */
 @media (max-width: 900px) {
     .wm-search { flex-basis: 100%; }
-    .wm-drawer { width: 100%; }
+}
+
+@media (max-width: 640px) {
+    .wm-drawer { top: 0; right: 0; bottom: 0; width: 100%; max-width: none; border-radius: 0; }
 }
 
 @media (max-width: 600px) {

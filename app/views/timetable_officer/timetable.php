@@ -180,7 +180,9 @@ sort($lecturers);
             </div>
 
             <!-- Slide-out Side Panel for Session Details (View / Edit / Delete / Schedule).
-                 .floating-panel (components.css) opens it over the page like the Add Course drawer. -->
+                 .floating-panel (components.css) opens it over the page like the Add Course drawer.
+                 Both ways of adding a session — clicking a free slot, and Schedule Course →
+                 select slots → Confirm — open the same Schedule Session form here. -->
             <aside class="tt-side-panel floating-panel" id="ttSidePanel" hidden>
                 <div class="tsp-header">
                     <div class="tsp-header-left">
@@ -216,76 +218,6 @@ sort($lecturers);
         <div class="confirm-buttons">
             <button type="button" class="btn-ghost" id="clearSelectionBtn">Clear</button>
             <button type="button" class="btn-primary-sm" id="confirmSelectionBtn" disabled>Confirm Selection &rarr;</button>
-        </div>
-    </div>
-</div>
-
-<!-- Schedule Course Session modal (for multi-slot selection flow) -->
-<div class="tt-modal-overlay" id="scheduleModal" hidden>
-    <div class="tt-modal">
-        <div class="tt-modal-header">
-            <div>
-                <h2>Schedule Course Session</h2>
-                <p id="modalSubtitle"><?= strtoupper(htmlspecialchars($dept)) ?> &middot; Year <?= $year ?> &middot; Sem <?= $sem ?></p>
-            </div>
-            <button type="button" class="modal-close" id="closeScheduleModal"><i class="fa-solid fa-xmark"></i></button>
-        </div>
-
-        <div class="tt-modal-body">
-            <div class="selected-slots-card">
-                <div class="selected-slots-icon"><i class="fa-regular fa-clock"></i></div>
-                <div>
-                    <p class="field-label">Selected Time Slots</p>
-                    <p class="selected-slots-range" id="selectedSlotsRange">&mdash;</p>
-                    <p class="selected-slots-total" id="selectedSlotsTotal"></p>
-                </div>
-            </div>
-
-            <div class="form-field">
-                <label for="courseModule">Course Module</label>
-                <div class="select-wrap">
-                    <i class="fa-solid fa-book"></i>
-                    <select id="courseModule" data-searchable data-search-placeholder="Search by code or title…">
-                        <option value="">Select a course&hellip;</option>
-                        <?php foreach ($courses as $code => $c): ?>
-                            <option value="<?= htmlspecialchars($code) ?>" data-lecturer="<?= htmlspecialchars($c['lecturer']) ?>">
-                                <?= htmlspecialchars($code) ?> &mdash; <?= htmlspecialchars($c['title']) ?>
-                            </option>
-                        <?php endforeach; ?>
-                    </select>
-                </div>
-                <p class="field-hint" id="lecturerHint">&nbsp;</p>
-            </div>
-
-            <div class="form-field">
-                <label>Session Type</label>
-                <div class="type-toggle" id="sessionTypeToggle">
-                    <button type="button" class="type-btn active" data-type="lecture">Lecture</button>
-                    <button type="button" class="type-btn" data-type="tutorial">Tutorial</button>
-                    <button type="button" class="type-btn" data-type="lab">Lab</button>
-                    <button type="button" class="type-btn" data-type="practical">Practical</button>
-                </div>
-            </div>
-
-            <div class="form-field">
-                <label for="venueInput">Venue</label>
-                <div class="select-wrap">
-                    <i class="fa-solid fa-location-dot"></i>
-                    <select id="venueInput" data-searchable data-search-placeholder="Search halls / labs…">
-                        <option value="">Select a hall / lab&hellip;</option>
-                        <?php foreach ($allRooms as $r): ?>
-                            <option value="<?= htmlspecialchars($r['code']) ?>">
-                                <?= htmlspecialchars($r['code']) ?> (<?= htmlspecialchars(ucwords(str_replace('_', ' ', $r['type']))) ?>, cap: <?= $r['capacity'] ?>)
-                            </option>
-                        <?php endforeach; ?>
-                    </select>
-                </div>
-            </div>
-        </div>
-
-        <div class="tt-modal-footer">
-            <button type="button" class="btn-outline" id="modalBackBtn">Back</button>
-            <button type="button" class="btn-primary-sm" id="addToTimetableBtn">Add to Timetable</button>
         </div>
     </div>
 </div>

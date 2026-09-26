@@ -54,22 +54,7 @@
     box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
 }
 
-/* ---- Score Pills in Table ---- */
-.eval-score-pill {
-    display: inline-flex;
-    align-items: center;
-    gap: 5px;
-    padding: 4px 10px;
-    border-radius: 20px;
-    font-size: 12px;
-    font-weight: 700;
-}
-
-.score-high {
-    background: #ecfdf5;
-    color: #059669;
-    border: 1px solid #a7f3d0;
-}
+/* Score pills (.eval-score-pill .score-high|mid|low) live in components.css. */
 
 
 /* .btn-secondary-sm now shared via components.css */
@@ -189,20 +174,6 @@
 
 .eval-page { display: flex; flex-direction: column; gap: 16px; }
 
-/* Score bands. .score-high is already defined above; these two complete the
-   set in the same visual language, and the band is now derived from the number
-   instead of every row being hardcoded to "high" as the old markup did. */
-.score-mid {
-    background: #fffbeb;
-    color: #b45309;
-    border: 1px solid #fde68a;
-}
-
-.score-low {
-    background: #fef2f2;
-    color: #b91c1c;
-    border: 1px solid #fecaca;
-}
 
 
 

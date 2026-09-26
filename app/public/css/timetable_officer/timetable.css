@@ -570,29 +570,6 @@
     margin-top: 6px;
 }
 
-.type-toggle {
-    display: flex;
-    gap: 6px;
-}
-
-.type-btn {
-    flex: 1;
-    padding: 8px 0;
-    border-radius: 7.5px;
-    border: 1px solid #dde3ee;
-    background: #fff;
-    font-size: 13px;
-    font-weight: 500;
-    color: #374151;
-    cursor: pointer;
-}
-
-.type-btn.active {
-    border-color: #2563eb;
-    color: #2563eb;
-    background: #eff6ff;
-}
-
 .tt-modal-footer {
     display: flex;
     gap: 12px;
@@ -692,14 +669,6 @@
 @media (max-width: 480px) {
     .tt-modal-footer {
         flex-direction: column;
-    }
-
-    .type-toggle {
-        flex-wrap: wrap;
-    }
-
-    .type-btn {
-        flex: 1 1 45%;
     }
 }
 

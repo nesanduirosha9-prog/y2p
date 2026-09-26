@@ -3,65 +3,16 @@
 // Instructor Workload View — Overview / Assigned Work / History tabs, matching
 // the Figma "MyWorkload" wireframes. Tab switching + Accept/Reject are
 // DOM-only demo behavior (js/instructor/workload.js) — nothing persists.
-$title = "My Workload";
+use app\core\ViewHelpers;
 
-// Dummy data for the UI
-$semesterOptions = ["Semester 1 - 2026", "Semester 2 - 2025", "Semester 1 - 2025"];
-$monthOptions = ["March 2026", "February 2026", "January 2026"];
-$weekOptions = ["Week 5", "Week 4", "Week 3"];
-
-$curSem = ['assigned' => 320, 'completed' => 248];
-$curMonth = ['assigned' => 42, 'completed' => 39];
-$curWeek = ['assigned' => 12, 'completed' => 10];
-
-$semesterBreakdown = [
-    ['label' => 'Semester 1 - 2026', 'assigned' => 320, 'completed' => 248],
-    ['label' => 'Semester 2 - 2025', 'assigned' => 280, 'completed' => 280],
-    ['label' => 'Semester 1 - 2025', 'assigned' => 300, 'completed' => 298],
-];
-$monthlyBreakdown = [
-    ['label' => 'March 2026', 'assigned' => 42, 'completed' => 39],
-    ['label' => 'February 2026', 'assigned' => 38, 'completed' => 35],
-];
-
-$coverRequests = [
-    [
-        'id' => 1,
-        'code' => 'CS2203',
-        'title' => 'Operating Systems',
-        'staff_on_leave' => 'Mr. Kojo Amoah',
-        'staff_code' => 'MKO',
-        'lecturer_name' => 'Dr. Elena Petrov',
-        'lecturer_code' => 'DEP',
-        'date' => '2026-09-30',
-        'time_from' => '14:00',
-        'time_to' => '16:00',
-        'credits' => 3,
-        'year' => 2,
-        'program' => 'CS',
-        'role' => 'Lab Assistant',
-        'hours' => 2,
-        'sessions' => ['Lectures', 'Practicals', 'Lab Sessions'],
-    ],
-    [
-        'id' => 2,
-        'code' => 'IS1103',
-        'title' => 'Spreadsheet Applications',
-        'staff_on_leave' => 'Ms. Yaw Bediako',
-        'staff_code' => 'MYB',
-        'lecturer_name' => 'Dr. Linda Osei',
-        'lecturer_code' => 'DLO',
-        'date' => '2026-10-01',
-        'time_from' => '09:00',
-        'time_to' => '12:00',
-        'credits' => 3,
-        'year' => 1,
-        'program' => 'IS',
-        'role' => 'Practical Support',
-        'hours' => 3,
-        'sessions' => ['Lectures', 'Practicals', 'Lab Sessions'],
-    ],
-];
+// $assignedCourses, $coverRequests, $evaluationHistory — the member's own lists
+// $overview — the Overview tab, worked out by WorkloadController::overview()
+$ov = $overview;
+$scoreBand = fn($n) => $n >= 4 ? 'high' : ($n >= 3 ? 'mid' : 'low');
+$fmtH = fn($h) => rtrim(rtrim(number_format($h, 1), '0'), '.');
+$fmtDate = fn($iso) => (new DateTimeImmutable($iso))->format('D j M');
+$fmtRange = fn($from, $to) => $from === $to ? $fmtDate($from) : $fmtDate($from) . ' – ' . $fmtDate($to);
+$plural = fn($n, $word) => $n . ' ' . $word . ($n == 1 ? '' : 's');
 ?>
 
 <div class="wk-container">
@@ -80,210 +31,168 @@ $coverRequests = [
     </div>
 
     <div class="wk-body" id="wk-panel-overview">
-        <!-- Filter Bar -->
-        <div class="wk-filter-bar">
-            <div class="wk-filter-title">
-                <i class="fa-solid fa-chart-bar" style="color: #1a3a6b;"></i>
-                <span>Filter Workload</span>
-            </div>
-            <div class="v-divider"></div>
-            <button class="wk-btn-reset" id="wkBtnReset" type="button"><i class="fa-solid fa-xmark"></i> Reset</button>
-            <div class="v-divider"></div>
-            
-            <div class="wk-filter-group">
-                <label>SEMESTER</label>
-                <div class="wk-select-wrapper">
-                    <select class="wk-select">
-                        <option value="">Select...</option>
-                        <?php foreach($semesterOptions as $opt): ?>
-                            <option><?= $opt ?></option>
-                        <?php endforeach; ?>
-                    </select>
-                    <i class="fa-solid fa-chevron-down chevron"></i>
-                </div>
-            </div>
 
-            <div class="wk-filter-group">
-                <label>MONTH</label>
-                <div class="wk-select-wrapper">
-                    <select class="wk-select">
-                        <option value="">Select...</option>
-                        <?php foreach($monthOptions as $opt): ?>
-                            <option><?= $opt ?></option>
-                        <?php endforeach; ?>
-                    </select>
-                    <i class="fa-solid fa-chevron-down chevron"></i>
-                </div>
-            </div>
-
-            <div class="wk-filter-group">
-                <label>WEEK</label>
-                <div class="wk-select-wrapper">
-                    <select class="wk-select">
-                        <option value="">Select...</option>
-                        <?php foreach($weekOptions as $opt): ?>
-                            <option><?= $opt ?></option>
-                        <?php endforeach; ?>
-                    </select>
-                    <i class="fa-solid fa-chevron-down chevron"></i>
-                </div>
-            </div>
-        </div>
-
-        <!-- Overview Cards -->
-        <div class="wk-overview-grid">
-            <!-- Semester Workload -->
-            <div class="wk-card">
-                <div class="wk-card-header" style="background: #f4f7fc;">
-                    <div class="wk-icon-box" style="background: #e8edf5; color: #1a3a6b;">
-                        <i class="fa-solid fa-book-open"></i>
-                    </div>
-                    <div class="wk-card-titles">
-                        <p class="wk-card-label">SEMESTER WORKLOAD</p>
-                        <p class="wk-card-sub">Semester 1 - 2026</p>
-                    </div>
-                </div>
-                <div class="wk-card-body">
-                    <div class="wk-stat">
-                        <p class="wk-stat-label">ASSIGNED</p>
-                        <p class="wk-stat-value text-blue"><?= $curSem['assigned'] ?></p>
-                        <p class="wk-stat-unit">hrs</p>
-                    </div>
-                    <div class="v-divider"></div>
-                    <div class="wk-stat">
-                        <p class="wk-stat-label">COMPLETED</p>
-                        <p class="wk-stat-value text-green"><?= $curSem['completed'] ?></p>
-                        <p class="wk-stat-unit">hrs</p>
-                    </div>
-                </div>
-                <div class="wk-card-footer">
-                    <div class="wk-progress-track">
-                        <div class="wk-progress-fill bg-blue" style="width: <?= round(($curSem['completed']/$curSem['assigned'])*100) ?>%;"></div>
-                    </div>
-                    <p class="wk-progress-text"><?= round(($curSem['completed']/$curSem['assigned'])*100) ?>% completed</p>
-                </div>
-            </div>
-
-            <!-- Monthly Workload -->
-            <div class="wk-card">
-                <div class="wk-card-header" style="background: #f7f4fd;">
-                    <div class="wk-icon-box" style="background: #ede9fe; color: #7c3aed;">
-                        <i class="fa-regular fa-calendar"></i>
-                    </div>
-                    <div class="wk-card-titles">
-                        <p class="wk-card-label">MONTHLY WORKLOAD</p>
-                        <p class="wk-card-sub">March 2026</p>
-                    </div>
-                </div>
-                <div class="wk-card-body">
-                    <div class="wk-stat">
-                        <p class="wk-stat-label">ASSIGNED</p>
-                        <p class="wk-stat-value text-purple"><?= $curMonth['assigned'] ?></p>
-                        <p class="wk-stat-unit">hrs</p>
-                    </div>
-                    <div class="v-divider"></div>
-                    <div class="wk-stat">
-                        <p class="wk-stat-label">COMPLETED</p>
-                        <p class="wk-stat-value text-green"><?= $curMonth['completed'] ?></p>
-                        <p class="wk-stat-unit">hrs</p>
-                    </div>
-                </div>
-                <div class="wk-card-footer">
-                    <div class="wk-progress-track">
-                        <div class="wk-progress-fill bg-purple" style="width: <?= round(($curMonth['completed']/$curMonth['assigned'])*100) ?>%;"></div>
-                    </div>
-                    <p class="wk-progress-text"><?= round(($curMonth['completed']/$curMonth['assigned'])*100) ?>% completed</p>
-                </div>
-            </div>
-
-            <!-- Weekly Workload -->
-            <div class="wk-card">
-                <div class="wk-card-header" style="background: #fefce8;">
-                    <div class="wk-icon-box" style="background: #fef9c3; color: #ca8a04;">
-                        <i class="fa-solid fa-calendar-week"></i>
-                    </div>
-                    <div class="wk-card-titles">
-                        <p class="wk-card-label">WEEKLY WORKLOAD</p>
-                        <p class="wk-card-sub">Week 5</p>
-                    </div>
-                </div>
-                <div class="wk-card-body">
-                    <div class="wk-stat">
-                        <p class="wk-stat-label">ASSIGNED</p>
-                        <p class="wk-stat-value text-yellow"><?= $curWeek['assigned'] ?></p>
-                        <p class="wk-stat-unit">hrs</p>
-                    </div>
-                    <div class="v-divider"></div>
-                    <div class="wk-stat">
-                        <p class="wk-stat-label">COMPLETED</p>
-                        <p class="wk-stat-value text-green"><?= $curWeek['completed'] ?></p>
-                        <p class="wk-stat-unit">hrs</p>
-                    </div>
-                </div>
-                <div class="wk-card-footer">
-                    <div class="wk-progress-track">
-                        <div class="wk-progress-fill bg-yellow" style="width: <?= round(($curWeek['completed']/$curWeek['assigned'])*100) ?>%;"></div>
-                    </div>
-                    <p class="wk-progress-text"><?= round(($curWeek['completed']/$curWeek['assigned'])*100) ?>% completed</p>
-                </div>
-            </div>
-        </div>
-
+        <!-- This semester in four numbers -->
         <div class="wk-table-card">
             <div class="wk-table-header">
-                <p><i class="fa-regular fa-calendar" style="color:#1a3a6b;margin-right:6px;"></i>Semester Breakdown</p>
-                <span class="wk-table-header-hint"><?= count($semesterBreakdown) ?> periods</span>
+                <p><?= htmlspecialchars($ov['semester']) ?></p>
+                <span class="wk-table-header-hint">
+                    <?= $ov['week'] ? 'Week ' . $ov['week'] . ' of ' . $ov['weeks'] . ' · ' : '' ?><?= htmlspecialchars($ov['dates']) ?>
+                </span>
             </div>
-            <div class="wk-table-scroll">
-            <table class="wk-table">
-                <thead>
-                    <tr><th>SEMESTER</th><th>ASSIGNED</th><th>COMPLETED</th><th>PROGRESS</th></tr>
-                </thead>
-                <tbody>
-                    <?php foreach ($semesterBreakdown as $row): $pct = round(($row['completed'] / $row['assigned']) * 100); ?>
-                        <tr>
-                            <td class="wk-td-label"><?= htmlspecialchars($row['label']) ?></td>
-                            <td><?= $row['assigned'] ?> hrs</td>
-                            <td><?= $row['completed'] ?> hrs</td>
-                            <td>
-                                <div class="wk-row-progress">
-                                    <div class="wk-progress-track"><div class="wk-progress-fill bg-blue" style="width: <?= $pct ?>%;"></div></div>
-                                    <span><?= $pct ?>%</span>
-                                </div>
-                            </td>
-                        </tr>
-                    <?php endforeach; ?>
-                </tbody>
-            </table>
+            <div class="wk-figures">
+                <div class="wk-figure">
+                    <p class="wk-figure-value"><?= $fmtH($ov['weekly']) ?> h</p>
+                    <p class="wk-figure-label">a week, across <?= $plural(count($ov['courses']), 'course') ?></p>
+                </div>
+                <div class="wk-figure">
+                    <p class="wk-figure-value"><?= $fmtH($ov['done']) ?> h</p>
+                    <p class="wk-figure-label">taught so far, of <?= $fmtH($ov['planned']) ?> h this semester</p>
+                </div>
+                <div class="wk-figure">
+                    <p class="wk-figure-value"><?= $plural($ov['leaveDays'], 'day') ?></p>
+                    <p class="wk-figure-label">
+                        on leave<?= $ov['missed'] ? ', ' . $fmtH($ov['missed']) . ' h of sessions missed' : '' ?>
+                    </p>
+                </div>
+                <div class="wk-figure">
+                    <p class="wk-figure-value"><?= $plural(count($ov['covering']), 'day') ?></p>
+                    <p class="wk-figure-label">
+                        covering for colleagues<?= $ov['covering'] ? ' — ' . $ov['coverDone'] . ' done, ' . $ov['coverNext'] . ' coming up' : '' ?>
+                    </p>
+                </div>
             </div>
         </div>
 
+        <!-- Where the hours go, per course -->
         <div class="wk-table-card">
             <div class="wk-table-header">
-                <p><i class="fa-regular fa-calendar-days" style="color:#7c3aed;margin-right:6px;"></i>Monthly Breakdown</p>
-                <span class="wk-table-header-hint"><?= count($monthlyBreakdown) ?> periods</span>
+                <p>Hours by course</p>
+                <span class="wk-table-header-hint">So far counts finished weeks only, less any sessions you were on leave for</span>
             </div>
-            <div class="wk-table-scroll">
-            <table class="wk-table">
-                <thead>
-                    <tr><th>MONTH</th><th>ASSIGNED</th><th>COMPLETED</th><th>PROGRESS</th></tr>
-                </thead>
-                <tbody>
-                    <?php foreach ($monthlyBreakdown as $row): $pct = round(($row['completed'] / $row['assigned']) * 100); ?>
+            <div class="dir-scroll">
+                <table class="dir-table wk-hours-table">
+                    <thead>
                         <tr>
-                            <td class="wk-td-label"><?= htmlspecialchars($row['label']) ?></td>
-                            <td><?= $row['assigned'] ?> hrs</td>
-                            <td><?= $row['completed'] ?> hrs</td>
-                            <td>
-                                <div class="wk-row-progress">
-                                    <div class="wk-progress-track"><div class="wk-progress-fill bg-purple" style="width: <?= $pct ?>%;"></div></div>
-                                    <span><?= $pct ?>%</span>
-                                </div>
-                            </td>
+                            <th>Course</th>
+                            <th>Role</th>
+                            <th>When</th>
+                            <th class="num">Per week</th>
+                            <th class="num">So far</th>
+                            <th class="num">Semester</th>
+                            <th>Latest rating</th>
                         </tr>
-                    <?php endforeach; ?>
-                </tbody>
-            </table>
+                    </thead>
+                    <tbody>
+                        <?php foreach ($ov['courses'] as $c): ?>
+                            <tr>
+                                <td>
+                                    <div class="lec-identity">
+                                        <?= ViewHelpers::codeBadge($c['code'], 'course', $c['name']) ?>
+                                        <span class="lec-name"><?= htmlspecialchars($c['name']) ?></span>
+                                    </div>
+                                </td>
+                                <td><?= htmlspecialchars($c['role']) ?></td>
+                                <td class="wk-muted"><?= htmlspecialchars($c['schedule']) ?></td>
+                                <td class="num"><?= $fmtH($c['weekly']) ?> h</td>
+                                <td class="num">
+                                    <?= $fmtH($c['done']) ?> h
+                                    <?php if ($c['missed']): ?>
+                                        <span class="wk-muted" title="Sessions that fell on your leave days">(−<?= $fmtH($c['missed']) ?>)</span>
+                                    <?php endif; ?>
+                                </td>
+                                <td class="num wk-muted"><?= $fmtH($c['planned']) ?> h</td>
+                                <td>
+                                    <?php if ($c['latest']): ?>
+                                        <span class="eval-score-pill score-<?= $scoreBand($c['latest']['rating']) ?>"><?= $c['latest']['rating'] ?> / 5</span>
+                                        <span class="wk-muted"><?= htmlspecialchars($c['latest']['week']) ?></span>
+                                    <?php else: ?>
+                                        <span class="wk-muted">Not rated yet</span>
+                                    <?php endif; ?>
+                                </td>
+                            </tr>
+                        <?php endforeach; ?>
+                    </tbody>
+                    <tfoot>
+                        <tr>
+                            <td colspan="3">Total</td>
+                            <td class="num"><?= $fmtH($ov['weekly']) ?> h</td>
+                            <td class="num"><?= $fmtH($ov['done']) ?> h</td>
+                            <td class="num"><?= $fmtH($ov['planned']) ?> h</td>
+                            <td></td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+        </div>
+
+        <div class="wk-overview-pair">
+            <!-- Own leave this semester (leave_requests) -->
+            <div class="wk-table-card">
+                <div class="wk-table-header">
+                    <p>Your leave</p>
+                    <a href="/leave" class="link-action">Manage leave</a>
+                </div>
+                <?php if ($ov['leave']): ?>
+                    <div class="dir-scroll">
+                        <table class="dir-table">
+                            <thead><tr><th>Dates</th><th>Hours</th><th>Covered by</th><th></th></tr></thead>
+                            <tbody>
+                                <?php foreach ($ov['leave'] as $l): ?>
+                                    <tr>
+                                        <td>
+                                            <?= htmlspecialchars($fmtRange($l['from'], $l['to'])) ?>
+                                            <span class="wk-muted"><?= htmlspecialchars($l['type']) ?> · <?= $plural($l['days'], 'day') ?></span>
+                                        </td>
+                                        <td class="wk-muted"><?= htmlspecialchars($l['hours']) ?></td>
+                                        <td>
+                                            <div class="tag-row">
+                                                <?php foreach ($l['covers'] as $code): ?>
+                                                    <?= ViewHelpers::codeBadge($code, 'staff') ?>
+                                                <?php endforeach; ?>
+                                            </div>
+                                        </td>
+                                        <td class="num"><span class="wk-state <?= $l['upcoming'] ? 'is-upcoming' : '' ?>"><?= $l['upcoming'] ? 'Upcoming' : 'Taken' ?></span></td>
+                                    </tr>
+                                <?php endforeach; ?>
+                            </tbody>
+                        </table>
+                    </div>
+                <?php else: ?>
+                    <p class="dir-empty">No leave this semester.</p>
+                <?php endif; ?>
+            </div>
+
+            <!-- Days covering for others (leave_days.cover_code) -->
+            <div class="wk-table-card">
+                <div class="wk-table-header">
+                    <p>Covering for colleagues</p>
+                    <span class="wk-table-header-hint">Named as cover on their leave</span>
+                </div>
+                <?php if ($ov['covering']): ?>
+                    <div class="dir-scroll">
+                        <table class="dir-table">
+                            <thead><tr><th>Date</th><th>For</th><th>Hours</th><th></th></tr></thead>
+                            <tbody>
+                                <?php foreach ($ov['covering'] as $cv): ?>
+                                    <tr>
+                                        <td><?= htmlspecialchars($fmtDate($cv['date'])) ?></td>
+                                        <td>
+                                            <div class="lec-identity">
+                                                <?= ViewHelpers::codeBadge($cv['for_code'], 'staff', $cv['for_name']) ?>
+                                                <span class="lec-name"><?= htmlspecialchars($cv['for_name']) ?></span>
+                                            </div>
+                                        </td>
+                                        <td class="wk-muted"><?= htmlspecialchars($cv['hours']) ?></td>
+                                        <td class="num"><span class="wk-state <?= $cv['upcoming'] ? 'is-upcoming' : '' ?>"><?= $cv['upcoming'] ? 'Upcoming' : 'Done' ?></span></td>
+                                    </tr>
+                                <?php endforeach; ?>
+                            </tbody>
+                        </table>
+                    </div>
+                <?php else: ?>
+                    <p class="dir-empty">Nobody has named you as their cover this semester.</p>
+                <?php endif; ?>
             </div>
         </div>
     </div>
@@ -575,9 +484,8 @@ $coverRequests = [
                                 </td>
                                 <td>
                                     <?php if ($isEval && !empty($h['rating'])): ?>
-                                        <span class="rating-badge rating-badge-active">
-                                            <i class="fa-solid fa-star"></i> <?= (int)round((float)$h['rating']) ?> / 5
-                                        </span>
+                                        <?php $r = (int)round((float)$h['rating']); ?>
+                                        <span class="eval-score-pill score-<?= $scoreBand($r) ?>"><?= $r ?> / 5</span>
                                     <?php else: ?>
                                         <span style="color: #94a3b8; font-weight: 500;">—</span>
                                     <?php endif; ?>

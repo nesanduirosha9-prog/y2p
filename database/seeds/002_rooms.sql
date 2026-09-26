@@ -6,10 +6,10 @@
 INSERT INTO rooms (code, type, capacity) VALUES
     ('LAB-A201', 'lab',           30),
     ('LT-301',   'lecture_hall', 120),
-    ('ROOM-B105','tutorial_room', 40),
+    ('ROOM-B105','lecture_hall',  40),
     ('LT-401',   'lecture_hall', 120),
     ('LAB-C301', 'lab',           30),
-    ('ROOM-D201','tutorial_room', 40),
+    ('ROOM-D201','lecture_hall',  40),
     ('LT-302',   'lecture_hall', 120),
     ('LT-201',   'lecture_hall', 100),
     ('LAB-B101', 'lab',           30)

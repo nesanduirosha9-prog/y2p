@@ -43,18 +43,6 @@ document.addEventListener('DOMContentLoaded', function () {
     const tspBody = document.getElementById('tspBody');
     const tspFooter = document.getElementById('tspFooter');
 
-    // Schedule Modal (for multi-slot selection)
-    const scheduleModal = document.getElementById('scheduleModal');
-    const closeScheduleModal = document.getElementById('closeScheduleModal');
-    const modalBackBtn = document.getElementById('modalBackBtn');
-    const addToTimetableBtn = document.getElementById('addToTimetableBtn');
-    const selectedSlotsRange = document.getElementById('selectedSlotsRange');
-    const selectedSlotsTotal = document.getElementById('selectedSlotsTotal');
-    const courseModule = document.getElementById('courseModule');
-    const lecturerHint = document.getElementById('lecturerHint');
-    const venueInput = document.getElementById('venueInput');
-    const sessionTypeToggle = document.getElementById('sessionTypeToggle');
-
     // Toast
     const ttToast = document.getElementById('ttToast');
     const toastMsg = document.getElementById('toastMsg');
@@ -158,7 +146,7 @@ document.addEventListener('DOMContentLoaded', function () {
         return `${r.code} (${type}${r.capacity ? ', cap: ' + r.capacity : ''})`;
     }
 
-    // Toolbar filters + schedule modal. Panel forms are enhanced in openPanel().
+    // Toolbar filters. Panel forms are enhanced in openPanel().
     SearchableSelect.enhance(document);
 
     function setDraftStatus() {
@@ -396,14 +384,12 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     // ------------------------------------------------------------------
-    // Empty Cell: Quick Schedule via Side Panel
+    // Schedule Session — one side-panel form for both ways in: clicking an
+    // empty cell (starts as one hour) and "Schedule Course" → select slots →
+    // Confirm (starts as the selected hours). Duration stays editable.
     // ------------------------------------------------------------------
-    function openEmptySlotSchedule(cell) {
-        if (isArchive || selecting) return;
-
-        const dayKey = cell.dataset.dayKey;
-        const hour = parseInt(cell.dataset.hour, 10);
-        const dayName = cell.dataset.day || DAY_LABELS[dayKey];
+    function openScheduleForm(dayKey, hour, duration) {
+        const dayName = DAY_LABELS[dayKey];
 
         let courseOptions = '';
         Object.keys(coursesMap).forEach(code => {
@@ -416,12 +402,17 @@ document.addEventListener('DOMContentLoaded', function () {
             roomOptions += `<option value="${esc(r.code)}">${esc(roomLabel(r))}</option>`;
         });
 
+        let durationOptions = '';
+        [...new Set([1, 2, 3, duration])].sort((x, y) => x - y).forEach(dur => {
+            durationOptions += `<option value="${dur}" ${dur === duration ? 'selected' : ''}>${dur} ${dur === 1 ? 'hour' : 'hours'}</option>`;
+        });
+
         const body = `
             <div class="selected-slots-card" style="margin-bottom: 4px;">
                 <div class="selected-slots-icon"><i class="fa-regular fa-clock"></i></div>
                 <div>
-                    <p class="field-label">Target Time</p>
-                    <p class="selected-slots-range">${dayName}, ${hourLabel(hour)}</p>
+                    <p class="field-label">Time</p>
+                    <p class="selected-slots-range" id="newSlotRange">${dayName}, ${timeRange(hour, duration)}</p>
                 </div>
             </div>
             <div>
@@ -430,6 +421,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     <option value="">Select a course module...</option>
                     ${courseOptions}
                 </select>
+                <p class="field-hint" id="newLecturerHint">&nbsp;</p>
             </div>
             <div>
                 <p class="tsp-field-label">Session Type</p>
@@ -449,10 +441,7 @@ document.addEventListener('DOMContentLoaded', function () {
             </div>
             <div>
                 <p class="tsp-field-label">Duration</p>
-                <select class="tsp-select" id="newDuration">
-                    <option value="1">1 hour</option>
-                    <option value="2">2 hours</option>
-                </select>
+                <select class="tsp-select" id="newDuration">${durationOptions}</select>
             </div>
         `;
 
@@ -460,17 +449,28 @@ document.addEventListener('DOMContentLoaded', function () {
             <div class="btn-row">
                 <button type="button" class="btn-outline" id="cancelNewBtn">Cancel</button>
                 <button type="button" class="btn-primary-sm" id="saveNewBtn">
-                    <i class="fa-solid fa-plus"></i> Save
+                    <i class="fa-solid fa-plus"></i> Add to Timetable
                 </button>
             </div>
         `;
 
-        openPanel('Schedule Session', `${dayName} at ${hourLabel(hour)}`, body, footer);
+        openPanel('Schedule Session', `Year ${year} ${dept.toUpperCase()} · Sem ${sem}`, body, footer);
+
+        const courseSelect = document.getElementById('newCourseCode');
+        const durationSelect = document.getElementById('newDuration');
+        courseSelect.addEventListener('change', () => {
+            const c = coursesMap[courseSelect.value];
+            document.getElementById('newLecturerHint').textContent = c && c.lecturer ? 'Lecturer: ' + c.lecturer : ' ';
+        });
+        durationSelect.addEventListener('change', () => {
+            document.getElementById('newSlotRange').textContent =
+                `${dayName}, ${timeRange(hour, parseInt(durationSelect.value, 10))}`;
+        });
 
         document.getElementById('cancelNewBtn').addEventListener('click', closePanel);
 
         document.getElementById('saveNewBtn').addEventListener('click', () => {
-            const code = document.getElementById('newCourseCode').value;
+            const code = courseSelect.value;
             const venue = document.getElementById('newVenue').value;
             if (!code || !venue) {
                 alert('Please select a course module and a venue.');
@@ -478,11 +478,16 @@ document.addEventListener('DOMContentLoaded', function () {
             }
             const payload = sessionPayload(
                 code, venue, dayKey, hour,
-                parseInt(document.getElementById('newDuration').value, 10),
+                parseInt(durationSelect.value, 10),
                 document.getElementById('newSessionType').value
             );
             saveSession('POST', '/timetable/sessions', payload, `Added ${code} to timetable.`);
         });
+    }
+
+    function openEmptySlotSchedule(cell) {
+        if (isArchive || selecting) return;
+        openScheduleForm(cell.dataset.dayKey, parseInt(cell.dataset.hour, 10), 1);
     }
 
     // ------------------------------------------------------------------
@@ -592,61 +597,6 @@ document.addEventListener('DOMContentLoaded', function () {
     if (confirmSelectionBtn) {
         confirmSelectionBtn.addEventListener('click', function () {
             if (!selectedCells.length) return;
-            const first = selectedCells[0];
-            const hoursArr = selectedCells.map(function (c) { return c.hour; });
-            const minHour = Math.min.apply(null, hoursArr);
-            const maxHour = Math.max.apply(null, hoursArr);
-            const duration = maxHour - minHour + 1;
-
-            selectedSlotsRange.textContent = DAY_SHORT[first.dayKey] + ' ' + hourLabel(minHour) + '–' + hourLabel(maxHour + 1);
-            selectedSlotsTotal.textContent = duration + (duration === 1 ? ' hour total' : ' hours total');
-
-            courseModule.value = '';
-            lecturerHint.innerHTML = '&nbsp;';
-            venueInput.value = '';
-            SearchableSelect.refresh(courseModule);
-            SearchableSelect.refresh(venueInput);
-            sessionTypeToggle.querySelectorAll('.type-btn').forEach(function (b, i) {
-                b.classList.toggle('active', i === 0);
-            });
-
-            scheduleModal.hidden = false;
-        });
-    }
-
-    function hideScheduleModal() {
-        scheduleModal.hidden = true;
-    }
-    if (closeScheduleModal) closeScheduleModal.addEventListener('click', hideScheduleModal);
-    if (modalBackBtn) modalBackBtn.addEventListener('click', hideScheduleModal);
-
-    if (courseModule) {
-        courseModule.addEventListener('change', function () {
-            const opt = courseModule.options[courseModule.selectedIndex];
-            const lecturer = opt ? opt.dataset.lecturer : '';
-            lecturerHint.textContent = lecturer ? ('Lecturer: ' + lecturer) : '';
-            if (!lecturer) lecturerHint.innerHTML = '&nbsp;';
-        });
-    }
-
-    if (sessionTypeToggle) {
-        sessionTypeToggle.addEventListener('click', function (e) {
-            const btn = e.target.closest('.type-btn');
-            if (!btn) return;
-            sessionTypeToggle.querySelectorAll('.type-btn').forEach(function (b) { b.classList.remove('active'); });
-            btn.classList.add('active');
-        });
-    }
-
-    if (addToTimetableBtn) {
-        addToTimetableBtn.addEventListener('click', function () {
-            const code = courseModule.value;
-            const venue = venueInput.value;
-            if (!code || !venue) {
-                alert('Please select a course module and a venue.');
-                return;
-            }
-
             const hoursArr = selectedCells.map(function (c) { return c.hour; });
             const minHour = Math.min.apply(null, hoursArr);
             const maxHour = Math.max.apply(null, hoursArr);
@@ -654,10 +604,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 alert('Please select consecutive time slots.');
                 return;
             }
-
-            const type = sessionTypeToggle.querySelector('.type-btn.active').dataset.type;
-            const payload = sessionPayload(code, venue, selectedCells[0].dayKey, minHour, selectedCells.length, type);
-            saveSession('POST', '/timetable/sessions', payload, `Added ${code} to timetable.`);
+            openScheduleForm(selectedCells[0].dayKey, minHour, selectedCells.length);
         });
     }
 
