@@ -254,6 +254,62 @@ body, html {
     background-color: rgba(0, 212, 146, 0.7);
 }
 
+/* Light variant — the copy above the form on tablet/phone. Same states,
+   recoloured for the pale background: grey pending, navy current (with a
+   soft halo), green done. */
+.progress-tracker--light .step::before,
+.progress-tracker--light .step::after {
+    top: 12px; /* vertical centre of the 26px circle */
+    height: 2px;
+    width: calc(50% - 19px); /* stops 6px short of each circle */
+    background-color: #dde3ee;
+}
+
+.progress-tracker--light .step-circle {
+    width: 26px;
+    height: 26px;
+    font-size: 11px;
+    color: #9ca3af;
+    background-color: #ffffff;
+    border: 2px solid #dde3ee;
+}
+
+.progress-tracker--light .step-check {
+    font-size: 11px;
+}
+
+.progress-tracker--light .step-text {
+    margin-top: 6px;
+    color: #9ca3af;
+}
+
+.progress-tracker--light .step.active .step-circle {
+    color: #ffffff;
+    background-color: #1a3a6b;
+    border-color: #1a3a6b;
+    box-shadow: 0 0 0 4px rgba(26, 58, 107, 0.12);
+}
+
+.progress-tracker--light .step.active .step-text {
+    color: var(--color-navy);
+    font-weight: 600;
+}
+
+.progress-tracker--light .step.completed .step-circle {
+    color: #ffffff;
+    background-color: var(--color-success);
+    border-color: var(--color-success);
+}
+
+.progress-tracker--light .step.completed .step-text {
+    color: var(--color-success-dark);
+}
+
+.progress-tracker--light .step.completed::after,
+.progress-tracker--light .step.completed + .step::before {
+    background-color: var(--color-success);
+}
+
 /* ==============================
    Right form panel
    ============================== */
@@ -327,6 +383,23 @@ body, html {
     width: 100%;
     max-width: 400px;
     margin: auto;
+}
+
+/* Wizard pages (signup / forgot password): the mobile stepper and the
+   step blocks are centred together as one column. */
+.auth-flow {
+    width: 100%;
+    max-width: 400px;
+    margin: auto;
+}
+
+.auth-flow .login-main {
+    margin: 0;
+}
+
+.mobile-stepper {
+    display: none;
+    margin-bottom: 28px;
 }
 
 .step-badge {
@@ -609,6 +682,15 @@ input:focus {
 
     .branding--compact {
         display: flex;
+    }
+
+    /* The stepper replaces the "Step X of 3" pill, which would repeat it. */
+    .mobile-stepper {
+        display: block;
+    }
+
+    .auth-flow .step-badge {
+        display: none;
     }
 }
 

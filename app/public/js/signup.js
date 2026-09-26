@@ -25,10 +25,9 @@ document.addEventListener('DOMContentLoaded', function() {
     const step2Content = document.getElementById('step-2-content');
     const step3Content = document.getElementById('step-3-content');
 
-    // 2. Grab the Progress Indicators (The 1-2-3 circles on the left)
-    const step1Indicator = document.getElementById('step-1-indicator');
-    const step2Indicator = document.getElementById('step-2-indicator');
-    const step3Indicator = document.getElementById('step-3-indicator');
+    // 2. Grab the Progress Trackers — the dark one in the brand panel and the
+    //    light one above the form on tablet/phone (components/auth_stepper.php)
+    const trackers = document.querySelectorAll('.progress-tracker');
 
     // 3. Grab the Forms (So we can stop them from refreshing the page)
     const emailForm = document.getElementById('emailForm');
@@ -60,26 +59,15 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // --- Helper Function to update the Left Panel Progress ---
+    // --- Helper Function to update every progress tracker ---
+    // Steps before the current one are completed, the current one is active.
     function updateProgressUI(currentStep) {
-        // First, reset all steps to their default inactive state
-        step1Indicator.className = 'step';
-        step2Indicator.className = 'step';
-        step3Indicator.className = 'step';
-
-        // Now, apply the correct classes based on what step we are on
-        if (currentStep === 1) {
-            step1Indicator.classList.add('active');
-        } 
-        else if (currentStep === 2) {
-            step1Indicator.classList.add('completed');
-            step2Indicator.classList.add('active');
-        } 
-        else if (currentStep === 3) {
-            step1Indicator.classList.add('completed');
-            step2Indicator.classList.add('completed');
-            step3Indicator.classList.add('active');
-        }
+        trackers.forEach(tracker => {
+            tracker.querySelectorAll('.step').forEach((step, index) => {
+                step.classList.toggle('completed', index + 1 < currentStep);
+                step.classList.toggle('active', index + 1 === currentStep);
+            });
+        });
     }
 
     // --- Step 1 to Step 2 (Send OTP) ---

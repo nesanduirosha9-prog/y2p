@@ -27,9 +27,8 @@ document.addEventListener('DOMContentLoaded', function() {
     const step2Content = document.getElementById('step-2-content');
     const step3Content = document.getElementById('step-3-content');
 
-    const step1Indicator = document.getElementById('step-1-indicator');
-    const step2Indicator = document.getElementById('step-2-indicator');
-    const step3Indicator = document.getElementById('step-3-indicator');
+    // Dark tracker (brand panel) + light tracker (tablet/phone) — components/auth_stepper.php
+    const trackers = document.querySelectorAll('.progress-tracker');
 
     const emailForm = document.getElementById('emailForm');
     const otpForm = document.getElementById('otpForm');
@@ -39,23 +38,14 @@ document.addEventListener('DOMContentLoaded', function() {
     const btnBackToStep2 = document.getElementById('btn-back-to-step2');
 
     // --- Timeline UI Updater ---
+    // Steps before the current one are completed (green), the current one is active.
     function updateProgressUI(currentStep) {
-        step1Indicator.className = 'step';
-        step2Indicator.className = 'step';
-        step3Indicator.className = 'step';
-
-        if (currentStep === 1) {
-            step1Indicator.classList.add('active');
-        } 
-        else if (currentStep === 2) {
-            step1Indicator.classList.add('completed'); // Adds green styling
-            step2Indicator.classList.add('active');
-        } 
-        else if (currentStep === 3) {
-            step1Indicator.classList.add('completed');
-            step2Indicator.classList.add('completed');
-            step3Indicator.classList.add('active');
-        }
+        trackers.forEach(tracker => {
+            tracker.querySelectorAll('.step').forEach((step, index) => {
+                step.classList.toggle('completed', index + 1 < currentStep);
+                step.classList.toggle('active', index + 1 === currentStep);
+            });
+        });
     }
 
     // --- STEP 1: Real-time Email Validation ---
