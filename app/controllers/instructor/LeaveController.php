@@ -206,6 +206,9 @@ class LeaveController extends Controller
             if ($date < $today) {
                 return $fail('Leave cannot be requested for a past date.');
             }
+            if ((int)$parsed->format('N') >= 6) {
+                return $fail('Leave can only be taken on weekdays.');
+            }
             if (isset($days[$date])) {
                 return $fail('The same date is listed twice.');
             }

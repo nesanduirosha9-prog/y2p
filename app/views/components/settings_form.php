@@ -9,6 +9,7 @@
 //   $isInCharge  — bool, optional flag for Department In-Charge role
 //   $roleHolders — array, optional list of role holders for In-Charge handover tab
 
+use app\core\StaffEmail;
 use app\core\ViewHelpers;
 
 $isInCharge = $isInCharge ?? (($_SESSION['position'] ?? '') === 'in_charge');
@@ -175,9 +176,9 @@ $initials = ViewHelpers::currentAvatarCode();
         ?>
         <?php
         // The Timetable Officer is its own account, not a seat handed between
-        // staff: when the officer changes, the account's details change, so
-        // that row has no Change button.
-        $positionLabels = ['coordinator' => 'Coordinator', 'in_charge' => 'In-Charge'];
+        // staff: its Change keeps the account (and its history) and only
+        // moves the login to the new officer's email.
+        $positionLabels = ['coordinator' => 'Coordinator', 'in_charge' => 'In-Charge', 'timetable_officer' => 'Timetable Officer'];
         ?>
         <div class="settings-panel" id="settings-panel-handover" role="tabpanel" aria-labelledby="tab-handover" hidden>
           <div class="ho-layout" id="hoLayout">
@@ -273,7 +274,14 @@ $initials = ViewHelpers::currentAvatarCode();
                         <div class="ho-person" id="hoCurrent"></div>
                     </div>
 
-                    <div class="ho-field">
+                    <!-- Timetable Officer only: the account stays, the login moves -->
+                    <div class="ho-field" id="hoEmailRow" hidden>
+                        <label class="ho-label" for="hoNewEmail">New officer's email</label>
+                        <input type="email" id="hoNewEmail" placeholder="name@<?= htmlspecialchars(StaffEmail::domain()) ?>" autocomplete="off">
+                        <p class="ho-hint">The account, its timetable and its history stay. The new officer sets a password with <b>Forgot password</b> and fills in their profile from Settings. The current officer is signed out.</p>
+                    </div>
+
+                    <div class="ho-field" id="hoPickRow">
                         <label class="ho-label" for="hoSearch">New holder</label>
                         <div class="search-box handover-search">
                             <i class="fa-solid fa-magnifying-glass"></i>

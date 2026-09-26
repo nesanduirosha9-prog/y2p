@@ -111,7 +111,7 @@ class StaffModel
      * Self-service profile update: a signed-in member may only change these
      * columns about themselves (not role/rank/position/department/
      * designation/email/etc — those are assigned by a Coordinator/In-Charge
-     * via approve()/reassignPosition()/reassignTimetableOfficer()). The
+     * via approve()/reassignPosition()/handOverTimetableOfficer()). The
      * array_intersect_key is the actual enforcement, independent of
      * whatever the calling controller trusts from the request body.
      */
@@ -297,33 +297,36 @@ class StaffModel
     }
 
     /**
-     * Hand the `timetable_officer` role itself to another staff member.
-     * The outgoing officer needs a new role/rank since `role` is the
-     * top-level ISA discriminator (not additive like `position`) —
-     * `$fromNewRank` decides whether they fall back to junior or senior
-     * academic staff.
+     * Hand the Timetable Officer account to a new person. The row — and its
+     * code, so every session, notification and record it owns — stays; only
+     * the login changes. The password becomes unusable, so the new officer
+     * sets their own with Forgot password, and the previous officer's
+     * personal details are cleared for the new one to fill in from Settings.
+     * Changing the email also signs the previous officer out (see
+     * Controller::sessionStillValid()).
+     *
+     * False if $code is not the officer's account or the email was taken
+     * in the meantime (UNIQUE).
      */
-    public function reassignTimetableOfficer(string $fromCode, string $toCode, string $fromNewRank): bool
+    public function handOverTimetableOfficer(string $code, string $newEmail): bool
     {
         $pdo = Database::getConnection();
-        $pdo->beginTransaction();
+        $stmt = $pdo->prepare(
+            "UPDATE staff
+                SET email = :email, password = :password, name = 'Timetable Officer',
+                    phone = NULL, office = NULL, extension = NULL, bio = NULL
+              WHERE code = :code AND role = 'timetable_officer'"
+        );
         try {
-            $demote = $pdo->prepare(
-                "UPDATE staff SET role = 'academic_staff', academic_rank = :rank WHERE code = :code"
-            );
-            $demote->execute(['rank' => $fromNewRank, 'code' => $fromCode]);
-
-            $promote = $pdo->prepare(
-                "UPDATE staff SET role = 'timetable_officer', academic_rank = NULL, position = NULL WHERE code = :code"
-            );
-            $promote->execute(['code' => $toCode]);
-
-            $pdo->commit();
-            return true;
-        } catch (\Throwable $e) {
-            $pdo->rollBack();
+            $stmt->execute([
+                'email'    => $newEmail,
+                'password' => password_hash(bin2hex(random_bytes(32)), PASSWORD_DEFAULT),
+                'code'     => $code,
+            ]);
+        } catch (\PDOException $e) {
             return false;
         }
+        return $stmt->rowCount() === 1;
     }
 
     /** A short, unique badge code derived from an email's local part. */

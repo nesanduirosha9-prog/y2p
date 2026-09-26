@@ -32,11 +32,16 @@ window.leaveCells = (function () {
     // Senior staff are lecturers; everyone else wears the staff badge.
     const badge = (code, rank, name) => codeBadge(code, rank === 'senior' ? 'lecturer' : 'staff', { title: name });
 
-    /** Type tag, with the hours as the note under it. */
+    /** Type tag. */
     function type(r) {
-        const hours = r.time_from ? `${clock(r.time_from)} – ${clock(r.time_to)}` : 'Full day';
-        return `<span class="leave-type">${esc(TYPE[r.leave_type] || r.leave_type)}</span>
-                <span class="leave-note">${esc(hours)}</span>`;
+        return `<span class="leave-type">${esc(TYPE[r.leave_type] || r.leave_type)}</span>`;
+    }
+
+    /** "9:00 AM – 12:00 PM", or "Full day". */
+    function hours(r) {
+        return r.time_from
+            ? `<span class="leave-date">${esc(`${clock(r.time_from)} – ${clock(r.time_to)}`)}</span>`
+            : '<span class="leave-muted">Full day</span>';
     }
 
     /** "Thu 8 Oct – Sat 10 Oct 2026", with the day count (or "On leave today") under it. */
@@ -59,19 +64,24 @@ window.leaveCells = (function () {
         return `<span class="leave-date">${esc(range)}</span><span class="${cls}">${esc(note)}</span>`;
     }
 
-    /** One chip per day: the date, then the cover's code badge (name on hover). */
+    /** One line per leave day, lined up with covers(); today's line is highlighted.
+     *  A record without per-day rows falls back to the date range. */
+    function days(r, today) {
+        if (!r.days.length) return dates(r, today);
+        return `<ul class="leave-stack">${r.days.map(d => `
+            <li class="leave-date${d.date === today ? ' leave-note-now' : ''}">${esc(`${shortDate(d.date)} ${d.date.slice(0, 4)}`)}</li>`).join('')}</ul>`;
+    }
+
+    /** One cover badge per leave day (name on hover), in the same order as days(). */
     function covers(r) {
         if (!r.days.length) return '<span class="leave-none">None</span>';
-        return `<div class="leave-covers">${r.days.map(d => `
-            <span class="leave-cover">
-                <span class="leave-cover-date">${esc(dayMonth(d.date))}</span>
-                ${badge(d.cover_code, r.requester_rank, `${shortDate(d.date)}: ${d.cover_name}`)}
-            </span>`).join('')}</div>`;
+        return `<ul class="leave-stack">${r.days.map(d => `
+            <li>${badge(d.cover_code, r.requester_rank, `${shortDate(d.date)}: ${d.cover_name}`)}</li>`).join('')}</ul>`;
     }
 
     function reason(r) {
         return r.reason ? esc(r.reason) : '<span class="leave-none">Not given</span>';
     }
 
-    return { esc, badge, type, dates, covers, reason };
+    return { esc, badge, type, hours, days, dates, covers, reason };
 })();

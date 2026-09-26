@@ -3,6 +3,7 @@
 namespace app\core;
 
 use app\core\Application;
+use app\models\StaffModel;
 
 // Controller: base controller with view helpers used by concrete controllers.
 // - `render` wraps a view inside the main layout
@@ -98,11 +99,27 @@ class Controller
      */
     protected function requireLogin(): ?string
     {
-        if (!isset($_SESSION['staff_code'])) {
+        if (!isset($_SESSION['staff_code']) || !$this->sessionStillValid()) {
             $this->redirect('/login');
             return '';
         }
         return null;
+    }
+
+    /**
+     * The session belongs to whoever signed in with the account's email at
+     * the time. If that email has since changed — the Timetable Officer
+     * account handed to a new person — the previous holder's session ends
+     * here, even though the account's code is the same.
+     */
+    private function sessionStillValid(): bool
+    {
+        $me = (new StaffModel())->findByCode($_SESSION['staff_code']);
+        if ($me && $me['email'] === ($_SESSION['user_email'] ?? null)) {
+            return true;
+        }
+        session_unset();
+        return false;
     }
 
     /**
@@ -155,7 +172,7 @@ class Controller
      */
     protected function guardJson(Response $response, string $key, string ...$allowed): bool
     {
-        if (!isset($_SESSION['staff_code'])) {
+        if (!isset($_SESSION['staff_code']) || !$this->sessionStillValid()) {
             $response->json(['success' => false, 'message' => 'Not authenticated'], 401);
             return false;
         }

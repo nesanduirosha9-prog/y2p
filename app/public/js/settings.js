@@ -21,6 +21,8 @@ document.addEventListener('DOMContentLoaded', () => {
 // server to send them a code (POST /settings/handover/select); step 2 checks
 // that code (POST /settings/handover/verify) and reloads onto this tab. The
 // server re-checks everything, so the panel only ever offers, never decides.
+// The Timetable Officer is one account that stays, so its step 1 asks for the
+// new officer's email instead of picking someone from the list.
 function initHandoverPanel() {
     const tab = document.getElementById('settings-panel-handover');
     const panel = document.getElementById('hoPanel');
@@ -36,7 +38,7 @@ function initHandoverPanel() {
 
     const next = $('hoNext');
     const back = $('hoBack');
-    let state = null;        // { position, label, from, candidates, toCode, step }
+    let state = null;        // { position, label, from, candidates, toCode, step, officer }
 
     function showError(id, msg) {
         $(id).textContent = msg;
@@ -47,9 +49,13 @@ function initHandoverPanel() {
         return state.candidates.find(c => c.code === state.toCode) || null;
     }
 
+    function newEmail() {
+        return $('hoNewEmail').value.trim().toLowerCase();
+    }
+
     function updateNext() {
         if (state.step === 'pick') {
-            next.disabled = !picked();
+            next.disabled = state.officer ? !$('hoNewEmail').checkValidity() || !newEmail() : !picked();
         } else {
             next.disabled = false;
         }
@@ -80,11 +86,15 @@ function initHandoverPanel() {
     function open(btn) {
         const d = btn.dataset;
         const from = d.code ? { code: d.code, name: d.name, email: d.email, kind: d.kind } : null;
-        state = { position: d.handover, label: d.label, from: from, candidates: [], toCode: '', step: 'pick' };
+        const officer = d.handover === 'timetable_officer';
+        state = { position: d.handover, label: d.label, from: from, candidates: [], toCode: '', step: 'pick', officer: officer };
 
         $('hoPanelTitle').textContent = (from ? 'Change ' : 'Add ') + d.label;
         $('hoCurrentRow').hidden = !from;
         $('hoCurrent').innerHTML = from ? personHtml(from) : '';
+        $('hoEmailRow').hidden = !officer;
+        $('hoPickRow').hidden = officer;
+        $('hoNewEmail').value = '';
         $('hoSearch').value = '';
         $('hoOtp').value = '';
         showError('hoPickError', '');
@@ -95,6 +105,11 @@ function initHandoverPanel() {
 
         panel.hidden = false;
         document.body.classList.add('ho-panel-open');
+
+        if (officer) {
+            $('hoNewEmail').focus();
+            return;
+        }
 
         const url = '/settings/handover/candidates/' + encodeURIComponent(d.handover) +
             '?exclude=' + encodeURIComponent(from ? from.code : '');
@@ -116,8 +131,11 @@ function initHandoverPanel() {
     }
 
     function sendCode() {
-        const to = picked();
-        if (!to) return;
+        // The officer's account keeps its code; only the email is new.
+        const to = state.officer
+            ? { code: state.from.code, name: 'New Timetable Officer', email: newEmail(), kind: 'staff' }
+            : picked();
+        if (!to || (state.officer && !to.email)) return;
         next.disabled = true;
         next.textContent = 'Sending…';
         showError('hoPickError', '');
@@ -128,7 +146,8 @@ function initHandoverPanel() {
             body: JSON.stringify({
                 position: state.position,
                 fromCode: state.from ? state.from.code : '',
-                toCode: to.code,
+                toCode: state.officer ? '' : to.code,
+                newEmail: state.officer ? to.email : '',
             }),
         })
             .then(r => r.json())
@@ -178,6 +197,10 @@ function initHandoverPanel() {
     back.addEventListener('click', () => (state && state.step === 'verify' ? showStep('pick') : close()));
     next.addEventListener('click', () => (state.step === 'pick' ? sendCode() : confirmChange()));
     $('hoSearch').addEventListener('input', renderCandidates);
+    $('hoNewEmail').addEventListener('input', updateNext);
+    $('hoNewEmail').addEventListener('keydown', e => {
+        if (e.key === 'Enter' && !next.disabled) sendCode();
+    });
     $('hoCandidates').addEventListener('change', e => {
         state.toCode = e.target.value;
         updateNext();

@@ -252,7 +252,17 @@
 
 .ho-side-panel .candidate-list { max-height: 300px; }
 
-#hoOtp {
+.ho-field[hidden] { display: none; }
+
+.ho-hint {
+    margin: 8px 0 0;
+    font-size: 12px;
+    line-height: 1.5;
+    color: #64748b;
+}
+
+#hoOtp,
+#hoNewEmail {
     width: 100%;
     height: 40px;
     border: 1px solid #dde3ee;

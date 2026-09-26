@@ -5,6 +5,7 @@ namespace app\controllers;
 use app\core\Controller;
 use app\core\Request;
 use app\core\Response;
+use app\core\StaffEmail;
 use app\models\StaffModel;
 use app\models\OtpCodeModel;
 use app\services\EmailService;
@@ -351,27 +352,15 @@ class AuthController extends Controller
         return '/timetable';
     }
 
-    private function staffEmailDomain(): string
-    {
-        return strtolower(defined('STAFF_EMAIL_DOMAIN') ? STAFF_EMAIL_DOMAIN : 'ucsc.cmb.ac.lk');
-    }
-
-    // Staff sign up with their university address; AUTH_BYPASS_EMAILS lists
-    // extra addresses (e.g. a Gmail used to demo real OTP delivery) that may too.
+    // Staff sign up with their university address — see app/core/StaffEmail.php.
     private function isAllowedSignupEmail(string $email): bool
     {
-        $email = strtolower($email);
-        if (str_ends_with($email, '@' . $this->staffEmailDomain())) {
-            return true;
-        }
-        $bypass = defined('AUTH_BYPASS_EMAILS') ? AUTH_BYPASS_EMAILS : '';
-        $allowed = array_filter(array_map(fn($e) => strtolower(trim($e)), explode(',', $bypass)));
-        return in_array($email, $allowed, true);
+        return StaffEmail::isAllowed($email);
     }
 
     private function signupDomainMessage(): string
     {
-        return 'Registration restricted: please use your official @' . $this->staffEmailDomain() . ' staff email.';
+        return 'Registration restricted: please use your official @' . StaffEmail::domain() . ' staff email.';
     }
 
     // Every action above funnels its JSON reply through here: set the
