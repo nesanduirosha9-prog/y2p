@@ -6,8 +6,9 @@ use app\core\Database;
 use app\core\Uuid;
 use PDO;
 
-// OtpCodeModel: one-time codes for the password-reset flow (AuthController::
-// sendOtp()/verifyOtp()). The other OTP flow in this codebase — role
+// OtpCodeModel: one-time codes for the password-reset and signup flows
+// (AuthController::sendOtp()/sendSignupOtp() and verifyOtpFor(); `purpose`
+// tells them apart). The other OTP flow in this codebase — role
 // handover, in_charge/AccountsController — deliberately stays on
 // $_SESSION['handover'] instead of this table; see 017_create_otp_codes.sql.
 //

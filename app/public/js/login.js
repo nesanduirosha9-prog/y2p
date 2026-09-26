@@ -1,6 +1,7 @@
 // login.js — wires up app/views/auth/login.php's single-step sign-in form.
-// 1. On submit: validate email/password aren't empty, then check the
-//    @ucsc.cmb.ac.lk domain client-side.
+// 1. On submit: validate email/password aren't empty. No domain check here —
+//    only accounts that got past signup's server-side check exist to log in
+//    to, and that check also admits config.php's AUTH_BYPASS_EMAILS.
 // 2. POST the credentials to /login as JSON (AuthController::login()).
 // 3. On success, redirect to the URL the server returns; on failure, show
 //    the error and re-enable the button.
@@ -27,14 +28,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 return; // Stop the function here
             }
 
-            // 2. Format Validation: Check if the email ends with the correct UCSC domain
-            // This is optional, but a great security/UX feature for a closed system!
-            if (!emailInput.endsWith('@ucsc.cmb.ac.lk')) {
-                alert('Access denied: Please use a valid UCSC staff email address.');
-                return; 
-            }
-
-            // 3. Send the login request to the backend
+            // 2. Send the login request to the backend
             const btnSubmit = loginForm.querySelector('button[type="submit"]');
             const originalText = btnSubmit.innerHTML;
             btnSubmit.innerHTML = 'Logging in...';

@@ -3,8 +3,8 @@
          1. Left panel  — branding + 3-step progress tracker (email/OTP/password).
          2. Right panel — three step-content blocks, only one visible at a time:
             #step-1-content (email) -> #step-2-content (OTP) -> #step-3-content (password).
-         JS: /js/signup.js switches steps and does the one real submit
-         (POST /signup) at the end of step 3. -->
+         JS: /js/signup.js switches steps and calls POST /signup/send-otp,
+         /signup/verify-otp, then /signup. -->
     <!-- ==================== MAIN PAGE LAYOUT ==================== -->
     <main class="login-layout-container">
         

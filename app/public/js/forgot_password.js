@@ -1,7 +1,8 @@
 // forgot_password.js — drives the 3-step reset wizard in
 // app/views/auth/forgot_password.php. Same shape as signup.js:
-// 1. Step 1 (email): domain check, then POST /forgot-password/send-otp;
-//    advances to step 2 only once the server confirms a code was sent.
+// 1. Step 1 (email): format check, then POST /forgot-password/send-otp;
+//    advances to step 2 only once the server confirms a code was sent. No
+//    domain check — the server only ever emails existing accounts.
 // 2. Step 2 (OTP): 6-digit boxes, paste support; submit concatenates them
 //    and POSTs /forgot-password/verify-otp; advances to step 3 only on a
 //    verified match (AuthController::verifyOtp() checks it server-side and
@@ -56,7 +57,7 @@ document.addEventListener('DOMContentLoaded', function() {
             const emailValue = this.value.trim();
             const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
             
-            if (emailRegex.test(emailValue) && emailValue.endsWith('@ucsc.cmb.ac.lk')) {
+            if (emailRegex.test(emailValue)) {
                 btnSendOtp.classList.add('active-btn'); 
             } else {
                 btnSendOtp.classList.remove('active-btn'); 
@@ -78,7 +79,7 @@ document.addEventListener('DOMContentLoaded', function() {
             event.preventDefault();
             const emailValue = emailInput.value.trim();
 
-            if (!emailValue.endsWith('@ucsc.cmb.ac.lk')) return; // Extra check
+            if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailValue)) return;
 
             const originalText = btnSendOtp.innerHTML;
             btnSendOtp.innerHTML = 'Sending...';

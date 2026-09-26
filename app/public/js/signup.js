@@ -1,12 +1,12 @@
 // signup.js — drives the 3-step signup wizard in app/views/auth/signup.php.
-// 1. Step 1 (email): client-side format + @ucsc.cmb.ac.lk domain check,
-//    then just switches to the step-2 panel and lights up the left-panel
-//    progress tracker — no request is sent yet (see gaps: the "Send OTP"
-//    step never calls the backend).
+// Same shape as forgot_password.js:
+// 1. Step 1 (email): format check, then POST /signup/send-otp; advances only
+//    once the server confirms a code was sent. Which emails may register
+//    (the staff domain, plus any AUTH_BYPASS_EMAILS) is decided server-side.
 // 2. Step 2 (OTP): 6 auto-advancing digit boxes with paste support; submit
-//    just switches to step 3 — again no server-side OTP is verified.
-// 3. Step 3 (password): live length/match validation, then the ONLY real
-//    network call in this file — POST /signup with {email, password}.
+//    POSTs /signup/verify-otp and advances only on a verified match.
+// 3. Step 3 (password): live length/match validation, then POST /signup with
+//    {email, password} — rejected unless step 2 verified this same email.
 // Wait for the HTML to fully load before running anything
 document.addEventListener('DOMContentLoaded', function() {
     
@@ -43,9 +43,8 @@ document.addEventListener('DOMContentLoaded', function() {
             
             // Regex to check if it looks like a real email (text@text.text)
             const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-            
-            // Check if it is a valid email AND ends specifically with the UCSC domain
-            if (emailRegex.test(emailValue) && emailValue.endsWith('@ucsc.cmb.ac.lk')) {
+
+            if (emailRegex.test(emailValue)) {
                 // IT'S VALID! Add the class to trigger your CSS brightness and allow clicking
                 btnSendOtp.classList.add('active-btn'); 
             } else {
@@ -78,33 +77,51 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // --- Step 1 to Step 2 (Send OTP) ---
+    function requestOtp(email) {
+        return fetch('/signup/send-otp', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email: email })
+        }).then(response => response.json());
+    }
+
     if (emailForm) {
         emailForm.addEventListener('submit', function(event) {
             event.preventDefault(); // Stop the page from reloading
 
             const emailValue = emailInput.value.trim();
 
-            // 1. Basic Format Validation using Regex
             const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-            
             if (!emailRegex.test(emailValue)) {
                 alert('Please enter a valid email address format.');
-                return; // Stop the function completely
+                return;
             }
 
-            // 2. Domain Specific Validation (Highly recommended for this project)
-            if (!emailValue.endsWith('@ucsc.cmb.ac.lk')) {
-                alert('Registration restricted: Please use your official @ucsc.cmb.ac.lk staff email.');
-                return; // Stop the function completely
-            }
+            const originalText = btnSendOtp.innerHTML;
+            btnSendOtp.innerHTML = 'Sending...';
+            btnSendOtp.disabled = true;
 
-            // 3. If it passes both checks, proceed to Step 2
-            step1Content.style.display = 'none';
-            step2Content.style.display = 'block';
-            updateProgressUI(2);
-            
-            // Automatically focus the first OTP input box!
-            document.querySelector('.otp-input').focus();
+            requestOtp(emailValue)
+                .then(data => {
+                    btnSendOtp.innerHTML = originalText;
+                    btnSendOtp.disabled = false;
+
+                    if (!data.success) {
+                        alert(data.message || 'Could not send the code. Please try again.');
+                        return;
+                    }
+
+                    step1Content.style.display = 'none';
+                    step2Content.style.display = 'block';
+                    updateProgressUI(2);
+                    document.querySelector('.otp-input').focus();
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    btnSendOtp.innerHTML = originalText;
+                    btnSendOtp.disabled = false;
+                    alert('An error occurred. Please try again.');
+                });
         });
     }
 
@@ -184,14 +201,57 @@ document.addEventListener('DOMContentLoaded', function() {
         otpForm.addEventListener('submit', function(event) {
             event.preventDefault();
 
-            // 1. Hide Step 2 right panel
-            step2Content.style.display = 'none';
-            
-            // 2. Show Step 3 right panel
-            step3Content.style.display = 'block';
-            
-            // 3. Update left panel timeline to Step 3
-            updateProgressUI(3);
+            const otpValue = Array.from(otpInputs).map(input => input.value).join('');
+            const emailValue = emailInput.value.trim();
+
+            const originalText = btnVerifyOtp.innerHTML;
+            btnVerifyOtp.innerHTML = 'Verifying...';
+            btnVerifyOtp.disabled = true;
+
+            fetch('/signup/verify-otp', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email: emailValue, otp: otpValue })
+            })
+            .then(response => response.json())
+            .then(data => {
+                btnVerifyOtp.innerHTML = originalText;
+                btnVerifyOtp.disabled = false;
+
+                if (!data.success) {
+                    alert(data.message || 'Incorrect code. Please try again.');
+                    otpInputs.forEach(input => input.value = '');
+                    otpInputs[0].focus();
+                    checkOtpValidity();
+                    return;
+                }
+
+                step2Content.style.display = 'none';
+                step3Content.style.display = 'block';
+                updateProgressUI(3);
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                btnVerifyOtp.innerHTML = originalText;
+                btnVerifyOtp.disabled = false;
+                alert('An error occurred. Please try again.');
+            });
+        });
+    }
+
+    // --- Step 2: Resend OTP ---
+    const resendLink = document.querySelector('.resend-link');
+    if (resendLink) {
+        resendLink.addEventListener('click', function(event) {
+            event.preventDefault();
+            requestOtp(emailInput.value.trim())
+                .then(data => {
+                    alert(data.success ? 'A new code has been sent.' : (data.message || 'Could not resend the code.'));
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('An error occurred. Please try again.');
+                });
         });
     }
 

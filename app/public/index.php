@@ -82,6 +82,12 @@ $router->get('/signup', function (Request $request, Response $response) {
 $router->post('/signup', function (Request $request, Response $response) {
     return (new AuthController())->signup($request, $response);
 });
+$router->post('/signup/send-otp', function (Request $request, Response $response) {
+    return (new AuthController())->sendSignupOtp($request, $response);
+});
+$router->post('/signup/verify-otp', function (Request $request, Response $response) {
+    return (new AuthController())->verifySignupOtp($request, $response);
+});
 
 $router->get('/forgot-password', function (Request $request, Response $response) {
     return (new AuthController())->forgotPasswordView();

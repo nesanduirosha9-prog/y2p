@@ -16,20 +16,29 @@ use app\services\EmailService;
 // 2. login() — POST /login. Verifies credentials, blocks `pending` accounts,
 //    regenerates the session id, then writes the session and returns a
 //    redirect URL by role.
-// 3. signup() — POST /signup. Creates a `pending` staff row (email+password
-//    only); a Coordinator assigns the role later from the Staff screen.
-// 4. sendOtp() — POST /forgot-password/send-otp. Emails a 6-digit code via
+// 3. sendSignupOtp() — POST /signup/send-otp. Emails a code to an address
+//    that's allowed to register (STAFF_EMAIL_DOMAIN or AUTH_BYPASS_EMAILS)
+//    and isn't already taken. Same rate limits as sendOtp().
+// 4. verifySignupOtp() — POST /signup/verify-otp. Marks the email verified
+//    in the session for 5 minutes.
+// 5. signup() — POST /signup. Creates a `pending` staff row (email+password
+//    only), but only for an email verifySignupOtp() just verified; a
+//    Coordinator assigns the role later from the Staff screen.
+// 6. sendOtp() — POST /forgot-password/send-otp. Emails a 6-digit code via
 //    EmailService, rate-limited per email (60s cooldown, 5/hour cap). Always
 //    returns the same generic response whether or not the email exists, so
 //    the endpoint can't be used to enumerate accounts.
-// 5. verifyOtp() — POST /forgot-password/verify-otp. Checks the code against
+// 7. verifyOtp() — POST /forgot-password/verify-otp. Checks the code against
 //    otp_codes, then marks the email verified in the session for 5 minutes.
-// 6. resetPassword() — POST /forgot-password. Overwrites the password, but
+// 8. resetPassword() — POST /forgot-password. Overwrites the password, but
 //    only if verifyOtp() marked this email verified within the last 5 min.
-// 7. logout() — destroys the session and redirects to /login.
-// 8. dashboardUrlForRole() — the role->URL mapping shared by loginView(),
+// 9. logout() — destroys the session and redirects to /login.
+// 10. dashboardUrlForRole() — the role->URL mapping shared by loginView(),
 //    signupView(), login(), and the `/` route in index.php.
-// 9. jsonResponse() — private helper every action above returns through.
+// 11. jsonResponse() — private helper every action above returns through.
+//
+// DEMO_AUTH (config.php) simulates every OTP step: nothing is emailed and any
+// 6-digit code verifies. Who may sign up is enforced in both modes.
 class AuthController extends Controller
 {
     public function __construct()
@@ -122,16 +131,29 @@ class AuthController extends Controller
             return $this->jsonResponse($response, ['success' => false, 'message' => 'Email and password are required'], 400);
         }
 
+        // 2. Re-check who may register — verifySignupOtp() in demo mode
+        //    accepts any email, so this is the gate that can't be skipped.
+        if (!$this->isAllowedSignupEmail($email)) {
+            return $this->jsonResponse($response, ['success' => false, 'message' => $this->signupDomainMessage()], 403);
+        }
+
+        // 3. Require a recent, matching verifySignupOtp() success.
+        $verified = $_SESSION['signup_verified'] ?? null;
+        if (!$verified || ($verified['email'] ?? null) !== $email || ($verified['until'] ?? 0) < time()) {
+            return $this->jsonResponse($response, ['success' => false, 'message' => 'Please verify your email again.'], 403);
+        }
+
         $staffModel = new StaffModel();
 
-        // 2. One email = one account; reject duplicates up front.
+        // 4. One email = one account; reject duplicates up front.
         if ($staffModel->findByEmail($email)) {
             return $this->jsonResponse($response, ['success' => false, 'message' => 'Email is already registered'], 409);
         }
 
-        // 3. Create a pending account — a Coordinator/In-Charge assigns the
+        // 5. Create a pending account — a Coordinator/In-Charge assigns the
         //    role via the Staff approval screen before this account can log in.
         if ($staffModel->create($email, $password)) {
+            unset($_SESSION['signup_verified']);
             return $this->jsonResponse($response, [
                 'success' => true,
                 'message' => 'Registration submitted! A coordinator will review your account before you can sign in.',
@@ -140,6 +162,53 @@ class AuthController extends Controller
         }
 
         return $this->jsonResponse($response, ['success' => false, 'message' => 'Registration failed due to a server error'], 500);
+    }
+
+    // POST /signup/send-otp — step 1 of the signup wizard. Unlike sendOtp()
+    // this says plainly when an email can't be used: signup() already reveals
+    // "already registered", so there's nothing extra to hide here.
+    public function sendSignupOtp(Request $request, Response $response)
+    {
+        $body = $request->getBody();
+        $email = trim($body['email'] ?? '');
+        if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+            return $this->jsonResponse($response, ['success' => false, 'message' => 'Enter a valid email address'], 400);
+        }
+        if (!$this->isAllowedSignupEmail($email)) {
+            return $this->jsonResponse($response, ['success' => false, 'message' => $this->signupDomainMessage()], 403);
+        }
+        if ((new StaffModel())->findByEmail($email)) {
+            return $this->jsonResponse($response, ['success' => false, 'message' => 'Email is already registered. Sign in instead.'], 409);
+        }
+
+        $sent = ['success' => true, 'message' => 'A verification code has been sent to your email.'];
+
+        if (defined('DEMO_AUTH') && DEMO_AUTH) {
+            return $this->jsonResponse($response, $sent);
+        }
+
+        $otpModel = new OtpCodeModel();
+        if ($otpModel->countRequestsSince($email, 'signup', 60) > 0) {
+            return $this->jsonResponse($response, ['success' => false, 'message' => 'Please wait a minute before requesting another code.'], 429);
+        }
+        if ($otpModel->countRequestsSince($email, 'signup', 3600) >= 5) {
+            return $this->jsonResponse($response, ['success' => false, 'message' => 'Too many requests. Please try again later.'], 429);
+        }
+
+        $otp = str_pad((string) random_int(0, 999999), 6, '0', STR_PAD_LEFT);
+        if (!EmailService::sendOtpEmail($email, $otp, 'signup')) {
+            return $this->jsonResponse($response, ['success' => false, 'message' => 'Could not send the code. Please try again.'], 500);
+        }
+        $otpModel->create($email, 'signup', $otp);
+
+        return $this->jsonResponse($response, $sent);
+    }
+
+    // POST /signup/verify-otp — step 2; on success signup() will accept this
+    // email for the next 5 minutes.
+    public function verifySignupOtp(Request $request, Response $response)
+    {
+        return $this->verifyOtpFor($request, $response, 'signup', 'signup_verified');
     }
 
     // POST /forgot-password/send-otp — step 1 of the reset wizard. Emails a
@@ -191,6 +260,14 @@ class AuthController extends Controller
     // 5 minutes so resetPassword() can trust it.
     public function verifyOtp(Request $request, Response $response)
     {
+        return $this->verifyOtpFor($request, $response, 'password_reset', 'password_reset_verified');
+    }
+
+    // Shared by verifyOtp() and verifySignupOtp(): checks {email, otp} against
+    // the latest active otp_codes row for $purpose, then sets
+    // $_SESSION[$sessionKey] = {email, until: +5 min} for the next step.
+    private function verifyOtpFor(Request $request, Response $response, string $purpose, string $sessionKey)
+    {
         $body = $request->getBody();
         $email = trim($body['email'] ?? '');
         $otp = trim($body['otp'] ?? '');
@@ -200,12 +277,12 @@ class AuthController extends Controller
         }
 
         if (defined('DEMO_AUTH') && DEMO_AUTH) {
-            $_SESSION['password_reset_verified'] = ['email' => $email, 'until' => time() + 300];
+            $_SESSION[$sessionKey] = ['email' => $email, 'until' => time() + 300];
             return $this->jsonResponse($response, ['success' => true]);
         }
 
         $otpModel = new OtpCodeModel();
-        $row = $otpModel->findLatestActive($email, 'password_reset');
+        $row = $otpModel->findLatestActive($email, $purpose);
         if (!$row) {
             return $this->jsonResponse($response, ['success' => false, 'message' => 'Invalid or expired code'], 400);
         }
@@ -215,7 +292,7 @@ class AuthController extends Controller
         }
 
         $otpModel->markConsumed($row['id']);
-        $_SESSION['password_reset_verified'] = ['email' => $email, 'until' => time() + 300];
+        $_SESSION[$sessionKey] = ['email' => $email, 'until' => time() + 300];
         return $this->jsonResponse($response, ['success' => true]);
     }
 
@@ -272,6 +349,29 @@ class AuthController extends Controller
     public function dashboardUrlForRole(string $role): string
     {
         return '/timetable';
+    }
+
+    private function staffEmailDomain(): string
+    {
+        return strtolower(defined('STAFF_EMAIL_DOMAIN') ? STAFF_EMAIL_DOMAIN : 'ucsc.cmb.ac.lk');
+    }
+
+    // Staff sign up with their university address; AUTH_BYPASS_EMAILS lists
+    // extra addresses (e.g. a Gmail used to demo real OTP delivery) that may too.
+    private function isAllowedSignupEmail(string $email): bool
+    {
+        $email = strtolower($email);
+        if (str_ends_with($email, '@' . $this->staffEmailDomain())) {
+            return true;
+        }
+        $bypass = defined('AUTH_BYPASS_EMAILS') ? AUTH_BYPASS_EMAILS : '';
+        $allowed = array_filter(array_map(fn($e) => strtolower(trim($e)), explode(',', $bypass)));
+        return in_array($email, $allowed, true);
+    }
+
+    private function signupDomainMessage(): string
+    {
+        return 'Registration restricted: please use your official @' . $this->staffEmailDomain() . ' staff email.';
     }
 
     // Every action above funnels its JSON reply through here: set the
