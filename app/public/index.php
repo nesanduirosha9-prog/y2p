@@ -217,6 +217,10 @@ $router->post('/staff/{code}/deactivate', function (Request $request, Response $
 $router->post('/staff/{code}/activate', function (Request $request, Response $response, array $params) {
     return (new StaffController())->activate($request, $response, $params);
 });
+// Only for an account with no history — see StaffController::destroy().
+$router->delete('/staff/{code}', function (Request $request, Response $response, array $params) {
+    return (new StaffController())->destroy($request, $response, $params);
+});
 
 // --- Lecture halls ---------------------------------------------------------
 // Already role-free before this refactor; timetable officer only. Full CRUD:

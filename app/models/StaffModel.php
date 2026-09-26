@@ -170,10 +170,96 @@ class StaffModel
         $stmt = $pdo->prepare($sql);
         $stmt->execute($params);
         $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        $history = $this->codesWithHistory();
         foreach ($rows as &$row) {
             $row['courses'] = !empty($row['assigned_courses']) ? explode(',', $row['assigned_courses']) : [];
+            $row['has_history'] = isset($history[$row['code']]);
         }
         return $rows;
+    }
+
+    /**
+     * Every (table, column) with a foreign key to staff.code, read from the
+     * schema rather than listed by hand, so a table added later counts as
+     * history without anyone remembering to update this file.
+     *   [['leave_requests', 'requester_code'], ['messages', 'sender_code'], ...]
+     */
+    private function staffReferences(): array
+    {
+        static $refs = null;   // the schema does not change within a request
+        if ($refs === null) {
+            $refs = Database::getConnection()->query(
+                "SELECT TABLE_NAME, COLUMN_NAME
+                 FROM information_schema.KEY_COLUMN_USAGE
+                 WHERE TABLE_SCHEMA = DATABASE()
+                   AND REFERENCED_TABLE_NAME = 'staff' AND REFERENCED_COLUMN_NAME = 'code'"
+            )->fetchAll(PDO::FETCH_NUM);
+        }
+        return $refs;
+    }
+
+    /**
+     * Staff codes referenced anywhere — leave, messages, course assignments,
+     * notifications, sessions they manage… — as code => true. An account
+     * NOT in here has no history and may be deleted outright.
+     */
+    public function codesWithHistory(): array
+    {
+        $selects = array_map(
+            fn($r) => "SELECT `{$r[1]}` FROM `{$r[0]}` WHERE `{$r[1]}` IS NOT NULL",
+            $this->staffReferences()
+        );
+        if (!$selects) {
+            return [];
+        }
+        $codes = Database::getConnection()->query(implode(' UNION ', $selects))->fetchAll(PDO::FETCH_COLUMN);
+        return array_fill_keys($codes, true);
+    }
+
+    /** True if anything anywhere references this staff member (see codesWithHistory()). */
+    public function hasHistory(string $code): bool
+    {
+        $refs = $this->staffReferences();
+        if (!$refs) {
+            return false;
+        }
+        $exists = [];
+        $params = [];
+        foreach ($refs as $i => [$table, $column]) {
+            $exists[] = "EXISTS (SELECT 1 FROM `{$table}` WHERE `{$column}` = :c{$i})";
+            $params["c{$i}"] = $code;
+        }
+        $stmt = Database::getConnection()->prepare('SELECT ' . implode(' OR ', $exists));
+        $stmt->execute($params);
+        return (bool) $stmt->fetchColumn();
+    }
+
+    /**
+     * Hard-delete an account that has no history. False if it has any, or is
+     * already gone. The row is locked first: InnoDB makes every INSERT that
+     * references it (a leave request, a message…) wait on that lock for its
+     * foreign-key check, so nothing can be linked to the account between the
+     * hasHistory() check and the DELETE — which would otherwise cascade it away.
+     */
+    public function deleteIfNoHistory(string $code): bool
+    {
+        $pdo = Database::getConnection();
+        $pdo->beginTransaction();
+        try {
+            $lock = $pdo->prepare("SELECT 1 FROM staff WHERE code = :code FOR UPDATE");
+            $lock->execute(['code' => $code]);
+            if (!$lock->fetchColumn() || $this->hasHistory($code)) {
+                $pdo->rollBack();
+                return false;
+            }
+            $delete = $pdo->prepare("DELETE FROM staff WHERE code = :code");
+            $delete->execute(['code' => $code]);
+            $pdo->commit();
+            return $delete->rowCount() === 1;
+        } catch (\Throwable $e) {
+            $pdo->rollBack();
+            return false;
+        }
     }
 
     /**

@@ -98,6 +98,11 @@ $currentUserPosition = $_SESSION['position'] ?? '';
                             // Inactive = deactivated after leaving the university (migration 023).
                             // Pending rows never reach this table: activeStaff() needs a role.
                             $isInactive = (($s['status'] ?? 'active') === 'inactive');
+                            // Delete only an account with no history (nothing references it —
+                            // e.g. added with a mistyped email) and no seat. Everyone else is
+                            // deactivated instead. StaffController::destroy() re-checks.
+                            $canDelete = empty($s['has_history'])
+                                && $s['role'] === 'academic_staff' && empty($s['position']);
                             ?>
                             <tr data-code="<?= htmlspecialchars($s['code']) ?>"
                                 data-role="<?= htmlspecialchars($rankKey) ?>"
@@ -147,13 +152,15 @@ $currentUserPosition = $_SESSION['position'] ?? '';
                                                 <i class="fa-solid <?= $isInactive ? 'fa-user-check' : 'fa-user-slash' ?>"></i>
                                                 <span><?= $isInactive ? 'Reactivate' : 'Deactivate' ?></span>
                                             </button>
-                                            <button type="button" 
-                                                    class="icon-action danger btn-delete-staff" 
+                                            <?php if ($canDelete): ?>
+                                            <button type="button"
+                                                    class="icon-action danger btn-delete-staff"
                                                     data-code="<?= htmlspecialchars($s['code']) ?>"
                                                     data-name="<?= htmlspecialchars($s['name']) ?>"
-                                                    title="Delete account">
+                                                    title="Delete account (it has no records yet)">
                                                 <i class="fa-solid fa-trash-can"></i>
                                             </button>
+                                            <?php endif; ?>
                                         </div>
                                     <?php else: ?>
                                         <span class="text-muted" title="Protected account">&mdash;</span>

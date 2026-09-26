@@ -362,22 +362,39 @@ document.addEventListener('DOMContentLoaded', function () {
                 return;
             }
 
-            // 2. Delete Staff Member
+            // 2. Delete -> DELETE /staff/{code}. The button is only rendered for
+            // an account with no history (e.g. added with a mistyped email);
+            // the server re-checks and answers 409 if it has gained some since.
             if (deleteBtn) {
                 const name = deleteBtn.dataset.name || 'this staff member';
-                if (!confirm('Are you sure you want to delete ' + name + '\'s account? This action cannot be undone and they will have to sign up again.')) {
+                if (!confirm('Delete ' + name + '\'s account?\n\nIt has no records in the system yet, so it will be removed completely. This cannot be undone.')) {
                     return;
                 }
 
-                row.style.opacity = '0.3';
-                setTimeout(function () {
-                    row.remove();
-                    // Update counter badges
-                    const currentRows = activeStaffTable.querySelectorAll('tbody tr').length;
-                    const badge = document.getElementById('activeStaffBadge');
-                    if (badge) badge.textContent = currentRows;
-                    applyFilters();
-                }, 200);
+                deleteBtn.disabled = true;
+                fetch(basePath + '/' + encodeURIComponent(row.dataset.code), {
+                    method: 'DELETE',
+                    headers: { 'Content-Type': 'application/json' }
+                })
+                    .then(function (r) { return r.json(); })
+                    .then(function (data) {
+                        if (!data.success) {
+                            deleteBtn.disabled = false;
+                            alert(data.message || 'Could not delete this account.');
+                            return;
+                        }
+                        row.style.opacity = '0.3';
+                        setTimeout(function () {
+                            row.remove();
+                            const badge = document.getElementById('activeStaffBadge');
+                            if (badge) badge.textContent = activeStaffTable.querySelectorAll('tbody tr').length;
+                            applyFilters();
+                        }, 200);
+                    })
+                    .catch(function () {
+                        deleteBtn.disabled = false;
+                        alert('Something went wrong. Please try again.');
+                    });
             }
         });
     }
