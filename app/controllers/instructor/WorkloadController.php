@@ -21,6 +21,7 @@ use app\models\NotificationModel;
 //                            -> an academic_calendar table
 //   last rating per course   fixture $evaluationHistory -> evaluations
 //   leave taken, covers owed LIVE: LeaveRequestModel::forRequester() / coveredBy()
+//                            (plus a few sample cover days — see overview())
 //
 // The cover requests and evaluation history lists are still fixtures too.
 class WorkloadController extends Controller
@@ -386,6 +387,26 @@ class WorkloadController extends Controller
                     'upcoming' => $d['date'] >= $todayIso,
                 ];
             }
+        }
+        // Sample cover days so the table is not empty in the demo. Dated from
+        // the semester start so they stay inside it; drop this block once
+        // colleagues' leave in the database names this member as cover.
+        $sample = [
+            ['week' => 2, 'day' => 1, 'for_code' => 'MEM', 'for_name' => 'Ms. Efua Mensah', 'hours' => 'Full day'],
+            ['week' => 4, 'day' => 3, 'for_code' => 'MAB', 'for_name' => 'Mr. Ato Baidoo',  'hours' => '09:00 – 12:00'],
+            ['week' => 7, 'day' => 0, 'for_code' => 'MEM', 'for_name' => 'Ms. Efua Mensah', 'hours' => 'Full day'],
+            ['week' => 9, 'day' => 2, 'for_code' => 'MKO', 'for_name' => 'Mr. Kojo Amoah',  'hours' => '13:00 – 16:00'],
+        ];
+        $taken = array_column($covering, 'date');
+        foreach ($sample as $x) {
+            $date = $start->modify('+' . (($x['week'] - 1) * 7 + $x['day']) . ' days')->format('Y-m-d');
+            if ($x['for_code'] === $me || in_array($date, $taken, true)) {
+                continue;
+            }
+            $covering[] = [
+                'date' => $date, 'for_code' => $x['for_code'], 'for_name' => $x['for_name'],
+                'hours' => $x['hours'], 'upcoming' => $date >= $todayIso,
+            ];
         }
         usort($covering, fn($a, $b) => strcmp($a['date'], $b['date']));
 

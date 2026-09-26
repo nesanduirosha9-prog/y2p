@@ -32,34 +32,42 @@ $plural = fn($n, $word) => $n . ' ' . $word . ($n == 1 ? '' : 's');
 
     <div class="wk-body" id="wk-panel-overview">
 
-        <!-- This semester in four numbers -->
-        <div class="wk-table-card">
-            <div class="wk-table-header">
-                <p><?= htmlspecialchars($ov['semester']) ?></p>
-                <span class="wk-table-header-hint">
-                    <?= $ov['week'] ? 'Week ' . $ov['week'] . ' of ' . $ov['weeks'] . ' · ' : '' ?><?= htmlspecialchars($ov['dates']) ?>
-                </span>
+        <!-- The semester, and four numbers for it -->
+        <div class="wk-sem-head">
+            <h2><?= htmlspecialchars($ov['semester']) ?></h2>
+            <?php if ($ov['week']): ?>
+                <span class="wk-sem-week">Week <?= $ov['week'] ?> of <?= $ov['weeks'] ?></span>
+            <?php endif; ?>
+            <span class="wk-sem-dates"><?= htmlspecialchars($ov['dates']) ?></span>
+        </div>
+
+        <div class="wk-stats">
+            <div class="wk-stat-card tone-blue">
+                <span class="wk-stat-icon"><i class="fa-regular fa-clock"></i></span>
+                <div>
+                    <p class="wk-stat-num"><?= $fmtH($ov['weekly']) ?> h</p>
+                    <p class="wk-stat-name">Per week</p>
+                </div>
             </div>
-            <div class="wk-figures">
-                <div class="wk-figure">
-                    <p class="wk-figure-value"><?= $fmtH($ov['weekly']) ?> h</p>
-                    <p class="wk-figure-label">a week, across <?= $plural(count($ov['courses']), 'course') ?></p>
+            <div class="wk-stat-card tone-green">
+                <span class="wk-stat-icon"><i class="fa-solid fa-check"></i></span>
+                <div>
+                    <p class="wk-stat-num"><?= $fmtH($ov['done']) ?> <small>/ <?= $fmtH($ov['planned']) ?> h</small></p>
+                    <p class="wk-stat-name">Taught so far</p>
                 </div>
-                <div class="wk-figure">
-                    <p class="wk-figure-value"><?= $fmtH($ov['done']) ?> h</p>
-                    <p class="wk-figure-label">taught so far, of <?= $fmtH($ov['planned']) ?> h this semester</p>
+            </div>
+            <div class="wk-stat-card tone-amber">
+                <span class="wk-stat-icon"><i class="fa-regular fa-calendar-xmark"></i></span>
+                <div>
+                    <p class="wk-stat-num"><?= $plural($ov['leaveDays'], 'day') ?></p>
+                    <p class="wk-stat-name">On leave</p>
                 </div>
-                <div class="wk-figure">
-                    <p class="wk-figure-value"><?= $plural($ov['leaveDays'], 'day') ?></p>
-                    <p class="wk-figure-label">
-                        on leave<?= $ov['missed'] ? ', ' . $fmtH($ov['missed']) . ' h of sessions missed' : '' ?>
-                    </p>
-                </div>
-                <div class="wk-figure">
-                    <p class="wk-figure-value"><?= $plural(count($ov['covering']), 'day') ?></p>
-                    <p class="wk-figure-label">
-                        covering for colleagues<?= $ov['covering'] ? ' — ' . $ov['coverDone'] . ' done, ' . $ov['coverNext'] . ' coming up' : '' ?>
-                    </p>
+            </div>
+            <div class="wk-stat-card tone-purple">
+                <span class="wk-stat-icon"><i class="fa-solid fa-people-arrows"></i></span>
+                <div>
+                    <p class="wk-stat-num"><?= $plural(count($ov['covering']), 'day') ?></p>
+                    <p class="wk-stat-name">Covering others</p>
                 </div>
             </div>
         </div>
@@ -68,7 +76,6 @@ $plural = fn($n, $word) => $n . ' ' . $word . ($n == 1 ? '' : 's');
         <div class="wk-table-card">
             <div class="wk-table-header">
                 <p>Hours by course</p>
-                <span class="wk-table-header-hint">So far counts finished weeks only, less any sessions you were on leave for</span>
             </div>
             <div class="dir-scroll">
                 <table class="dir-table wk-hours-table">
@@ -78,7 +85,7 @@ $plural = fn($n, $word) => $n . ' ' . $word . ($n == 1 ? '' : 's');
                             <th>Role</th>
                             <th>When</th>
                             <th class="num">Per week</th>
-                            <th class="num">So far</th>
+                            <th class="num" title="Finished weeks only, less sessions that fell on your leave">So far</th>
                             <th class="num">Semester</th>
                             <th>Latest rating</th>
                         </tr>
@@ -93,35 +100,30 @@ $plural = fn($n, $word) => $n . ' ' . $word . ($n == 1 ? '' : 's');
                                     </div>
                                 </td>
                                 <td><?= htmlspecialchars($c['role']) ?></td>
-                                <td class="wk-muted"><?= htmlspecialchars($c['schedule']) ?></td>
+                                <td><?= htmlspecialchars($c['schedule']) ?></td>
                                 <td class="num"><?= $fmtH($c['weekly']) ?> h</td>
-                                <td class="num">
+                                <td class="num" <?= $c['missed'] ? 'title="' . $fmtH($c['missed']) . ' h missed while on leave"' : '' ?>>
                                     <?= $fmtH($c['done']) ?> h
-                                    <?php if ($c['missed']): ?>
-                                        <span class="wk-muted" title="Sessions that fell on your leave days">(−<?= $fmtH($c['missed']) ?>)</span>
-                                    <?php endif; ?>
                                 </td>
-                                <td class="num wk-muted"><?= $fmtH($c['planned']) ?> h</td>
+                                <td class="num"><?= $fmtH($c['planned']) ?> h</td>
                                 <td>
                                     <?php if ($c['latest']): ?>
-                                        <span class="eval-score-pill score-<?= $scoreBand($c['latest']['rating']) ?>"><?= $c['latest']['rating'] ?> / 5</span>
-                                        <span class="wk-muted"><?= htmlspecialchars($c['latest']['week']) ?></span>
+                                        <span class="eval-score-pill score-<?= $scoreBand($c['latest']['rating']) ?>"
+                                              title="<?= htmlspecialchars($c['latest']['week']) ?>"><?= $c['latest']['rating'] ?> / 5</span>
                                     <?php else: ?>
-                                        <span class="wk-muted">Not rated yet</span>
+                                        <span class="wk-dash">—</span>
                                     <?php endif; ?>
                                 </td>
                             </tr>
                         <?php endforeach; ?>
-                    </tbody>
-                    <tfoot>
-                        <tr>
+                        <tr class="wk-total-row">
                             <td colspan="3">Total</td>
                             <td class="num"><?= $fmtH($ov['weekly']) ?> h</td>
                             <td class="num"><?= $fmtH($ov['done']) ?> h</td>
                             <td class="num"><?= $fmtH($ov['planned']) ?> h</td>
                             <td></td>
                         </tr>
-                    </tfoot>
+                    </tbody>
                 </table>
             </div>
         </div>
@@ -136,15 +138,12 @@ $plural = fn($n, $word) => $n . ' ' . $word . ($n == 1 ? '' : 's');
                 <?php if ($ov['leave']): ?>
                     <div class="dir-scroll">
                         <table class="dir-table">
-                            <thead><tr><th>Dates</th><th>Hours</th><th>Covered by</th><th></th></tr></thead>
+                            <thead><tr><th>Dates</th><th>Hours</th><th>Covered by</th><th class="num">Status</th></tr></thead>
                             <tbody>
                                 <?php foreach ($ov['leave'] as $l): ?>
                                     <tr>
-                                        <td>
-                                            <?= htmlspecialchars($fmtRange($l['from'], $l['to'])) ?>
-                                            <span class="wk-muted"><?= htmlspecialchars($l['type']) ?> · <?= $plural($l['days'], 'day') ?></span>
-                                        </td>
-                                        <td class="wk-muted"><?= htmlspecialchars($l['hours']) ?></td>
+                                        <td><?= htmlspecialchars($fmtRange($l['from'], $l['to'])) ?></td>
+                                        <td><?= htmlspecialchars($l['hours']) ?></td>
                                         <td>
                                             <div class="tag-row">
                                                 <?php foreach ($l['covers'] as $code): ?>
@@ -167,12 +166,11 @@ $plural = fn($n, $word) => $n . ' ' . $word . ($n == 1 ? '' : 's');
             <div class="wk-table-card">
                 <div class="wk-table-header">
                     <p>Covering for colleagues</p>
-                    <span class="wk-table-header-hint">Named as cover on their leave</span>
                 </div>
                 <?php if ($ov['covering']): ?>
                     <div class="dir-scroll">
                         <table class="dir-table">
-                            <thead><tr><th>Date</th><th>For</th><th>Hours</th><th></th></tr></thead>
+                            <thead><tr><th>Date</th><th>For</th><th>Hours</th><th class="num">Status</th></tr></thead>
                             <tbody>
                                 <?php foreach ($ov['covering'] as $cv): ?>
                                     <tr>
@@ -183,7 +181,7 @@ $plural = fn($n, $word) => $n . ' ' . $word . ($n == 1 ? '' : 's');
                                                 <span class="lec-name"><?= htmlspecialchars($cv['for_name']) ?></span>
                                             </div>
                                         </td>
-                                        <td class="wk-muted"><?= htmlspecialchars($cv['hours']) ?></td>
+                                        <td><?= htmlspecialchars($cv['hours']) ?></td>
                                         <td class="num"><span class="wk-state <?= $cv['upcoming'] ? 'is-upcoming' : '' ?>"><?= $cv['upcoming'] ? 'Upcoming' : 'Done' ?></span></td>
                                     </tr>
                                 <?php endforeach; ?>
