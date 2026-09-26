@@ -248,6 +248,30 @@
     color: inherit;
 }
 
+/* Overlapping sessions share the slot side by side (ViewHelpers::timetableLanes).
+   Percentages resolve against the grid cell, so each lane is 1/--lanes of it. */
+.tt-block.tt-lane {
+    justify-self: start;
+    width: calc(100% / var(--lanes) - 4px);
+    margin: 2px 0 2px calc(100% / var(--lanes) * var(--lane) + 2px);
+    padding: 6px 7px;
+    min-width: 0;
+}
+
+.tt-block.tt-lane .tt-block-code,
+.tt-block.tt-lane .tt-block-loc {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.tt-block.tt-lane .tt-block-title {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
 .tt-block-code {
     font-family: 'JetBrains Mono', monospace;
     font-weight: 700;

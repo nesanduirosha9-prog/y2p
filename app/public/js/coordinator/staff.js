@@ -279,7 +279,33 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
-    // --- Active Staff Table: Deactivate / Activate & Delete UI actions ---
+    // Mirrors what components/staff_directory.php renders for each status.
+    function setRowStatus(row, statusBtn, status) {
+        const inactive = status === 'inactive';
+        row.dataset.status = status;
+        row.classList.toggle('is-inactive', inactive);
+
+        const pill = row.querySelector('.status-indicator-pill');
+        if (pill) {
+            pill.className = 'pill ' + (inactive ? 'pill-muted' : 'pill-active') + ' status-indicator-pill';
+            pill.textContent = inactive ? 'Inactive' : 'Active';
+        }
+
+        statusBtn.className = 'btn-action-status ' + (inactive ? 'btn-activate' : 'btn-deactivate');
+        statusBtn.title = inactive ? 'Reactivate account' : 'Deactivate account';
+        statusBtn.innerHTML = inactive
+            ? '<i class="fa-solid fa-user-check"></i> <span>Reactivate</span>'
+            : '<i class="fa-solid fa-user-slash"></i> <span>Deactivate</span>';
+
+        // Deactivating removed their course assignments on the server.
+        if (inactive && statusBtn.dataset.courses) {
+            statusBtn.dataset.courses = '';
+            const coursesCell = row.cells[4];
+            if (coursesCell) coursesCell.innerHTML = '<span class="text-muted">&mdash;</span>';
+        }
+    }
+
+    // --- Active Staff Table: Deactivate / Reactivate & Delete UI actions ---
     const activeStaffTable = document.getElementById('activeStaffTable');
     if (activeStaffTable) {
         activeStaffTable.addEventListener('click', function (e) {
@@ -288,38 +314,39 @@ document.addEventListener('DOMContentLoaded', function () {
             const statusBtn = e.target.closest('.btn-action-status');
             const deleteBtn = e.target.closest('.btn-delete-staff');
 
-            // 1. Deactivate / Activate Toggle
+            // 1. Deactivate / Reactivate -> POST /staff/{code}/deactivate | activate.
+            // Deactivating is the soft delete for someone who left the
+            // university: they can no longer sign in, their history stays.
             if (statusBtn) {
                 const name = statusBtn.dataset.name || 'this staff member';
-                const currentStatus = row.dataset.status || 'active';
-                const isDeactivating = currentStatus === 'active';
+                const isDeactivating = (row.dataset.status || 'active') === 'active';
+                const courses = (statusBtn.dataset.courses || '').trim();
 
-                if (isDeactivating) {
-                    if (!confirm('Are you sure you want to deactivate ' + name + '\'s account? Their status will be set to pending.')) {
-                        return;
-                    }
-                    // Toggle UI to pending / deactivated state
-                    row.dataset.status = 'pending';
-                    const pill = row.querySelector('.status-indicator-pill');
-                    if (pill) {
-                        pill.className = 'pill pill-pending status-indicator-pill';
-                        pill.textContent = 'Pending';
-                    }
-                    statusBtn.className = 'btn-action-status btn-activate';
-                    statusBtn.title = 'Activate account';
-                    statusBtn.innerHTML = '<i class="fa-solid fa-user-check"></i> <span>Activate</span>';
-                } else {
-                    // Toggle UI back to active state
-                    row.dataset.status = 'active';
-                    const pill = row.querySelector('.status-indicator-pill');
-                    if (pill) {
-                        pill.className = 'pill pill-active status-indicator-pill';
-                        pill.textContent = 'Active';
-                    }
-                    statusBtn.className = 'btn-action-status btn-deactivate';
-                    statusBtn.title = 'Deactivate account';
-                    statusBtn.innerHTML = '<i class="fa-solid fa-user-slash"></i> <span>Deactivate</span>';
-                }
+                const question = isDeactivating
+                    ? 'Deactivate ' + name + '\'s account?\n\nThey will no longer be able to sign in. Their leave, messages and other records are kept.'
+                        + (courses ? '\n\nThey will be removed from ' + courses.split(/\s+/).join(', ') + '. The Timetable Officer will need to assign someone else.' : '')
+                    : 'Reactivate ' + name + '\'s account? They will be able to sign in again.';
+                if (!confirm(question)) return;
+
+                statusBtn.disabled = true;
+                fetch(basePath + '/' + encodeURIComponent(row.dataset.code) + (isDeactivating ? '/deactivate' : '/activate'), {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({})
+                })
+                    .then(function (r) { return r.json(); })
+                    .then(function (data) {
+                        statusBtn.disabled = false;
+                        if (!data.success) {
+                            alert(data.message || 'Could not change this account.');
+                            return;
+                        }
+                        setRowStatus(row, statusBtn, isDeactivating ? 'inactive' : 'active');
+                    })
+                    .catch(function () {
+                        statusBtn.disabled = false;
+                        alert('Something went wrong. Please try again.');
+                    });
                 return;
             }
 

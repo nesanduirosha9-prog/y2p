@@ -93,7 +93,7 @@ $titleSuffix = $isInstructor ? 'StaffSync - Instructor' : 'StaffSync';
         <link rel="stylesheet" href="/css/instructor/common.css">
     <?php endif; ?>
     <?php foreach ((array)($css_file ?? []) as $cssHref): ?>
-        <link rel="stylesheet" href="<?= htmlspecialchars($cssHref) ?>">
+        <link rel="stylesheet" href="<?= htmlspecialchars(\app\core\ViewHelpers::asset($cssHref)) ?>">
     <?php endforeach; ?>
     <!-- In <head>, not beside dashboard.js: page scripts inside $content call codeBadge() while they render. -->
     <script src="/js/code_badge.js"></script>

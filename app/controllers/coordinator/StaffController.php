@@ -20,6 +20,9 @@ use app\services\EmailService;
 // 4. reject()  — POST, deletes a pending row outright (no soft-delete).
 // 5. create()  — POST, adds an active Lecturer / Junior Staff account from
 //    just an email, and emails the member how to set their password.
+// 6. deactivate() / activate() — POST, soft-removes a member who left the
+//    university (and brings them back). An active account is never DELETEd:
+//    too many tables reference it — see migration 023.
 class StaffController extends Controller
 {
     private const ASSIGNABLE_ROLES = [
@@ -169,5 +172,90 @@ class StaffController extends Controller
         }
 
         $response->json(['success' => true]);
+    }
+
+    /**
+     * POST /staff/{code}/deactivate — for a member who has left the
+     * university. Soft delete: the row and its history stay, login is refused.
+     * Answers with the courses they were removed from, for the officer to
+     * reassign.
+     */
+    public function deactivate(Request $request, Response $response, array $params = [])
+    {
+        if (!$this->guardJson($response, 'position', 'coordinator', 'in_charge')) {
+            return;
+        }
+
+        $target = $this->manageableTarget($response, $params['code'] ?? '');
+        if ($target === null) {
+            return;
+        }
+        if ($target['status'] !== 'active') {
+            $response->json(['success' => false, 'message' => 'This account is already inactive.'], 409);
+            return;
+        }
+        // Each seat has its own hand-over flow, which keeps the department
+        // from being left without a coordinator or a timetable officer.
+        if ($target['role'] === 'timetable_officer') {
+            $response->json(['success' => false, 'message' => 'The Timetable Officer account is handed over to the new officer from Settings → Handover, not deactivated.'], 409);
+            return;
+        }
+        if (!empty($target['position'])) {
+            $seat = $target['position'] === 'in_charge' ? 'In-Charge' : 'Coordinator';
+            $response->json(['success' => false, 'message' => "{$target['name']} holds the {$seat} seat. Hand it over or revoke it from Settings → Handover first."], 409);
+            return;
+        }
+
+        $staffModel = new StaffModel();
+        $courses = $staffModel->courseCodes($target['code']);
+        if (!$staffModel->deactivate($target['code'], $_SESSION['staff_code'])) {
+            $response->json(['success' => false, 'message' => 'Could not deactivate the account. Please try again.'], 500);
+            return;
+        }
+
+        $response->json(['success' => true, 'removedFromCourses' => $courses]);
+    }
+
+    /** POST /staff/{code}/activate — reverses deactivate(). */
+    public function activate(Request $request, Response $response, array $params = [])
+    {
+        if (!$this->guardJson($response, 'position', 'coordinator', 'in_charge')) {
+            return;
+        }
+
+        $target = $this->manageableTarget($response, $params['code'] ?? '');
+        if ($target === null) {
+            return;
+        }
+        if (!(new StaffModel())->reactivate($target['code'])) {
+            $response->json(['success' => false, 'message' => 'This account is not inactive.'], 409);
+            return;
+        }
+
+        $response->json(['success' => true]);
+    }
+
+    /**
+     * The staff row behind a deactivate/activate, or null once an error has
+     * been sent. Same rules as the Actions column of components/staff_directory.php:
+     * never yourself, never the In-Charge, and a Coordinator only by the In-Charge.
+     */
+    private function manageableTarget(Response $response, string $code): ?array
+    {
+        $target = (new StaffModel())->findByCode($code);
+        if (!$target || $target['status'] === 'pending') {
+            $response->json(['success' => false, 'message' => 'Staff member not found.'], 404);
+            return null;
+        }
+        if ($target['code'] === $_SESSION['staff_code']) {
+            $response->json(['success' => false, 'message' => 'You cannot change the status of your own account.'], 403);
+            return null;
+        }
+        if ($target['position'] === 'in_charge'
+            || ($target['position'] === 'coordinator' && ($_SESSION['position'] ?? '') !== 'in_charge')) {
+            $response->json(['success' => false, 'message' => 'You do not have permission to manage this account.'], 403);
+            return null;
+        }
+        return $target;
     }
 }

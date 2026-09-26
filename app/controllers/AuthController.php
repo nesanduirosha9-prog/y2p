@@ -99,6 +99,13 @@ class AuthController extends Controller
                 'message' => 'Your account is awaiting approval from a coordinator. You will be able to sign in once it is approved.',
             ], 403);
         }
+        // ...and refuse a member who has been deactivated (left the university).
+        if (($user['status'] ?? 'active') !== 'active') {
+            return $this->jsonResponse($response, [
+                'success' => false,
+                'message' => 'This account has been deactivated. Contact the department coordinator if you think this is a mistake.',
+            ], 403);
+        }
 
         // 4. Regenerate the session id before writing any session state —
         //    prevents session fixation (an id issued to an anonymous visitor

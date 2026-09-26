@@ -95,12 +95,15 @@ $currentUserPosition = $_SESSION['position'] ?? '';
                                     $canManage = true;
                                 }
                             }
-                            $isPending = (($s['status'] ?? 'active') === 'pending');
+                            // Inactive = deactivated after leaving the university (migration 023).
+                            // Pending rows never reach this table: activeStaff() needs a role.
+                            $isInactive = (($s['status'] ?? 'active') === 'inactive');
                             ?>
                             <tr data-code="<?= htmlspecialchars($s['code']) ?>"
                                 data-role="<?= htmlspecialchars($rankKey) ?>"
                                 data-search="<?= htmlspecialchars($search) ?>"
-                                data-status="<?= $isPending ? 'pending' : 'active' ?>">
+                                data-status="<?= $isInactive ? 'inactive' : 'active' ?>"
+                                <?= $isInactive ? 'class="is-inactive"' : '' ?>>
                                 <td><?= ViewHelpers::codeBadge($s['code'], $rankKey === 'senior' ? 'lecturer' : 'staff', $s['name']) ?></td>
                                 <td>
                                     <div class="lec-identity">
@@ -126,8 +129,8 @@ $currentUserPosition = $_SESSION['position'] ?? '';
                                 </td>
                                 <td><?= htmlspecialchars($s['phone'] ?: '—') ?></td>
                                 <td>
-                                    <span class="pill <?= $isPending ? 'pill-pending' : 'pill-active' ?> status-indicator-pill">
-                                        <?= $isPending ? 'Pending' : 'Active' ?>
+                                    <span class="pill <?= $isInactive ? 'pill-muted' : 'pill-active' ?> status-indicator-pill">
+                                        <?= $isInactive ? 'Inactive' : 'Active' ?>
                                     </span>
                                 </td>
                                 <td>
@@ -135,13 +138,14 @@ $currentUserPosition = $_SESSION['position'] ?? '';
                                         <span class="pill pill-subtle"><i class="fa-solid fa-user"></i> You</span>
                                     <?php elseif ($canManage): ?>
                                         <div class="staff-row-actions">
-                                            <button type="button" 
-                                                    class="btn-action-status <?= $isPending ? 'btn-activate' : 'btn-deactivate' ?>" 
+                                            <button type="button"
+                                                    class="btn-action-status <?= $isInactive ? 'btn-activate' : 'btn-deactivate' ?>"
                                                     data-code="<?= htmlspecialchars($s['code']) ?>"
                                                     data-name="<?= htmlspecialchars($s['name']) ?>"
-                                                    title="<?= $isPending ? 'Activate account' : 'Deactivate account' ?>">
-                                                <i class="fa-solid <?= $isPending ? 'fa-user-check' : 'fa-user-slash' ?>"></i>
-                                                <span><?= $isPending ? 'Activate' : 'Deactivate' ?></span>
+                                                    data-courses="<?= htmlspecialchars($coursesStr) ?>"
+                                                    title="<?= $isInactive ? 'Reactivate account' : 'Deactivate account' ?>">
+                                                <i class="fa-solid <?= $isInactive ? 'fa-user-check' : 'fa-user-slash' ?>"></i>
+                                                <span><?= $isInactive ? 'Reactivate' : 'Deactivate' ?></span>
                                             </button>
                                             <button type="button" 
                                                     class="icon-action danger btn-delete-staff" 

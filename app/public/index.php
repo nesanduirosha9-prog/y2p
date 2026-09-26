@@ -211,6 +211,12 @@ $router->post('/staff/{code}/approve', function (Request $request, Response $res
 $router->post('/staff/{code}/reject', function (Request $request, Response $response, array $params) {
     return (new StaffController())->reject($request, $response, $params);
 });
+$router->post('/staff/{code}/deactivate', function (Request $request, Response $response, array $params) {
+    return (new StaffController())->deactivate($request, $response, $params);
+});
+$router->post('/staff/{code}/activate', function (Request $request, Response $response, array $params) {
+    return (new StaffController())->activate($request, $response, $params);
+});
 
 // --- Lecture halls ---------------------------------------------------------
 // Already role-free before this refactor; timetable officer only. Full CRUD:

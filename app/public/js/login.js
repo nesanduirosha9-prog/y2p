@@ -4,8 +4,12 @@
 //    to, and that check also admits config.php's AUTH_BYPASS_EMAILS.
 // 2. POST the credentials to /login as JSON (AuthController::login()).
 // 3. On success, redirect to the URL the server returns; on failure, show
-//    the error and re-enable the button.
+//    the error as a system toast (window.ttToast) and re-enable the button.
 document.addEventListener('DOMContentLoaded', function() {
+
+    function showError(message) {
+        window.ttToast(message, { type: 'error', icon: 'fa-circle-exclamation', duration: message.length > 80 ? 6000 : 4000 });
+    }
 
     // Grab the login form element using its ID
     const loginForm = document.getElementById('loginForm');
@@ -24,14 +28,14 @@ document.addEventListener('DOMContentLoaded', function() {
 
             // 1. Basic Validation: Check if fields are empty
             if (emailInput === '' || passwordInput === '') {
-                alert('Please fill in both your email and password.');
+                showError('Please fill in both your email and password.');
                 return; // Stop the function here
             }
 
             // 2. Send the login request to the backend
             const btnSubmit = loginForm.querySelector('button[type="submit"]');
             const originalText = btnSubmit.innerHTML;
-            btnSubmit.innerHTML = 'Logging in...';
+            btnSubmit.innerHTML = 'Signing in...';
             btnSubmit.disabled = true;
 
             fetch('/login', {
@@ -47,17 +51,16 @@ document.addEventListener('DOMContentLoaded', function() {
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
-                    alert('Login successful! Redirecting to dashboard...');
                     window.location.href = data.redirect || '/dashboard';
                 } else {
-                    alert('Login failed: ' + data.message);
+                    showError(data.message || 'Could not sign you in. Please try again.');
                     btnSubmit.innerHTML = originalText;
                     btnSubmit.disabled = false;
                 }
             })
             .catch(error => {
                 console.error('Error:', error);
-                alert('An error occurred. Please try again.');
+                showError('Could not reach the server. Please try again.');
                 btnSubmit.innerHTML = originalText;
                 btnSubmit.disabled = false;
             });

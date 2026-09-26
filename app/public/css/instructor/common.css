@@ -40,3 +40,29 @@
 .tt-toast-error i {
     color: #ff6467;
 }
+
+.tt-toast-warning i {
+    color: #fbbf24;
+}
+
+.tt-toast {
+    max-width: 380px;
+    line-height: 1.45;
+}
+
+.tt-toast i {
+    flex: 0 0 auto;
+}
+
+/* Phones: span the width under the top edge instead of hugging the right. */
+@media (max-width: 480px) {
+    .tt-toast-host {
+        top: 12px;
+        left: 12px;
+        right: 12px;
+    }
+
+    .tt-toast {
+        max-width: none;
+    }
+}

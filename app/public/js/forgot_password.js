@@ -10,7 +10,17 @@
 // 3. Step 3 (new password): live match validation, then POST /forgot-password
 //    with {email, password} — AuthController::resetPassword() rejects this
 //    unless step 2's verification is still valid for this same email.
+// Feedback goes through the system toast (window.ttToast, js/instructor/common.js).
 document.addEventListener('DOMContentLoaded', function() {
+
+    // Toast helper — long server messages stay up a little longer.
+    function notify(message, isError) {
+        window.ttToast(message, {
+            type: isError ? 'error' : undefined,
+            icon: isError ? 'fa-circle-exclamation' : 'fa-circle-check',
+            duration: message.length > 80 ? 6000 : 4000
+        });
+    }
 
     // UI Elements
     const step1Content = document.getElementById('step-1-content');
@@ -91,10 +101,11 @@ document.addEventListener('DOMContentLoaded', function() {
                     btnSendOtp.disabled = false;
 
                     if (!data.success) {
-                        alert(data.message || 'Could not send the code. Please try again.');
+                        notify(data.message || 'Could not send the code. Please try again.', true);
                         return;
                     }
 
+                    notify(data.message || 'If this email is registered, a code has been sent.');
                     step1Content.style.display = 'none';
                     step2Content.style.display = 'block';
                     updateProgressUI(2);
@@ -104,7 +115,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     console.error('Error:', error);
                     btnSendOtp.innerHTML = originalText;
                     btnSendOtp.disabled = false;
-                    alert('An error occurred. Please try again.');
+                    notify('Could not reach the server. Please try again.', true);
                 });
         });
     }
@@ -184,7 +195,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 btnVerifyOtp.disabled = false;
 
                 if (!data.success) {
-                    alert(data.message || 'Incorrect code. Please try again.');
+                    notify(data.message || 'Incorrect code. Please try again.', true);
                     otpInputs.forEach(input => input.value = '');
                     otpInputs[0].focus();
                     checkOtpValidity();
@@ -199,7 +210,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 console.error('Error:', error);
                 btnVerifyOtp.innerHTML = originalText;
                 btnVerifyOtp.disabled = false;
-                alert('An error occurred. Please try again.');
+                notify('Could not reach the server. Please try again.', true);
             });
         });
     }
@@ -212,11 +223,12 @@ document.addEventListener('DOMContentLoaded', function() {
             const emailValue = emailInput.value.trim();
             requestOtp(emailValue)
                 .then(data => {
-                    alert(data.success ? 'A new code has been sent.' : (data.message || 'Could not resend the code.'));
+                    if (data.success) notify('A new code has been sent.');
+                    else notify(data.message || 'Could not resend the code.', true);
                 })
                 .catch(error => {
                     console.error('Error:', error);
-                    alert('An error occurred. Please try again.');
+                    notify('Could not reach the server. Please try again.', true);
                 });
         });
     }
@@ -284,17 +296,18 @@ document.addEventListener('DOMContentLoaded', function() {
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
-                    alert("Password reset successful! You can now sign in with your new password.");
+                    // Shown on the login page after the redirect.
+                    window.ttToast.flash('Password reset successful. You can now sign in with your new password.', { duration: 5000 });
                     window.location.href = data.redirect || '/login';
                 } else {
-                    alert("Password reset failed: " + data.message);
+                    notify(data.message || 'Password reset failed. Please try again.', true);
                     btnComplete.innerHTML = originalText;
                     btnComplete.disabled = false;
                 }
             })
             .catch(error => {
                 console.error('Error:', error);
-                alert("An error occurred. Please try again.");
+                notify('Could not reach the server. Please try again.', true);
                 btnComplete.innerHTML = originalText;
                 btnComplete.disabled = false;
             });

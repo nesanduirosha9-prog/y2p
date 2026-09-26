@@ -20,6 +20,8 @@ use app\core\Application;
     <link rel="stylesheet" href="/css/tokens.css">
     <link rel="stylesheet" href="/css/components.css">
     <link rel="stylesheet" href="/css/global.css">
+    <!-- System toast (window.ttToast) — same notifications as the dashboard -->
+    <link rel="stylesheet" href="/css/instructor/common.css">
 
     <!-- View-Specific CSS -->
     <?php if (isset($css_file)): ?>
@@ -31,6 +33,7 @@ use app\core\Application;
     <!-- Main Content injected here -->
     <?= $content ?? '' ?>
 
+    <script src="/js/instructor/common.js"></script>
     <script src="/js/password_toggle.js"></script>
 
 </body>

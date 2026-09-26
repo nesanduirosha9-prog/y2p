@@ -206,6 +206,62 @@ class StaffModel
     }
 
     /**
+     * Deactivate a member who has left the university. The row is kept so
+     * every history screen still resolves their name (see migration 023);
+     * login refuses them from now on. Their course assignments are removed
+     * in the same transaction — course_staff holds who teaches a course NOW,
+     * not who taught it — so they stop showing in the course/timetable
+     * pickers, and the officer reassigns those courses.
+     *
+     * The WHERE clause is the eligibility rule: active academic staff with no
+     * coordinator/in-charge seat. The caller explains any refusal first.
+     */
+    public function deactivate(string $code, string $byCode): bool
+    {
+        $pdo = Database::getConnection();
+        $pdo->beginTransaction();
+        try {
+            $stmt = $pdo->prepare(
+                "UPDATE staff
+                    SET status = 'inactive', deactivated_at = NOW(), deactivated_by = :by
+                  WHERE code = :code AND status = 'active'
+                    AND role = 'academic_staff' AND position IS NULL"
+            );
+            $stmt->execute(['code' => $code, 'by' => $byCode]);
+            if ($stmt->rowCount() !== 1) {
+                $pdo->rollBack();
+                return false;
+            }
+            $pdo->prepare("DELETE FROM course_staff WHERE staff_code = :code")->execute(['code' => $code]);
+            $pdo->commit();
+            return true;
+        } catch (\Throwable $e) {
+            $pdo->rollBack();
+            return false;
+        }
+    }
+
+    /** Course codes this member is currently assigned to, e.g. ['CS2201', 'CS3105']. */
+    public function courseCodes(string $code): array
+    {
+        $pdo = Database::getConnection();
+        $stmt = $pdo->prepare("SELECT course_code FROM course_staff WHERE staff_code = :code ORDER BY course_code");
+        $stmt->execute(['code' => $code]);
+        return $stmt->fetchAll(PDO::FETCH_COLUMN);
+    }
+
+    /** Undo deactivate(). Course assignments are not restored — the officer reassigns them. */
+    public function reactivate(string $code): bool
+    {
+        $pdo = Database::getConnection();
+        $stmt = $pdo->prepare(
+            "UPDATE staff SET status = 'active', deactivated_at = NULL, deactivated_by = NULL
+             WHERE code = :code AND status = 'inactive'"
+        );
+        return $stmt->execute(['code' => $code]) && $stmt->rowCount() > 0;
+    }
+
+    /**
      * The current holders of the three "key role" seats managed from the
      * In-Charge "Accounts" screen: the timetable officer, and every active
      * coordinator/in-charge. Used to render the Role Assignment table.

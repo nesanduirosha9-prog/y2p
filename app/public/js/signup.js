@@ -7,9 +7,19 @@
 //    POSTs /signup/verify-otp and advances only on a verified match.
 // 3. Step 3 (password): live length/match validation, then POST /signup with
 //    {email, password} — rejected unless step 2 verified this same email.
+// Feedback goes through the system toast (window.ttToast, js/instructor/common.js).
 // Wait for the HTML to fully load before running anything
 document.addEventListener('DOMContentLoaded', function() {
-    
+
+    // Toast helper — long server messages stay up a little longer.
+    function notify(message, isError) {
+        window.ttToast(message, {
+            type: isError ? 'error' : undefined,
+            icon: isError ? 'fa-circle-exclamation' : 'fa-circle-check',
+            duration: message.length > 80 ? 6000 : 4000
+        });
+    }
+
     // 1. Grab the Content Containers (The 3 forms on the right)
     const step1Content = document.getElementById('step-1-content');
     const step2Content = document.getElementById('step-2-content');
@@ -25,12 +35,8 @@ document.addEventListener('DOMContentLoaded', function() {
     const otpForm = document.getElementById('otpForm');
     const passwordForm = document.getElementById('passwordForm');
 
-    // 4. Grab the Back Buttons
+    // 4. Grab the Back Button (step 3's "Back to Login" is a plain link)
     const btnBackToStep1 = document.getElementById('btn-back-to-step1');
-    const btnBackToLogin = document.getElementById('btn-back-to-login');
-
-    // Just a quick check to make sure our script is connected
-    console.log("Signup JS is successfully connected!");
 
     // --- NEW: Real-time Email Validation (Lighting up the button) ---
     const emailInput = document.getElementById('signup-email');
@@ -93,7 +99,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
             const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
             if (!emailRegex.test(emailValue)) {
-                alert('Please enter a valid email address format.');
+                notify('Please enter a valid email address.', true);
                 return;
             }
 
@@ -107,10 +113,11 @@ document.addEventListener('DOMContentLoaded', function() {
                     btnSendOtp.disabled = false;
 
                     if (!data.success) {
-                        alert(data.message || 'Could not send the code. Please try again.');
+                        notify(data.message || 'Could not send the code. Please try again.', true);
                         return;
                     }
 
+                    notify(data.message || 'A verification code has been sent to your email.');
                     step1Content.style.display = 'none';
                     step2Content.style.display = 'block';
                     updateProgressUI(2);
@@ -120,7 +127,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     console.error('Error:', error);
                     btnSendOtp.innerHTML = originalText;
                     btnSendOtp.disabled = false;
-                    alert('An error occurred. Please try again.');
+                    notify('Could not reach the server. Please try again.', true);
                 });
         });
     }
@@ -219,7 +226,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 btnVerifyOtp.disabled = false;
 
                 if (!data.success) {
-                    alert(data.message || 'Incorrect code. Please try again.');
+                    notify(data.message || 'Incorrect code. Please try again.', true);
                     otpInputs.forEach(input => input.value = '');
                     otpInputs[0].focus();
                     checkOtpValidity();
@@ -234,7 +241,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 console.error('Error:', error);
                 btnVerifyOtp.innerHTML = originalText;
                 btnVerifyOtp.disabled = false;
-                alert('An error occurred. Please try again.');
+                notify('Could not reach the server. Please try again.', true);
             });
         });
     }
@@ -246,11 +253,12 @@ document.addEventListener('DOMContentLoaded', function() {
             event.preventDefault();
             requestOtp(emailInput.value.trim())
                 .then(data => {
-                    alert(data.success ? 'A new code has been sent.' : (data.message || 'Could not resend the code.'));
+                    if (data.success) notify('A new code has been sent.');
+                    else notify(data.message || 'Could not resend the code.', true);
                 })
                 .catch(error => {
                     console.error('Error:', error);
-                    alert('An error occurred. Please try again.');
+                    notify('Could not reach the server. Please try again.', true);
                 });
         });
     }
@@ -317,17 +325,18 @@ document.addEventListener('DOMContentLoaded', function() {
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
-                    alert(data.message || "Registration submitted!");
+                    // Shown on the login page after the redirect.
+                    window.ttToast.flash(data.message || 'Registration submitted!', { duration: 6000 });
                     window.location.href = data.redirect || '/login';
                 } else {
-                    alert("Registration failed: " + data.message);
+                    notify(data.message || 'Registration failed. Please try again.', true);
                     btnComplete.innerHTML = originalText;
                     btnComplete.disabled = false;
                 }
             })
             .catch(error => {
                 console.error('Error:', error);
-                alert("An error occurred. Please try again.");
+                notify('Could not reach the server. Please try again.', true);
                 btnComplete.innerHTML = originalText;
                 btnComplete.disabled = false;
             });

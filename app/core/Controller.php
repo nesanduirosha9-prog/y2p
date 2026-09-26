@@ -110,12 +110,13 @@ class Controller
      * The session belongs to whoever signed in with the account's email at
      * the time. If that email has since changed — the Timetable Officer
      * account handed to a new person — the previous holder's session ends
-     * here, even though the account's code is the same.
+     * here, even though the account's code is the same. Likewise a member
+     * deactivated while signed in is signed out on their next request.
      */
     private function sessionStillValid(): bool
     {
         $me = (new StaffModel())->findByCode($_SESSION['staff_code']);
-        if ($me && $me['email'] === ($_SESSION['user_email'] ?? null)) {
+        if ($me && $me['status'] === 'active' && $me['email'] === ($_SESSION['user_email'] ?? null)) {
             return true;
         }
         session_unset();

@@ -224,6 +224,12 @@
     color: #007a55;
 }
 
+/* A deactivated member (left the university): kept for history, greyed out.
+   Only the identity cells fade, so the Reactivate button stays readable. */
+.dir-table tr.is-inactive td:not(:last-child) {
+    opacity: 0.55;
+}
+
 .assign-role-select {
     height: 34px;
     border: 1px solid #dde3ee;
