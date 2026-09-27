@@ -927,3 +927,84 @@ select.ss-native { display: none !important; }
         max-width: none;
     }
 }
+
+/* ---------- Confirm dialog ----------
+ * The system's one confirm dialog — window.ttConfirm() in js/confirm.js,
+ * replacing the browser's confirm(). A native <dialog> opened with
+ * showModal(), so it sits in the top layer above every panel and modal.
+ */
+.tt-confirm {
+    width: min(420px, calc(100vw - 32px));
+    margin: auto; /* the global margin reset would pin it top-left */
+    padding: 0;
+    border: none;
+    border-radius: var(--radius-lg);
+    background: var(--color-surface);
+    color: var(--color-text-dark);
+    font-family: var(--font-sans);
+    box-shadow: 0 20px 45px rgba(15, 28, 46, 0.25);
+}
+
+.tt-confirm::backdrop {
+    background: rgba(15, 28, 46, 0.45);
+}
+
+.tt-confirm-box {
+    padding: var(--space-5);
+}
+
+.tt-confirm-title {
+    margin: 0 0 var(--space-2);
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--color-text);
+}
+
+.tt-confirm-body p {
+    margin: 0 0 var(--space-2);
+    font-size: 13.5px;
+    line-height: 1.5;
+    color: var(--color-text-muted);
+}
+
+.tt-confirm-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: var(--space-2);
+    margin-top: var(--space-4);
+}
+
+.tt-confirm-btn {
+    padding: 8px 16px;
+    border: 1px solid #cbd5e1;
+    border-radius: var(--radius-sm);
+    background: var(--color-surface);
+    color: var(--color-text-dark);
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.tt-confirm-btn:hover {
+    background: #f1f5f9;
+}
+
+.tt-confirm-btn-primary {
+    border-color: var(--color-primary);
+    background: var(--color-primary);
+    color: #fff;
+}
+
+.tt-confirm-btn-primary:hover {
+    background: var(--color-primary-dark);
+}
+
+.tt-confirm-btn-danger {
+    border-color: #dc2626;
+    background: #dc2626;
+}
+
+.tt-confirm-btn-danger:hover {
+    background: #b91c1c;
+}

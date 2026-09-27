@@ -36,6 +36,9 @@ class Database
                 $pass,
                 [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION]
             );
+            // NOW()/CURDATE() on PHP's clock (set in bootstrap.php), so date
+            // rules checked in SQL agree with the ones checked in PHP.
+            $pdo->exec("SET time_zone = '" . date('P') . "'");
             self::$pdo = $pdo;
         } catch (PDOException $e) {
             die(

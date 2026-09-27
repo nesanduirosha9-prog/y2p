@@ -106,25 +106,28 @@ document.addEventListener('DOMContentLoaded', function () {
 
             const rejectBtn = e.target.closest('.btn-reject');
             if (rejectBtn) {
-                if (!confirm('Reject this registration request? This cannot be undone.')) return;
-                rejectBtn.disabled = true;
-                fetch(basePath + '/' + encodeURIComponent(code) + '/reject', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({})
-                })
-                    .then(function (r) { return r.json(); })
-                    .then(function (data) {
-                        if (data.success) {
-                            removeRow(row);
-                        } else {
-                            ttToast.error(data.message || 'Could not reject this registration.');
-                            rejectBtn.disabled = false;
-                        }
-                    })
-                    .catch(function () {
-                        ttToast.error('Something went wrong. Please try again.');
-                        rejectBtn.disabled = false;
+                ttConfirm('This cannot be undone.', { title: 'Reject this registration request?', confirmText: 'Reject', danger: true })
+                    .then(function (ok) {
+                        if (!ok) return;
+                        rejectBtn.disabled = true;
+                        fetch(basePath + '/' + encodeURIComponent(code) + '/reject', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({})
+                        })
+                            .then(function (r) { return r.json(); })
+                            .then(function (data) {
+                                if (data.success) {
+                                    removeRow(row);
+                                } else {
+                                    ttToast.error(data.message || 'Could not reject this registration.');
+                                    rejectBtn.disabled = false;
+                                }
+                            })
+                            .catch(function () {
+                                ttToast.error('Something went wrong. Please try again.');
+                                rejectBtn.disabled = false;
+                            });
                     });
             }
         });
@@ -320,7 +323,7 @@ document.addEventListener('DOMContentLoaded', function () {
     // --- Active Staff Table: Deactivate / Reactivate & Delete UI actions ---
     const activeStaffTable = document.getElementById('activeStaffTable');
     if (activeStaffTable) {
-        activeStaffTable.addEventListener('click', function (e) {
+        activeStaffTable.addEventListener('click', async function (e) {
             const row = e.target.closest('tr');
             if (!row) return;
             const statusBtn = e.target.closest('.btn-action-status');
@@ -334,11 +337,15 @@ document.addEventListener('DOMContentLoaded', function () {
                 const isDeactivating = (row.dataset.status || 'active') === 'active';
                 const courses = (statusBtn.dataset.courses || '').trim();
 
-                const question = isDeactivating
-                    ? 'Deactivate ' + name + '\'s account?\n\nThey will no longer be able to sign in. Their leave, messages and other records are kept.'
+                const ok = await ttConfirm(isDeactivating
+                    ? 'They will no longer be able to sign in. Their leave, messages and other records are kept.'
                         + (courses ? '\n\nThey will be removed from ' + courses.split(/\s+/).join(', ') + '. The Timetable Officer will need to assign someone else.' : '')
-                    : 'Reactivate ' + name + '\'s account? They will be able to sign in again.';
-                if (!confirm(question)) return;
+                    : 'They will be able to sign in again.', {
+                    title: (isDeactivating ? 'Deactivate ' : 'Reactivate ') + name + '\'s account?',
+                    confirmText: isDeactivating ? 'Deactivate' : 'Reactivate',
+                    danger: isDeactivating,
+                });
+                if (!ok) return;
 
                 statusBtn.disabled = true;
                 fetch(basePath + '/' + encodeURIComponent(row.dataset.code) + (isDeactivating ? '/deactivate' : '/activate'), {
@@ -367,9 +374,12 @@ document.addEventListener('DOMContentLoaded', function () {
             // the server re-checks and answers 409 if it has gained some since.
             if (deleteBtn) {
                 const name = deleteBtn.dataset.name || 'this staff member';
-                if (!confirm('Delete ' + name + '\'s account?\n\nIt has no records in the system yet, so it will be removed completely. This cannot be undone.')) {
-                    return;
-                }
+                const ok = await ttConfirm('It has no records in the system yet, so it will be removed completely. This cannot be undone.', {
+                    title: 'Delete ' + name + '\'s account?',
+                    confirmText: 'Delete',
+                    danger: true,
+                });
+                if (!ok) return;
 
                 deleteBtn.disabled = true;
                 fetch(basePath + '/' + encodeURIComponent(row.dataset.code), {
@@ -380,7 +390,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     .then(function (data) {
                         if (!data.success) {
                             deleteBtn.disabled = false;
-                            alert(data.message || 'Could not delete this account.');
+                            ttToast.error(data.message || 'Could not delete this account.');
                             return;
                         }
                         row.style.opacity = '0.3';
@@ -393,7 +403,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     })
                     .catch(function () {
                         deleteBtn.disabled = false;
-                        alert('Something went wrong. Please try again.');
+                        ttToast.error('Something went wrong. Please try again.');
                     });
             }
         });

@@ -157,7 +157,7 @@ document.addEventListener('DOMContentLoaded', () => {
         history.replaceState(history.state, '', url);
     });
 
-    page.querySelector('[data-rows="upcoming"]').addEventListener('click', (e) => {
+    page.querySelector('[data-rows="upcoming"]').addEventListener('click', async (e) => {
         const editBtn = e.target.closest('[data-edit-id]');
         if (editBtn) {
             const rec = leaves.find(l => l.id === editBtn.dataset.editId);
@@ -168,7 +168,13 @@ document.addEventListener('DOMContentLoaded', () => {
         const btn = e.target.closest('[data-cancel-id]');
         if (!btn) return;
         const id = btn.dataset.cancelId;
-        if (!confirm('Cancel this leave? It will be removed, and your cover staff will be told they are no longer needed.')) return;
+        const ok = await ttConfirm('It will be removed, and your cover staff will be told they are no longer needed.', {
+            title: 'Cancel this leave?',
+            confirmText: 'Cancel leave',
+            cancelText: 'Keep it',
+            danger: true,
+        });
+        if (!ok) return;
 
         btn.disabled = true;
         send('/leave/' + encodeURIComponent(id), 'DELETE').then(data => {

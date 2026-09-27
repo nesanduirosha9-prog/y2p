@@ -103,11 +103,14 @@ document.addEventListener('DOMContentLoaded', function () {
 
     function deleteHall(row) {
         const code = row.dataset.code;
-        if (!confirm('Delete ' + code + '? This cannot be undone.')) return;
-        sendJson('DELETE', '/lecture-halls/' + encodeURIComponent(code))
-            .then(function () {
-                row.remove();
-                applySearch();
+        ttConfirm('This cannot be undone.', { title: 'Delete ' + code + '?', confirmText: 'Delete', danger: true })
+            .then(function (ok) {
+                if (!ok) return;
+                return sendJson('DELETE', '/lecture-halls/' + encodeURIComponent(code))
+                    .then(function () {
+                        row.remove();
+                        applySearch();
+                    });
             })
             .catch(function (err) { ttToast.error(err.message); });
     }

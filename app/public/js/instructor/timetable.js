@@ -146,7 +146,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // DELETE (cancel) request
     deleteRequestBtn.addEventListener('click', async () => {
-        if (!confirm('Cancel this request? This cannot be undone.')) return;
+        const ok = await ttConfirm('This cannot be undone.', {
+            title: 'Cancel this request?',
+            confirmText: 'Cancel request',
+            cancelText: 'Keep it',
+            danger: true,
+        });
+        if (!ok) return;
 
         const payload = { request_id: detailRequestId.value };
 

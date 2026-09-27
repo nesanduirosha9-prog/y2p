@@ -14,6 +14,12 @@ if (session_status() === PHP_SESSION_NONE) {
 // Load configuration
 require_once __DIR__ . '/config.php';
 
+// The department's clock. php.ini's date.timezone varies by machine (XAMPP
+// ships Europe/Berlin), which put PHP's "today" a day behind MySQL's
+// CURDATE() after midnight — leave showed a Cancel button the server then
+// refused. Database::init() gives MySQL the same offset.
+date_default_timezone_set('Asia/Colombo');
+
 // Simple PSR-4-like autoloader for this mini framework.
 // It converts namespace separators to directory separators
 // and requires the corresponding PHP file if it exists.

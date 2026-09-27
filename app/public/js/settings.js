@@ -225,11 +225,16 @@ function initRevokeCoordinator() {
     const body = document.getElementById('handoverBody');
     if (!body) return;
 
-    body.addEventListener('click', (e) => {
+    body.addEventListener('click', async (e) => {
         const btn = e.target.closest('[data-revoke]');
         if (!btn || btn.disabled) return;
         const name = btn.dataset.name || 'this person';
-        if (!confirm('Revoke the Coordinator role from ' + name + '?\n\nThey stay on staff as Junior Staff. You can add them back later.')) return;
+        const ok = await ttConfirm('They stay on staff as Junior Staff. You can add them back later.', {
+            title: 'Revoke the Coordinator role from ' + name + '?',
+            confirmText: 'Revoke',
+            danger: true,
+        });
+        if (!ok) return;
 
         btn.disabled = true;
         fetch('/settings/handover/revoke', {

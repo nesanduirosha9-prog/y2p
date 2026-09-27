@@ -279,11 +279,14 @@ document.addEventListener('DOMContentLoaded', function () {
             openModal('edit', row);
         } else if (btn.dataset.act === 'delete') {
             const code = row.dataset.code;
-            if (!confirm('Delete ' + code + '? This cannot be undone.')) return;
-            sendJson('DELETE', '/courses/' + encodeURIComponent(code))
-                .then(function () {
-                    row.remove();
-                    applyFilters();
+            ttConfirm('This cannot be undone.', { title: 'Delete ' + code + '?', confirmText: 'Delete', danger: true })
+                .then(function (ok) {
+                    if (!ok) return;
+                    return sendJson('DELETE', '/courses/' + encodeURIComponent(code))
+                        .then(function () {
+                            row.remove();
+                            applyFilters();
+                        });
                 })
                 .catch(function (err) { ttToast.error(err.message); });
         }

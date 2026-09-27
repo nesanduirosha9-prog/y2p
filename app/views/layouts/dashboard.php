@@ -96,6 +96,8 @@ $titleSuffix = $isInstructor ? 'StaffSync - Instructor' : 'StaffSync';
     <script src="/js/code_badge.js"></script>
     <!-- System toast (window.ttToast) — every role, every page -->
     <script src="/js/toast.js"></script>
+    <!-- System confirm dialog (window.ttConfirm) — use instead of confirm() -->
+    <script src="/js/confirm.js"></script>
 </head>
 <body>
 
