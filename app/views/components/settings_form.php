@@ -284,7 +284,7 @@ $initials = ViewHelpers::currentAvatarCode();
             </div>
 
             <p class="accounts-note">
-                Giving someone a role needs a verification code from them. Revoking a Coordinator takes effect straight away.
+                Role changes take effect straight away. Moving the Timetable Officer account needs a verification code sent to the new email.
             </p>
 
             <!-- Change / Add panel — the app's side drawer (components.css).
@@ -316,11 +316,14 @@ $initials = ViewHelpers::currentAvatarCode();
 
                         <div class="form-row" id="hoPickRow">
                             <label class="form-label" for="hoSearch">New holder</label>
-                            <div class="search-box handover-search">
-                                <i class="fa-solid fa-magnifying-glass"></i>
-                                <input type="text" id="hoSearch" placeholder="Search by name or email…" autocomplete="off">
+                            <div class="ho-combo">
+                                <div class="search-box handover-search">
+                                    <i class="fa-solid fa-magnifying-glass"></i>
+                                    <input type="text" id="hoSearch" placeholder="Search by name…" autocomplete="off"
+                                           role="combobox" aria-controls="hoCandidates" aria-expanded="false">
+                                </div>
+                                <ul class="ho-options" id="hoCandidates" role="listbox" hidden></ul>
                             </div>
-                            <div class="candidate-list" id="hoCandidates"></div>
                             <p class="dir-empty" id="hoCandidatesEmpty" hidden>Nobody matches.</p>
                         </div>
 
@@ -342,7 +345,7 @@ $initials = ViewHelpers::currentAvatarCode();
 
                     <div class="side-drawer-footer">
                         <button type="button" class="btn-drawer-cancel" id="hoBack">Cancel</button>
-                        <button type="button" class="btn-drawer-submit" id="hoNext" disabled>Send code</button>
+                        <button type="button" class="btn-drawer-submit" id="hoNext" disabled>Done</button>
                     </div>
                 </div>
             </div>

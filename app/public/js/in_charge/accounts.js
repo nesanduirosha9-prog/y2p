@@ -37,7 +37,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 if (!picked) return;
 
                 confirmBtn.disabled = true;
-                confirmBtn.textContent = 'Sending code...';
+                confirmBtn.textContent = 'Saving...';
 
                 fetch('/settings/handover/select', {
                     method: 'POST',

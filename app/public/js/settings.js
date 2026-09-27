@@ -62,16 +62,23 @@ function initHandoverPanel() {
         }
     }
 
+    function setListOpen(isOpen) {
+        $('hoCandidates').hidden = !isOpen;
+        $('hoSearch').setAttribute('aria-expanded', String(isOpen));
+    }
+
+    // Searchable dropdown: badge + name only. Once someone is picked the input
+    // holds their name, so the filter ignores it and reopening shows everyone.
     function renderCandidates() {
-        const q = $('hoSearch').value.trim().toLowerCase();
-        const list = state.candidates.filter(c => !q || (c.name + ' ' + c.email).toLowerCase().includes(q));
-        const chosen = picked();
+        const q = state.toCode ? '' : $('hoSearch').value.trim().toLowerCase();
+        const list = state.candidates.filter(c => !q || (c.name + ' ' + c.code).toLowerCase().includes(q));
         $('hoCandidates').innerHTML = list.map(c => `
-            <label class="candidate-row">
-                <input type="radio" name="hoCandidate" value="${esc(c.code)}" ${chosen && chosen.code === c.code ? 'checked' : ''}>
-                ${personHtml(c)}
-            </label>`).join('');
+            <li><button type="button" role="option" data-code="${esc(c.code)}"
+                    class="ho-option${c.code === state.toCode ? ' is-selected' : ''}">
+                ${codeBadge(c.code, c.kind || 'staff')}<span class="candidate-name">${esc(c.name)}</span>
+            </button></li>`).join('');
         $('hoCandidatesEmpty').hidden = list.length > 0;
+        setListOpen(list.length > 0);
         updateNext();
     }
 
@@ -83,7 +90,7 @@ function initHandoverPanel() {
             ? 'Enter the code they received'
             : state.officer ? 'Move the account to the new officer' : 'Pick who takes the role';
         back.textContent = step === 'pick' ? 'Cancel' : 'Back';
-        next.textContent = step === 'pick' ? 'Send code' : 'Confirm change';
+        next.textContent = step === 'verify' ? 'Confirm change' : state.officer ? 'Send code' : 'Done';
         updateNext();
     }
 
@@ -104,6 +111,7 @@ function initHandoverPanel() {
         showError('hoPickError', '');
         showError('hoOtpError', '');
         $('hoCandidates').innerHTML = '';
+        setListOpen(false);
         $('hoCandidatesEmpty').hidden = true;
         showStep('pick');
 
@@ -132,14 +140,16 @@ function initHandoverPanel() {
         state = null;
     }
 
-    function sendCode() {
+    // Coordinator / In-Charge: the server makes the change at once, so reload
+    // onto the tab. Timetable Officer: a code goes to the new email first.
+    function submitPick() {
         // The officer's account keeps its code; only the email is new.
         const to = state.officer
             ? { code: state.from.code, name: 'New Timetable Officer', email: newEmail(), kind: 'staff' }
             : picked();
         if (!to || (state.officer && !to.email)) return;
         next.disabled = true;
-        next.textContent = 'Sending…';
+        next.textContent = state.officer ? 'Sending…' : 'Saving…';
         showError('hoPickError', '');
 
         fetch('/settings/handover/select', {
@@ -155,12 +165,17 @@ function initHandoverPanel() {
             .then(r => r.json())
             .then(data => {
                 if (!data.success) throw new Error(data.message);
+                if (!state.officer) {
+                    window.location.hash = 'handover';
+                    window.location.reload();
+                    return;
+                }
                 $('hoTarget').innerHTML = personHtml(to);
                 showStep('verify');
                 $('hoOtp').focus();
             })
             .catch(err => {
-                showError('hoPickError', (err && err.message) || 'Could not send the code. Please try again.');
+                showError('hoPickError', (err && err.message) || 'Could not save the change. Please try again.');
                 showStep('pick');
             });
     }
@@ -201,14 +216,26 @@ function initHandoverPanel() {
         if (e.target === panel) close();
     });
     back.addEventListener('click', () => (state && state.step === 'verify' ? showStep('pick') : close()));
-    next.addEventListener('click', () => (state.step === 'pick' ? sendCode() : confirmChange()));
-    $('hoSearch').addEventListener('input', renderCandidates);
+    next.addEventListener('click', () => (state.step === 'pick' ? submitPick() : confirmChange()));
+    // Typing means a new search, so drop the current pick.
+    $('hoSearch').addEventListener('input', () => {
+        state.toCode = '';
+        renderCandidates();
+    });
+    $('hoSearch').addEventListener('focus', () => state && state.candidates.length && renderCandidates());
+    $('hoSearch').addEventListener('blur', () => setListOpen(false));
     $('hoNewEmail').addEventListener('input', updateNext);
     $('hoNewEmail').addEventListener('keydown', e => {
-        if (e.key === 'Enter' && !next.disabled) sendCode();
+        if (e.key === 'Enter' && !next.disabled) submitPick();
     });
-    $('hoCandidates').addEventListener('change', e => {
-        state.toCode = e.target.value;
+    // Keep focus in the input so its blur doesn't close the list before the click lands.
+    $('hoCandidates').addEventListener('mousedown', e => e.preventDefault());
+    $('hoCandidates').addEventListener('click', e => {
+        const opt = e.target.closest('.ho-option');
+        if (!opt) return;
+        state.toCode = opt.dataset.code;
+        $('hoSearch').value = picked().name;
+        setListOpen(false);
         updateNext();
     });
     $('hoOtp').addEventListener('input', function () {

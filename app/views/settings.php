@@ -21,4 +21,4 @@ require \app\core\Application::$ROOT_DIR . '/views/components/settings_form.php'
 ?>
 <!-- Show/hide buttons on the Password card's fields (same as the sign-in pages) -->
 <script src="/js/password_toggle.js"></script>
-<script src="/js/settings.js"></script>
+<script src="<?= htmlspecialchars(\app\core\ViewHelpers::asset('/js/settings.js')) ?>"></script>

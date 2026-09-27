@@ -11,9 +11,8 @@ use app\models\StaffModel;
 use app\services\EmailService;
 
 // In-Charge "Accounts" / Role Assignment screen — pulled from Figma node
-// 34:5044 (canvas "In_Charge"): a 4-step handover flow (pick seat -> search
-// replacement -> OTP verify -> success) to reassign the Coordinator(s) and
-// In-Charge seats. The Timetable Officer is not a seat: it is its own account
+// 34:5044 (canvas "In_Charge"): a handover flow (pick seat -> search
+// replacement -> success) to reassign the Coordinator(s) and In-Charge seats. The Timetable Officer is not a seat: it is its own account
 // (code TMO), so handing it over keeps the account and its history and only
 // changes the login email — the new officer then sets a password with Forgot
 // password and fills in their profile from Settings (see
@@ -32,12 +31,14 @@ use app\services\EmailService;
 // 2. index()        — GET, lists the current seat holders.
 // 3. change()        — GET, step 1: pick which seat to reassign.
 // 4. selectView()     — GET, step 2: search a same-rank replacement.
-// 5. selectSubmit()   — POST, step 2 submit: generates a 6-digit OTP into
-//    the session and emails it (via EmailService) to the incoming staff
-//    member, so they consciously confirm accepting the new role.
-// 6. verifyView()     — GET, step 3: shows the OTP entry screen.
+// 5. selectSubmit()   — POST, step 2 submit: for a Coordinator / In-Charge
+//    seat, performs the reassignment straight away (no code). For the
+//    Timetable Officer, generates a 6-digit OTP into the session and emails it
+//    (via EmailService) to the new login email, so the new officer proves
+//    they own that address.
+// 6. verifyView()     — GET, step 3 (Timetable Officer only): OTP entry screen.
 // 7. verifySubmit()   — POST, step 3 submit: checks the OTP + expiry, then
-//    performs the actual reassignment.
+//    moves the Timetable Officer login.
 // 8. updatedView()    — GET, step 4: confirmation screen.
 // 9. add()            — GET, "Add coordinator": the same select/verify steps,
 //    with nobody being replaced. The department may have any number of
@@ -235,7 +236,10 @@ class AccountsController extends Controller
         $response->json(['success' => true]);
     }
 
-    /** POST /settings/handover/select — starts the OTP challenge. */
+    /**
+     * POST /settings/handover/select — Coordinator / In-Charge: performs the
+     * change immediately. Timetable Officer: starts the OTP challenge.
+     */
     public function selectSubmit(Request $request, Response $response)
     {
         // Guard lives on Controller now — see app/core/Controller.php.
@@ -267,32 +271,19 @@ class AccountsController extends Controller
             return;
         }
 
-        // The incoming staff member (the one receiving the new role) is who
-        // needs to consciously confirm accepting the handover.
-        $toStaff = (new StaffModel())->findByCode($toCode);
-        if (!$toStaff) {
-            $response->json(['success' => false, 'message' => 'Could not find the selected replacement.'], 404);
+        // Seats change straight away — the In-Charge's pick is the confirmation,
+        // no code is sent to the incoming holder.
+        $staffModel = new StaffModel();
+        $ok = $isAdd
+            ? $staffModel->assignPosition($toCode, $position)
+            : $staffModel->reassignPosition($fromCode, $toCode, $position);
+
+        if (!$ok) {
+            $response->json(['success' => false, 'message' => 'Could not complete the role change.'], 500);
             return;
         }
 
-        $otp = str_pad((string) random_int(0, 999999), 6, '0', STR_PAD_LEFT);
-        $demo = defined('DEMO_AUTH') && DEMO_AUTH;
-
-        if (!$demo && !EmailService::sendOtpEmail($toStaff['email'], $otp, 'role_handover')) {
-            $response->json(['success' => false, 'message' => 'Could not send the verification code. Please try again.'], 500);
-            return;
-        }
-
-        $_SESSION['handover'] = [
-            'position' => $position,
-            'from_code' => $fromCode,
-            'to_code' => $toCode,
-            'otp' => $otp,
-            'demo' => $demo,
-            'expires_at' => time() + 300, // 5 minutes
-        ];
-
-        $response->json(['success' => true, 'redirect' => '/settings/handover/verify']);
+        $response->json(['success' => true, 'redirect' => '/settings/handover/updated']);
     }
 
     /**
