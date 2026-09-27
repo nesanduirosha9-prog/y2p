@@ -110,8 +110,8 @@ class MessagesController extends Controller
     {
         return [
             [
-                'id' => 1, 'name' => 'CS3401 Lab Group', 'subtitle' => 'CS3401 – Fundamentals of Computing Lab',
-                'avatar' => 'CS', 'color' => '#4d179a', 'time' => '9:41 AM',
+                'id' => 1, 'name' => 'CS2201 LAB WED 8AM', 'subtitle' => 'CS3401 – Fundamentals of Computing Lab',
+                'avatar' => '8A', 'color' => '#4d179a', 'time' => '9:41 AM',
                 'preview' => 'Lab report template has been updated — please use the new version.',
                 'unread' => 3, 'isGroup' => true,
                 'members' => ['Ms. T. Fernando (You)', 'Dr. N. Perera', 'Mr. K. Bandara'],
@@ -119,13 +119,12 @@ class MessagesController extends Controller
                     ['text' => 'Good morning everyone. Today we\'ll cover memory allocation in C.', 'time' => '8:02 AM', 'mine' => false],
                     ['text' => 'Dr. Perera, the lab report template has been updated — please check the shared drive.', 'time' => '8:45 AM', 'mine' => false],
                     ['text' => 'Got it, thanks. I\'ll distribute it at the start of class.', 'time' => '9:10 AM', 'mine' => true],
-                    ['text' => 'Also, can someone confirm the projector in LAB-A is working?', 'time' => '9:35 AM', 'mine' => true],
-                    ['text' => 'Lab report template has been updated — please use the new version.', 'time' => '9:41 AM', 'mine' => false],
+
                 ],
             ],
             [
-                'id' => 2, 'name' => 'IT2301 Practical Group', 'subtitle' => 'IT2301 – Web Technologies Practical',
-                'avatar' => 'IT', 'color' => '#0f766e', 'time' => '9:12 AM',
+                'id' => 2, 'name' => 'CS2201 LAB THU 2PM', 'subtitle' => 'IT2301 – Web Technologies Practical',
+                'avatar' => '2P', 'color' => '#0f766e', 'time' => '9:12 AM',
                 'preview' => "Don't forget the network config lab.",
                 'unread' => 1, 'isGroup' => true,
                 'members' => ['Ms. T. Fernando (You)', 'Prof. A. Silva'],
@@ -134,39 +133,39 @@ class MessagesController extends Controller
                     ['text' => "Don't forget the network config lab.", 'time' => '9:12 AM', 'mine' => false],
                 ],
             ],
-            [
-                'id' => 3, 'name' => 'Dr. Nimal Perera', 'subtitle' => 'Dr. Nimal Perera',
-                'avatar' => 'NP', 'color' => '#1a3a6b', 'time' => 'Yesterday',
-                'preview' => 'Please send the attendance sheet for las…',
-                'unread' => 0, 'isGroup' => false,
-                'members' => ['Ms. T. Fernando (You)', 'Dr. N. Perera'],
-                'messages' => [
-                    ['text' => 'Please send the attendance sheet for last week\'s lab.', 'time' => 'Yesterday · 4:12 PM', 'mine' => false],
-                    ['text' => 'Sure, sending it over now.', 'time' => 'Yesterday · 4:20 PM', 'mine' => true],
-                ],
-            ],
-            [
-                'id' => 4, 'name' => 'Prof. Anoma Silva', 'subtitle' => 'Prof. Anoma Silva',
-                'avatar' => 'AS', 'color' => '#9a3412', 'time' => 'Monday',
-                'preview' => 'Thank you for the update.',
-                'unread' => 0, 'isGroup' => false,
-                'members' => ['Ms. T. Fernando (You)', 'Prof. A. Silva'],
-                'messages' => [
-                    ['text' => 'Could you cover my practical session next Tuesday?', 'time' => 'Monday · 11:00 AM', 'mine' => false],
-                    ['text' => 'Yes, happy to help — I\'ll confirm the room.', 'time' => 'Monday · 11:20 AM', 'mine' => true],
-                    ['text' => 'Thank you for the update.', 'time' => 'Monday · 11:25 AM', 'mine' => false],
-                ],
-            ],
-            [
-                'id' => 5, 'name' => 'Dept. Instructors Channel', 'subtitle' => 'Department of Computer Science',
-                'avatar' => 'DI', 'color' => '#4338ca', 'time' => 'Monday',
-                'preview' => 'Reminder: staff meeting at 3 PM tomorrow.',
-                'unread' => 2, 'isGroup' => true,
-                'members' => ['Ms. T. Fernando (You)', 'Dr. N. Perera', 'Prof. A. Silva', 'Mr. K. Bandara'],
-                'messages' => [
-                    ['text' => 'Reminder: staff meeting at 3 PM tomorrow in the conference room.', 'time' => 'Monday · 2:00 PM', 'mine' => false],
-                ],
-            ],
+            // [
+            //     'id' => 3, 'name' => 'Dr. Nimal Perera', 'subtitle' => 'Dr. Nimal Perera',
+            //     'avatar' => 'NP', 'color' => '#1a3a6b', 'time' => 'Yesterday',
+            //     'preview' => 'Please send the attendance sheet for las…',
+            //     'unread' => 0, 'isGroup' => false,
+            //     'members' => ['Ms. T. Fernando (You)', 'Dr. N. Perera'],
+            //     'messages' => [
+            //         ['text' => 'Please send the attendance sheet for last week\'s lab.', 'time' => 'Yesterday · 4:12 PM', 'mine' => false],
+            //         ['text' => 'Sure, sending it over now.', 'time' => 'Yesterday · 4:20 PM', 'mine' => true],
+            //     ],
+            // ],
+            // [
+            //     'id' => 4, 'name' => 'Prof. Anoma Silva', 'subtitle' => 'Prof. Anoma Silva',
+            //     'avatar' => 'AS', 'color' => '#9a3412', 'time' => 'Monday',
+            //     'preview' => 'Thank you for the update.',
+            //     'unread' => 0, 'isGroup' => false,
+            //     'members' => ['Ms. T. Fernando (You)', 'Prof. A. Silva'],
+            //     'messages' => [
+            //         ['text' => 'Could you cover my practical session next Tuesday?', 'time' => 'Monday · 11:00 AM', 'mine' => false],
+            //         ['text' => 'Yes, happy to help — I\'ll confirm the room.', 'time' => 'Monday · 11:20 AM', 'mine' => true],
+            //         ['text' => 'Thank you for the update.', 'time' => 'Monday · 11:25 AM', 'mine' => false],
+            //     ],
+            // ],
+            // [
+            //     'id' => 5, 'name' => 'Dept. Instructors Channel', 'subtitle' => 'Department of Computer Science',
+            //     'avatar' => 'DI', 'color' => '#4338ca', 'time' => 'Monday',
+            //     'preview' => 'Reminder: staff meeting at 3 PM tomorrow.',
+            //     'unread' => 2, 'isGroup' => true,
+            //     'members' => ['Ms. T. Fernando (You)', 'Dr. N. Perera', 'Prof. A. Silva', 'Mr. K. Bandara'],
+            //     'messages' => [
+            //         ['text' => 'Reminder: staff meeting at 3 PM tomorrow in the conference room.', 'time' => 'Monday · 2:00 PM', 'mine' => false],
+            //     ],
+            // ],
         ];
     }
 }

@@ -162,27 +162,7 @@ $initials = ViewHelpers::currentAvatarCode();
         <div style="height: 20px;"></div>
 
         <!-- Theme: decorative only -->
-        <div class="sys-card">
-            <div class="sys-card-header">
-                <h3><i class="fa-solid fa-palette"></i> Preferred Theme</h3>
-            </div>
-            <div class="sys-card-body">
-                <div class="sys-theme-options">
-                    <div class="sys-theme-pill active" data-theme-val="light">
-                        <span><i class="fa-solid fa-sun" style="color: #f59e0b;"></i> Light Mode</span>
-                        <i class="fa-solid fa-check check-icon"></i>
-                    </div>
-                    <div class="sys-theme-pill" data-theme-val="dark">
-                        <span><i class="fa-solid fa-moon" style="color: #6366f1;"></i> Dark Mode</span>
-                        <i class="fa-solid fa-check check-icon"></i>
-                    </div>
-                    <div class="sys-theme-pill" data-theme-val="system">
-                        <span><i class="fa-solid fa-desktop" style="color: #2563eb;"></i> System Default</span>
-                        <i class="fa-solid fa-check check-icon"></i>
-                    </div>
-                </div>
-            </div>
-        </div>
+       
 
         <div style="height: 20px;"></div>
 
