@@ -97,11 +97,11 @@ class WorkloadPrototypeData
     public static function courses(): array
     {
         return [
-            ['code' => 'SCS 1308', 'name' => 'Foundations of Algorithms',              'year' => 1, 'program' => 'CS', 'lecturer' => 'DKF', 'lecturer_name' => 'Dr. K. Fernando',       'engagement' => 'tutorial',           'hours' => 2, 'target' => 5, 'instructors' => ['TSR', 'BMC', 'PRL', 'NNE', 'WDI'], 'notes' => []],
-            ['code' => 'SCS 1309', 'name' => 'Database Management Systems',            'year' => 1, 'program' => 'CS', 'lecturer' => 'ENO', 'lecturer_name' => 'Dr. E. Osei',           'engagement' => 'practical',          'hours' => 3, 'target' => 5, 'instructors' => ['NJN', 'DUH', 'TSH', 'WIJ'],        'notes' => ['DUH' => 'Lab Lead', 'TSH' => 'Lab Setup Lead']],
-            ['code' => 'SCS 1310', 'name' => 'Object Oriented Modelling and Programming', 'year' => 1, 'program' => 'CS', 'lecturer' => 'LNC', 'lecturer_name' => 'Dr. L. Nanayakkara', 'engagement' => 'practical',          'hours' => 3, 'target' => 5, 'instructors' => ['GLS', 'ADM', 'AYS', 'MVT', 'UPE'], 'notes' => []],
-            ['code' => 'SCS 1311', 'name' => 'Internet and Web Technologies',          'year' => 1, 'program' => 'CS', 'lecturer' => 'GSR', 'lecturer_name' => 'Prof. G. Ranasinghe',   'engagement' => 'practical',          'hours' => 3, 'target' => 4, 'instructors' => ['UPE', 'MVT', 'ADM', 'PRL'],        'notes' => []],
-            ['code' => 'SCS 1312', 'name' => 'Operating System Concepts',              'year' => 1, 'program' => 'CS', 'lecturer' => 'CIK', 'lecturer_name' => 'Dr. C. Iddamalgoda',    'engagement' => 'practical',          'hours' => 3, 'target' => 5, 'instructors' => ['TSH', 'MVT', 'NNE', 'BMC', 'MAS'], 'notes' => []],
+            ['code' => 'CS 1308',  'name' => 'Foundations of Algorithms',              'year' => 1, 'program' => 'CS', 'lecturer' => 'DKF', 'lecturer_name' => 'Dr. K. Fernando',       'engagement' => 'tutorial',           'hours' => 2, 'target' => 5, 'instructors' => ['TSR', 'BMC', 'PRL', 'NNE', 'WDI'], 'notes' => []],
+            ['code' => 'CS 1309',  'name' => 'Database Management Systems',            'year' => 1, 'program' => 'CS', 'lecturer' => 'ENO', 'lecturer_name' => 'Dr. E. Osei',           'engagement' => 'practical',          'hours' => 3, 'target' => 5, 'instructors' => ['NJN', 'DUH', 'TSH', 'WIJ'],        'notes' => ['DUH' => 'Lab Lead', 'TSH' => 'Lab Setup Lead']],
+            ['code' => 'CS 1310',  'name' => 'Object Oriented Modelling and Programming', 'year' => 1, 'program' => 'CS', 'lecturer' => 'LNC', 'lecturer_name' => 'Dr. L. Nanayakkara', 'engagement' => 'practical',          'hours' => 3, 'target' => 5, 'instructors' => ['GLS', 'ADM', 'AYS', 'MVT', 'UPE'], 'notes' => []],
+            ['code' => 'CS 1311',  'name' => 'Internet and Web Technologies',          'year' => 1, 'program' => 'CS', 'lecturer' => 'GSR', 'lecturer_name' => 'Prof. G. Ranasinghe',   'engagement' => 'practical',          'hours' => 3, 'target' => 4, 'instructors' => ['UPE', 'MVT', 'ADM', 'PRL'],        'notes' => []],
+            ['code' => 'CS 1312',  'name' => 'Operating System Concepts',              'year' => 1, 'program' => 'CS', 'lecturer' => 'CIK', 'lecturer_name' => 'Dr. C. Iddamalgoda',    'engagement' => 'practical',          'hours' => 3, 'target' => 5, 'instructors' => ['TSH', 'MVT', 'NNE', 'BMC', 'MAS'], 'notes' => []],
             ['code' => 'EN 1203',  'name' => 'Aesthetic Studies',                      'year' => 1, 'program' => 'CS', 'lecturer' => 'SDA', 'lecturer_name' => 'Dr. S. D. Abeywardena', 'engagement' => 'coordination_lecture', 'hours' => 1, 'target' => 5, 'instructors' => ['JRA', 'NJN', 'DUH', 'KST'],      'notes' => []],
 
             ['code' => 'IS 1208',  'name' => 'Systems Analysis and Design',            'year' => 1, 'program' => 'IS', 'lecturer' => 'CRW', 'lecturer_name' => 'Dr. C. Wickramasinghe', 'engagement' => 'tutorial',           'hours' => 2, 'target' => 3, 'instructors' => ['AMJ', 'KST'],                      'notes' => []],
@@ -111,12 +111,12 @@ class WorkloadPrototypeData
             ['code' => 'IS 1212',  'name' => 'Probability and Statistics',             'year' => 1, 'program' => 'IS', 'lecturer' => 'NPK', 'lecturer_name' => 'Dr. N. P. Karunaratne', 'engagement' => 'tutorial',           'hours' => 2, 'target' => 4, 'instructors' => ['GLS', 'AMJ'],                      'notes' => []],
             ['code' => 'IS 1214',  'name' => 'Data Structures and Algorithms',         'year' => 1, 'program' => 'IS', 'lecturer' => 'NAS', 'lecturer_name' => 'Dr. N. A. Silva',       'engagement' => 'practical',          'hours' => 3, 'target' => 6, 'instructors' => ['DUH', 'AMJ', 'PRL', 'WDI'],        'notes' => []],
 
-            ['code' => 'SCS 2310', 'name' => 'Digital Signal Processing',              'year' => 2, 'program' => 'CS', 'lecturer' => 'ASA', 'lecturer_name' => 'Dr. A. S. Alahakoon',   'engagement' => 'assignment_marking', 'hours' => 2, 'target' => 4, 'instructors' => ['BMC', 'GLS'],                      'notes' => []],
-            ['code' => 'SCS 2311', 'name' => 'Cryptography and Information Security',  'year' => 2, 'program' => 'CS', 'lecturer' => 'TNK', 'lecturer_name' => 'Dr. T. N. Kumara',      'engagement' => 'practical',          'hours' => 3, 'target' => 5, 'instructors' => ['NJN', 'DUH', 'GLS'],               'notes' => []],
-            ['code' => 'SCS 2312', 'name' => 'Computational Models',                   'year' => 2, 'program' => 'CS', 'lecturer' => 'MIE', 'lecturer_name' => 'Dr. M. Ieshan',         'engagement' => 'tutorial',           'hours' => 2, 'target' => 5, 'instructors' => ['WDI', 'KST'],                      'notes' => []],
-            ['code' => 'SCS 2313', 'name' => 'Computer System Architecture',           'year' => 2, 'program' => 'CS', 'lecturer' => 'KGG', 'lecturer_name' => 'Dr. K. G. Gunawardena', 'engagement' => 'assignment_marking', 'hours' => 2, 'target' => 3, 'instructors' => ['TSR', 'NNE'],                      'notes' => []],
-            ['code' => 'SCS 2314', 'name' => 'Middleware Architecture',                'year' => 2, 'program' => 'CS', 'lecturer' => 'CRC', 'lecturer_name' => 'Dr. C. R. Chandrasiri',  'engagement' => 'assignment_marking', 'hours' => 2, 'target' => 4, 'instructors' => ['NNE', 'JRA', 'BMC'],               'notes' => []],
-            ['code' => 'SCS 2315', 'name' => 'Electronics and Physical Computing',     'year' => 2, 'program' => 'CS', 'lecturer' => 'HBE', 'lecturer_name' => 'Dr. H. B. Ekanayake',    'engagement' => 'tutorial',           'hours' => 2, 'target' => 5, 'instructors' => ['MAS', 'BMC', 'NJN'],               'notes' => []],
+            ['code' => 'CS 2310',  'name' => 'Digital Signal Processing',              'year' => 2, 'program' => 'CS', 'lecturer' => 'ASA', 'lecturer_name' => 'Dr. A. S. Alahakoon',   'engagement' => 'assignment_marking', 'hours' => 2, 'target' => 4, 'instructors' => ['BMC', 'GLS'],                      'notes' => []],
+            ['code' => 'CS 2311',  'name' => 'Cryptography and Information Security',  'year' => 2, 'program' => 'CS', 'lecturer' => 'TNK', 'lecturer_name' => 'Dr. T. N. Kumara',      'engagement' => 'practical',          'hours' => 3, 'target' => 5, 'instructors' => ['NJN', 'DUH', 'GLS'],               'notes' => []],
+            ['code' => 'CS 2312',  'name' => 'Computational Models',                   'year' => 2, 'program' => 'CS', 'lecturer' => 'MIE', 'lecturer_name' => 'Dr. M. Ieshan',         'engagement' => 'tutorial',           'hours' => 2, 'target' => 5, 'instructors' => ['WDI', 'KST'],                      'notes' => []],
+            ['code' => 'CS 2313',  'name' => 'Computer System Architecture',           'year' => 2, 'program' => 'CS', 'lecturer' => 'KGG', 'lecturer_name' => 'Dr. K. G. Gunawardena', 'engagement' => 'assignment_marking', 'hours' => 2, 'target' => 3, 'instructors' => ['TSR', 'NNE'],                      'notes' => []],
+            ['code' => 'CS 2314',  'name' => 'Middleware Architecture',                'year' => 2, 'program' => 'CS', 'lecturer' => 'CRC', 'lecturer_name' => 'Dr. C. R. Chandrasiri',  'engagement' => 'assignment_marking', 'hours' => 2, 'target' => 4, 'instructors' => ['NNE', 'JRA', 'BMC'],               'notes' => []],
+            ['code' => 'CS 2315',  'name' => 'Electronics and Physical Computing',     'year' => 2, 'program' => 'CS', 'lecturer' => 'HBE', 'lecturer_name' => 'Dr. H. B. Ekanayake',    'engagement' => 'tutorial',           'hours' => 2, 'target' => 5, 'instructors' => ['MAS', 'BMC', 'NJN'],               'notes' => []],
 
             ['code' => 'IS 2208',  'name' => 'Information Systems Management',         'year' => 2, 'program' => 'IS', 'lecturer' => 'GSR', 'lecturer_name' => 'Prof. G. Ranasinghe',   'engagement' => 'assignment_marking', 'hours' => 2, 'target' => 3, 'instructors' => ['UPE', 'WIJ', 'NNE'],               'notes' => []],
             ['code' => 'IS 2209',  'name' => 'Data Management and Governance',         'year' => 2, 'program' => 'IS', 'lecturer' => 'YSR', 'lecturer_name' => 'Dr. Y. S. Rajapaksha',  'engagement' => 'tutorial',           'hours' => 2, 'target' => 6, 'instructors' => ['WIJ', 'AYS', 'JRA', 'GLS'],        'notes' => []],
@@ -124,7 +124,7 @@ class WorkloadPrototypeData
             ['code' => 'IS 2211',  'name' => 'UI/UX Design',                           'year' => 2, 'program' => 'IS', 'lecturer' => 'DGS', 'lecturer_name' => 'Dr. D. G. Silva',       'engagement' => 'practical',          'hours' => 3, 'target' => 4, 'instructors' => ['TSR', 'PRL'],                      'notes' => []],
             ['code' => 'IS 2212',  'name' => 'Cloud Infrastructure and Applications',  'year' => 2, 'program' => 'IS', 'lecturer' => 'KMT', 'lecturer_name' => 'Dr. K. M. Thilina',     'engagement' => 'assignment_marking', 'hours' => 2, 'target' => 4, 'instructors' => ['DUH', 'WDI', 'WIJ'],               'notes' => []],
 
-            ['code' => 'SCS 3205', 'name' => 'Software Engineering',                   'year' => 3, 'program' => 'CS', 'lecturer' => 'NHP', 'lecturer_name' => 'Dr. N. H. Perera',      'engagement' => 'coordination_project', 'hours' => 2, 'target' => 5, 'instructors' => ['ADM', 'MVT'],                    'notes' => []],
+            ['code' => 'CS 3205',  'name' => 'Software Engineering',                   'year' => 3, 'program' => 'CS', 'lecturer' => 'NHP', 'lecturer_name' => 'Dr. N. H. Perera',      'engagement' => 'coordination_project', 'hours' => 2, 'target' => 5, 'instructors' => ['ADM', 'MVT'],                    'notes' => []],
             ['code' => 'IS 3202',  'name' => 'Enterprise Systems',                     'year' => 3, 'program' => 'IS', 'lecturer' => 'SMG', 'lecturer_name' => 'Dr. S. M. Gamage',      'engagement' => 'coordination_project', 'hours' => 2, 'target' => 4, 'instructors' => ['AYS', 'MAS', 'AMJ'],             'notes' => []],
         ];
     }
@@ -231,16 +231,22 @@ class WorkloadPrototypeData
         return null;
     }
 
-    /** Lecturer duty requests awaiting triage — the spreadsheet's Request sheet. */
+    /**
+     * Lecturer duty requests awaiting triage — the spreadsheet's Request sheet,
+     * in the shape the lecturer's timetable sends them: a first date that
+     * repeats weekly for `weeks` weeks, the room of the session, and the
+     * instructors the lecturer named (`requested_staff`). `headcount` is the
+     * total needed, named ones included; the allocator fills the rest.
+     */
     public static function requests(): array
     {
         return [
-            ['id' => 'req-1', 'requester' => 'AYS', 'requester_name' => 'W. M. A. Sanahari',     'course' => 'IS 4115',  'duty' => 'In-class Assignment',            'date' => self::day(0), 'slots' => ['10-11', '11-12'],                                  'headcount' => 3,  'note' => ''],
-            ['id' => 'req-2', 'requester' => 'AMD', 'requester_name' => 'Amod Pathirana',        'course' => 'SCS 2314', 'duty' => 'Middleware In-class Assessment', 'date' => self::day(1), 'slots' => ['1-2', '2-3'],                                      'headcount' => 4,  'note' => ''],
-            ['id' => 'req-3', 'requester' => 'NPK', 'requester_name' => 'Dr. N. P. Karunaratne', 'course' => 'IS 1212',  'duty' => 'Probability Lab Quiz',           'date' => self::day(2), 'slots' => ['8-9', '9-10'],                                     'headcount' => 3,  'note' => 'Two lab rooms in parallel'],
-            ['id' => 'req-4', 'requester' => 'TSR', 'requester_name' => 'T. S. Rathnayake',      'course' => 'SCS 2313', 'duty' => 'Architecture Lab Test',          'date' => self::day(3), 'slots' => ['1-2', '2-3'],                                      'headcount' => 4,  'note' => ''],
-            ['id' => 'req-5', 'requester' => 'PDW', 'requester_name' => 'Prof. D. Wijesekara',   'course' => 'SCS 2312', 'duty' => 'Computational Models Evaluation','date' => self::day(4), 'slots' => ['8-9', '9-10'],                                     'headcount' => 6,  'note' => ''],
-            ['id' => 'req-6', 'requester' => 'MAS', 'requester_name' => 'Dr. M. A. Silva',       'course' => 'IS 4101',  'duty' => 'Final Year Project Vivas',       'date' => self::day(4), 'slots' => ['8-9', '9-10', '10-11', '11-12', '12-1', '1-2', '2-3'], 'headcount' => 10, 'note' => 'All-day panel'],
+            ['id' => 'req-1', 'requester' => 'YSR', 'requester_name' => 'Dr. Y. S. Rajapaksha',  'course' => 'IS 4115',  'duty' => 'In-class Assignment',            'room' => 'LT-201', 'date' => self::day(0), 'weeks' => 1, 'slots' => ['10-11', '11-12'],                                  'requested_staff' => [],             'headcount' => 3,  'note' => ''],
+            ['id' => 'req-2', 'requester' => 'AMD', 'requester_name' => 'Mr. Amod Pathirana',    'course' => 'CS 2314',  'duty' => 'Middleware In-class Assessment', 'room' => 'LAB-B',  'date' => self::day(1), 'weeks' => 4, 'slots' => ['1-2', '2-3'],                                      'requested_staff' => ['NNE', 'DUH'], 'headcount' => 4,  'note' => ''],
+            ['id' => 'req-3', 'requester' => 'NPK', 'requester_name' => 'Dr. N. P. Karunaratne', 'course' => 'IS 1212',  'duty' => 'Probability Lab Quiz',           'room' => 'LAB-A',  'date' => self::day(2), 'weeks' => 1, 'slots' => ['8-9', '9-10'],                                     'requested_staff' => ['NNE', 'GLS'], 'headcount' => 3,  'note' => 'Two lab rooms in parallel'],
+            ['id' => 'req-4', 'requester' => 'KGG', 'requester_name' => 'Dr. K. G. Gunawardena', 'course' => 'CS 2313',  'duty' => 'Architecture Lab Test',          'room' => 'LAB-C',  'date' => self::day(3), 'weeks' => 3, 'slots' => ['1-2', '2-3'],                                      'requested_staff' => ['PRL', 'DUH'], 'headcount' => 3,  'note' => ''],
+            ['id' => 'req-5', 'requester' => 'PDW', 'requester_name' => 'Prof. D. Wijesekara',   'course' => 'CS 2312',  'duty' => 'Computational Models Evaluation','room' => 'LT-301', 'date' => self::day(4), 'weeks' => 1, 'slots' => ['8-9', '9-10'],                                     'requested_staff' => [],             'headcount' => 6,  'note' => ''],
+            ['id' => 'req-6', 'requester' => 'GSR', 'requester_name' => 'Prof. G. Ranasinghe',   'course' => 'IS 4101',  'duty' => 'Final Year Project Vivas',       'room' => 'LT-401', 'date' => self::day(4), 'weeks' => 2, 'slots' => ['8-9', '9-10', '10-11', '11-12', '12-1', '1-2', '2-3'], 'requested_staff' => [],             'headcount' => 10, 'note' => 'All-day panel'],
         ];
     }
 
@@ -251,11 +257,11 @@ class WorkloadPrototypeData
     public static function duties(): array
     {
         return [
-            ['id' => 'duty-1', 'requester' => 'DKF', 'requester_name' => 'Dr. K. Fernando',     'course' => 'SCS 1308', 'course_name' => 'Foundations of Algorithms',   'duty' => 'Tutorial Session',      'date' => self::day(0), 'slots' => ['10-11', '11-12'], 'headcount' => 3, 'assigned' => ['TSR', 'BMC', 'PRL']],
-            ['id' => 'duty-2', 'requester' => 'CIK', 'requester_name' => 'Dr. C. Iddamalgoda',  'course' => 'SCS 1312', 'course_name' => 'Operating System Concepts',   'duty' => 'Practical Lab','date' => self::day(1), 'slots' => ['8-9', '9-10'],    'headcount' => 3, 'assigned' => ['TSH', 'MVT', 'NNE']],
+            ['id' => 'duty-1', 'requester' => 'DKF', 'requester_name' => 'Dr. K. Fernando',     'course' => 'CS 1308', 'course_name' => 'Foundations of Algorithms',   'duty' => 'Tutorial Session',      'date' => self::day(0), 'slots' => ['10-11', '11-12'], 'headcount' => 3, 'assigned' => ['TSR', 'BMC', 'PRL']],
+            ['id' => 'duty-2', 'requester' => 'CIK', 'requester_name' => 'Dr. C. Iddamalgoda',  'course' => 'CS 1312', 'course_name' => 'Operating System Concepts',   'duty' => 'Practical Lab','date' => self::day(1), 'slots' => ['8-9', '9-10'],    'headcount' => 3, 'assigned' => ['TSH', 'MVT', 'NNE']],
             ['id' => 'duty-3', 'requester' => 'NAS', 'requester_name' => 'Dr. N. A. Silva',     'course' => 'IS 1214',  'course_name' => 'Data Structures and Algorithms', 'duty' => 'Lab Exam & Practical Evaluation', 'date' => self::day(2), 'slots' => ['1-2', '2-3'],     'headcount' => 3, 'assigned' => []],
-            ['id' => 'duty-4', 'requester' => 'CRC', 'requester_name' => 'Dr. C. R. Chandrasiri','course' => 'SCS 2314','course_name' => 'Middleware Architecture',      'duty' => 'RPC Practical Supervision',         'date' => self::day(3), 'slots' => ['10-11', '11-12'], 'headcount' => 3, 'assigned' => []],
-            ['id' => 'duty-5', 'requester' => 'ENO', 'requester_name' => 'Dr. E. Osei',         'course' => 'SCS 1309', 'course_name' => 'Database Management Systems', 'duty' => 'SQL Lab Assessment',                'date' => self::day(1), 'slots' => ['8-9'],            'headcount' => 2, 'assigned' => []],
+            ['id' => 'duty-4', 'requester' => 'CRC', 'requester_name' => 'Dr. C. R. Chandrasiri','course' => 'CS 2314','course_name' => 'Middleware Architecture',      'duty' => 'RPC Practical Supervision',         'date' => self::day(3), 'slots' => ['10-11', '11-12'], 'headcount' => 3, 'assigned' => []],
+            ['id' => 'duty-5', 'requester' => 'ENO', 'requester_name' => 'Dr. E. Osei',         'course' => 'CS 1309', 'course_name' => 'Database Management Systems', 'duty' => 'SQL Lab Assessment',                'date' => self::day(1), 'slots' => ['8-9'],            'headcount' => 2, 'assigned' => []],
         ];
     }
 
@@ -384,10 +390,10 @@ class WorkloadPrototypeData
     {
         $at = fn(int $days) => (new \DateTimeImmutable(self::currentSemester()['start']))->modify("+$days days")->format('Y-m-d');
         return [
-            ['date' => $at(7), 'course' => 'SCS 1308', 'staff' => 'KST', 'how' => 'removed', 'note' => 'temporarily paused'],
-            ['date' => $at(7), 'course' => 'SCS 1308', 'staff' => 'WDI', 'how' => 'added',   'note' => 'replacing KST'],
-            ['date' => $at(14), 'course' => 'SCS 1309', 'staff' => 'GLS', 'how' => 'removed', 'note' => 'moved to SCS 2311'],
-            ['date' => $at(14), 'course' => 'SCS 2311', 'staff' => 'GLS', 'how' => 'added',   'note' => 'moved from SCS 1309'],
+            ['date' => $at(7), 'course' => 'CS 1308', 'staff' => 'KST', 'how' => 'removed', 'note' => 'temporarily paused'],
+            ['date' => $at(7), 'course' => 'CS 1308', 'staff' => 'WDI', 'how' => 'added',   'note' => 'replacing KST'],
+            ['date' => $at(14), 'course' => 'CS 1309', 'staff' => 'GLS', 'how' => 'removed', 'note' => 'moved to CS 2311'],
+            ['date' => $at(14), 'course' => 'CS 2311', 'staff' => 'GLS', 'how' => 'added',   'note' => 'moved from CS 1309'],
             ['date' => $at(21), 'course' => 'IS 1211',  'staff' => 'JRA', 'how' => 'removed', 'note' => 'account deactivated'],
             ['date' => $at(21), 'course' => 'IS 1214',  'staff' => 'AMJ', 'how' => 'added',   'note' => 'extra lab group'],
         ];
@@ -694,14 +700,14 @@ class WorkloadPrototypeData
     private static function writtenEvaluations(): array
     {
         return [
-            ['id' => 'eval-001', 'staff_code' => 'TSR', 'course_code' => 'SCS 1308', 'date' => self::day(-8), 'rating' => 5, 'comment' => 'Exceptional algorithm demonstration; students consistently praise his step-by-step trace explanations. Could encourage quieter students to join in more during group tutorials.'],
-            ['id' => 'eval-002', 'staff_code' => 'BMC', 'course_code' => 'SCS 2310', 'date' => self::day(-11), 'rating' => 4, 'comment' => 'Strong command of MATLAB and the Fourier transform practicals, and proactive in lab setup. Should finish grading a day or two earlier when batches are large.'],
+            ['id' => 'eval-001', 'staff_code' => 'TSR', 'course_code' => 'CS 1308', 'date' => self::day(-8), 'rating' => 5, 'comment' => 'Exceptional algorithm demonstration; students consistently praise his step-by-step trace explanations. Could encourage quieter students to join in more during group tutorials.'],
+            ['id' => 'eval-002', 'staff_code' => 'BMC', 'course_code' => 'CS 2310', 'date' => self::day(-11), 'rating' => 4, 'comment' => 'Strong command of MATLAB and the Fourier transform practicals, and proactive in lab setup. Should finish grading a day or two earlier when batches are large.'],
             ['id' => 'eval-003', 'staff_code' => 'DUH', 'course_code' => 'IS 1214',  'date' => self::day(-13), 'rating' => 5, 'comment' => 'Very approachable and patient with first-year students struggling with C pointers. Needs to follow the automated grading rubric more strictly.'],
             ['id' => 'eval-004', 'staff_code' => 'AMJ', 'course_code' => 'IS 1208',  'date' => self::day(-18), 'rating' => 4, 'comment' => 'Well-versed in UML modelling and agile case studies. Arrived late to two practical sessions because of a timetable clash, which should be resolved before next semester.'],
             ['id' => 'eval-005', 'staff_code' => 'WIJ', 'course_code' => 'IS 2209',  'date' => self::day(-21), 'rating' => 5, 'comment' => 'Took over two tutorial groups at short notice without any drop in quality. Carrying one of the heaviest loads in the department — watch for burnout.'],
-            ['id' => 'eval-006', 'staff_code' => 'NJN', 'course_code' => 'SCS 2311', 'date' => self::day(-24), 'rating' => 4, 'comment' => 'Deep practical knowledge of the OpenSSL toolchain. Some students found the explanations terse.'],
+            ['id' => 'eval-006', 'staff_code' => 'NJN', 'course_code' => 'CS 2311', 'date' => self::day(-24), 'rating' => 4, 'comment' => 'Deep practical knowledge of the OpenSSL toolchain. Some students found the explanations terse.'],
             ['id' => 'eval-007', 'staff_code' => 'PRL', 'course_code' => 'IS 2211',  'date' => self::day(-27), 'rating' => 5, 'comment' => 'Ran the Figma critique sessions entirely unaided. Ready for a heavier allocation next semester.'],
-            ['id' => 'eval-008', 'staff_code' => 'TSH', 'course_code' => 'SCS 1309', 'date' => self::day(-25), 'rating' => 3, 'comment' => 'Lab setup is always ready ahead of the session, but missed two marking deadlines. Needs a clearer handover when on leave.'],
+            ['id' => 'eval-008', 'staff_code' => 'TSH', 'course_code' => 'CS 1309', 'date' => self::day(-25), 'rating' => 3, 'comment' => 'Lab setup is always ready ahead of the session, but missed two marking deadlines. Needs a clearer handover when on leave.'],
         ];
     }
 }

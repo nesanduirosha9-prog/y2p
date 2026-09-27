@@ -650,29 +650,29 @@ document.addEventListener('DOMContentLoaded', function () {
     const pastYearsData = {
         '2023/2024': {
             'cs': [
-                { code: 'CS1101', title: 'Intro to Programming', location: 'LAB-A201', type: 'lab', day: 'mon', start: 8, duration: 2, lecturer: 'Prof. David Nkrumah' },
-                { code: 'CS1102', title: 'Discrete Mathematics', location: 'LT-301', type: 'lecture', day: 'tue', start: 10, duration: 2, lecturer: 'Dr. Sarah Chen' },
-                { code: 'CS1103', title: 'Computer Systems', location: 'ROOM-B105', type: 'tutorial', day: 'wed', start: 13, duration: 2, lecturer: 'Dr. Kofi Anning' },
-                { code: 'CS1104', title: 'Calculus', location: 'LT-201', type: 'lecture', day: 'thu', start: 9, duration: 2, lecturer: 'Dr. Linda Osei' },
-                { code: 'CS1101', title: 'Programming Practical', location: 'LAB-B101', type: 'practical', day: 'fri', start: 14, duration: 2, lecturer: 'Prof. David Nkrumah' }
+                { code: 'CS1101', title: 'Intro to Programming', location: 'LAB-A', type: 'lab', day: 'mon', start: 8, duration: 2, lecturer: 'Prof. D. Nawarathne' },
+                { code: 'CS1102', title: 'Discrete Mathematics', location: 'LT-301', type: 'lecture', day: 'tue', start: 10, duration: 2, lecturer: 'Dr. S. Chandrasekara' },
+                { code: 'CS1103', title: 'Computer Systems', location: 'LT-105', type: 'tutorial', day: 'wed', start: 13, duration: 2, lecturer: 'Dr. K. Attanayake' },
+                { code: 'CS1104', title: 'Calculus', location: 'LT-201', type: 'lecture', day: 'thu', start: 9, duration: 2, lecturer: 'Dr. L. Obeyesekere' },
+                { code: 'CS1101', title: 'Programming Practical', location: 'LAB-B', type: 'practical', day: 'fri', start: 14, duration: 2, lecturer: 'Prof. D. Nawarathne' }
             ],
             'is': [
-                { code: 'IS1101', title: 'Foundations of IS', location: 'LT-201', type: 'lecture', day: 'mon', start: 9, duration: 2, lecturer: 'Dr. Kofi Anning' },
-                { code: 'IS1102', title: 'Business Processes', location: 'LT-401', type: 'lecture', day: 'tue', start: 13, duration: 2, lecturer: 'Dr. Linda Osei' },
-                { code: 'IS1103', title: 'Information Systems Lab', location: 'LAB-B101', type: 'lab', day: 'fri', start: 10, duration: 2, lecturer: 'Dr. Kofi Anning' }
+                { code: 'IS1101', title: 'Foundations of IS', location: 'LT-201', type: 'lecture', day: 'mon', start: 9, duration: 2, lecturer: 'Dr. K. Attanayake' },
+                { code: 'IS1102', title: 'Business Processes', location: 'LT-401', type: 'lecture', day: 'tue', start: 13, duration: 2, lecturer: 'Dr. L. Obeyesekere' },
+                { code: 'IS1103', title: 'Information Systems Lab', location: 'LAB-B', type: 'lab', day: 'fri', start: 10, duration: 2, lecturer: 'Dr. K. Attanayake' }
             ]
         },
         '2022/2023': {
             'cs': [
-                { code: 'CS1101', title: 'Intro to Programming', location: 'LAB-A201', type: 'lab', day: 'mon', start: 10, duration: 2, lecturer: 'Prof. David Nkrumah' },
-                { code: 'CS1102', title: 'Discrete Mathematics', location: 'LT-401', type: 'lecture', day: 'wed', start: 8, duration: 2, lecturer: 'Dr. Sarah Chen' },
-                { code: 'CS1103', title: 'Computer Systems', location: 'LT-302', type: 'lecture', day: 'thu', start: 13, duration: 2, lecturer: 'Dr. Kofi Anning' },
-                { code: 'CS1104', title: 'Calculus', location: 'ROOM-D201', type: 'tutorial', day: 'fri', start: 9, duration: 2, lecturer: 'Dr. Linda Osei' }
+                { code: 'CS1101', title: 'Intro to Programming', location: 'LAB-A', type: 'lab', day: 'mon', start: 10, duration: 2, lecturer: 'Prof. D. Nawarathne' },
+                { code: 'CS1102', title: 'Discrete Mathematics', location: 'LT-401', type: 'lecture', day: 'wed', start: 8, duration: 2, lecturer: 'Dr. S. Chandrasekara' },
+                { code: 'CS1103', title: 'Computer Systems', location: 'LT-302', type: 'lecture', day: 'thu', start: 13, duration: 2, lecturer: 'Dr. K. Attanayake' },
+                { code: 'CS1104', title: 'Calculus', location: 'LT-201', type: 'tutorial', day: 'fri', start: 9, duration: 2, lecturer: 'Dr. L. Obeyesekere' }
             ],
             'is': [
-                { code: 'IS1101', title: 'Foundations of IS', location: 'LT-301', type: 'lecture', day: 'mon', start: 8, duration: 2, lecturer: 'Dr. Kofi Anning' },
-                { code: 'IS1102', title: 'Business Processes', location: 'LT-201', type: 'lecture', day: 'wed', start: 14, duration: 2, lecturer: 'Dr. Linda Osei' },
-                { code: 'IS1103', title: 'Information Systems Lab', location: 'LAB-A201', type: 'lab', day: 'thu', start: 10, duration: 2, lecturer: 'Dr. Kofi Anning' }
+                { code: 'IS1101', title: 'Foundations of IS', location: 'LT-301', type: 'lecture', day: 'mon', start: 8, duration: 2, lecturer: 'Dr. K. Attanayake' },
+                { code: 'IS1102', title: 'Business Processes', location: 'LT-201', type: 'lecture', day: 'wed', start: 14, duration: 2, lecturer: 'Dr. L. Obeyesekere' },
+                { code: 'IS1103', title: 'Information Systems Lab', location: 'LAB-A', type: 'lab', day: 'thu', start: 10, duration: 2, lecturer: 'Dr. K. Attanayake' }
             ]
         }
     };

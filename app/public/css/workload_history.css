@@ -108,6 +108,7 @@
     white-space: nowrap;
 }
 .hist-how-auto        { background: #eff6ff; color: #1d4ed8; }
+.hist-how-requested   { background: #f5f3ff; color: #6d28d9; }
 .hist-how-manual      { background: #f1f5f9; color: #334155; }
 .hist-how-cover       { background: #fef3c7; color: #b45309; }
 .hist-how-replacement { background: #ffedd5; color: #c2410c; }

@@ -117,7 +117,7 @@
  * The one way the system prints a code. Rendered by
  * ViewHelpers::codeBadge() (PHP) and window.codeBadge() (js/code_badge.js) —
  * keep the markup of the two in sync.
- *   --course    SCS 1308  light slate
+ *   --course    CS 1308  light slate
  *   --lecturer  DKF       white, outlined (lecturer in-charge)
  *   --staff     TSR       navy (instructors / junior staff)
  * One colour per kind, no state variants: a problem with a person is shown

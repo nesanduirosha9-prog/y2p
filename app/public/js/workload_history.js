@@ -1,7 +1,7 @@
 // workload_history.js — the History tab of the Workload page.
 //
 // Every allocation over time, one row per staff member per event:
-//   duties   auto | manual | cover | replacement | removed
+//   duties   auto | requested (named by the lecturer) | manual | cover | replacement | removed
 //   courses  allocated (semester start) | added | removed
 //
 // Three sources, merged:
@@ -28,12 +28,12 @@
     DATA.staff.forEach(s => { staffByCode[s.code] = s; });
 
     const HOW_LABEL = {
-        auto: 'Auto', manual: 'Manual', cover: 'Cover', replacement: 'Replacement',
+        auto: 'Auto', requested: 'Requested', manual: 'Manual', cover: 'Cover', replacement: 'Replacement',
         removed: 'Removed', allocated: 'Allocated', added: 'Added',
     };
 
     // Order the How column sorts in: what happened, from routine to exceptional.
-    const HOW_ORDER = ['allocated', 'auto', 'added', 'manual', 'cover', 'replacement', 'removed'];
+    const HOW_ORDER = ['allocated', 'auto', 'requested', 'added', 'manual', 'cover', 'replacement', 'removed'];
 
     const DEFAULTS = { search: '', kind: 'all', group: 'none', sort: 'date', dir: -1 };
     const state = Object.assign({}, DEFAULTS);

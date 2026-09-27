@@ -257,7 +257,7 @@ $panel = fn(string ...$t) => in_array($tab, $t, true) ? '' : 'hidden';
                 <div class="sched-panel-header">
                     <div>
                         <h3>Requests from lecturers</h3>
-                        <p class="page-head-sub">Tick the ones to run this week. Approving moves them onto the board and allocates them in one step.</p>
+                        <p class="page-head-sub">Tick the ones to run. Approving books the named staff for every week requested and allocates the open places in one step.</p>
                     </div>
                     <div class="sched-batch-actions">
                         <button type="button" class="btn-primary" id="batchApproveBtn" disabled>
@@ -272,10 +272,10 @@ $panel = fn(string ...$t) => in_array($tab, $t, true) ? '' : 'hidden';
                                 <th style="width:42px;"><input type="checkbox" id="selectAllRequests" aria-label="Select all requests"></th>
                                 <th style="width:150px;">Requested by</th>
                                 <th style="min-width:240px;">Duty</th>
-                                <th style="width:130px;">Date</th>
+                                <th style="width:150px;">When</th>
                                 <th style="width:190px;">Time</th>
-                                <th style="width:80px;text-align:center;">Staff</th>
-                                <th style="width:160px;">Can we fill it?</th>
+                                <th style="min-width:170px;">Staff</th>
+                                <th style="width:190px;">Can we fill it?</th>
                             </tr>
                         </thead>
                         <tbody id="requestsBody"></tbody>

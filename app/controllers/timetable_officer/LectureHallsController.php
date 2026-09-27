@@ -83,7 +83,7 @@ class LectureHallsController extends Controller
         $type = $body['type'] ?? '';
         $capacity = filter_var($body['capacity'] ?? null, FILTER_VALIDATE_INT);
 
-        // rooms.code is VARCHAR(20); keep it to the shape the seeds use (LT-301, LAB-A201).
+        // rooms.code is VARCHAR(20); keep it to the shape the seeds use (LT-301, LAB-A).
         if (!preg_match('/^[A-Z0-9][A-Z0-9-]{1,19}$/', $code)) {
             $response->json(['success' => false, 'message' => 'Hall code must be 2–20 letters, digits or dashes.'], 400);
             return;

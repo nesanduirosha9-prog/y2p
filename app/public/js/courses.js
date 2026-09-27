@@ -305,7 +305,7 @@ document.addEventListener('DOMContentLoaded', function () {
         row.dataset.instructors = c.instructors.join(',');
         row.dataset.search = (c.code + ' ' + c.title + ' ' + c.lecturers.join(' ') + ' ' + c.instructors.join(' ')).toLowerCase();
         row.innerHTML =
-            '<td>' + codeBadge(c.code, 'course') + '</td>' +
+            '<td>' + codeBadge(c.code.replace(/^([A-Z]+)(\d)/, '$1 $2'), 'course') + '</td>' +
             '<td>' + esc(c.title) + '</td>' +
             '<td>' + c.credits + '</td>' +
             '<td><span class="pill pill-year-' + c.year + '">Year ' + c.year + '</span></td>' +

@@ -10,7 +10,7 @@ INSERT INTO timetable_sessions (
     session_type, 
     managed_by_code
 ) VALUES (
-    'ROOM-D201',    
+    'LAB-C',        
     'mon',       
     13,             
     'IS1103',      
@@ -34,7 +34,7 @@ INSERT INTO timetable_sessions (
     session_type, 
     managed_by_code
 ) VALUES (
-    'ROOM-D201',    
+    'LAB-C',        
     'mon',       
     8,             
     'CS2201',      

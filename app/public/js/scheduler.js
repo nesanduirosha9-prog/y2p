@@ -88,6 +88,35 @@
         return k ? WEEKDAYS[k] : '—';
     }
 
+    /** Local date → ISO, from local parts (see isoForDay for why not toISOString). */
+    function toIso(d) {
+        return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' +
+            String(d.getDate()).padStart(2, '0');
+    }
+
+    function addWeeks(iso, n) {
+        const d = new Date(iso + 'T00:00:00');
+        d.setDate(d.getDate() + 7 * n);
+        return toIso(d);
+    }
+
+    /** Monday of the week `iso` falls in. */
+    function weekOf(iso) {
+        const d = new Date(iso + 'T00:00:00');
+        d.setDate(d.getDate() - (d.getDay() + 6) % 7);
+        return toIso(d);
+    }
+
+    /** The board, History and the fairness count only look at the active week. */
+    function inThisWeek(d) {
+        return d.date >= DATA.week.from && d.date <= DATA.week.to;
+    }
+
+    /** Every date a request runs on: its first date, then weekly for `weeks` weeks. */
+    function occurrences(r) {
+        return Array.from({ length: Math.max(1, r.weeks || 1) }, (_, k) => addWeeks(r.date, k));
+    }
+
     /** '8-9' → '8:00 AM'. Used for the human time range on each card. */
     function slotLabel(slot) {
         const h = SLOT_HOURS[slot];
@@ -134,9 +163,14 @@
         );
     }
 
-    /** Duty count so far — the sort key the spreadsheet uses. */
-    function dutyCount(code) {
-        return duties.reduce((n, d) => n + (d.assigned.includes(code) ? 1 : 0), 0);
+    /**
+     * Duty count in the week `iso` falls in — the sort key the spreadsheet
+     * uses. Per week, so booking a 4-week request does not make its staff look
+     * busier this week than they are.
+     */
+    function dutyCount(code, iso = DATA.week.from) {
+        const wk = weekOf(iso);
+        return duties.reduce((n, d) => n + (d.assigned.includes(code) && weekOf(d.date) === wk ? 1 : 0), 0);
     }
 
     /**
@@ -205,7 +239,7 @@
             slots: d.slots,
         });
         const rows = [];
-        duties.forEach(d => d.assigned.forEach(code => {
+        duties.filter(inThisWeek).forEach(d => d.assigned.forEach(code => {
             const v = d.via[code] || { how: 'auto', note: '' };
             rows.push(Object.assign(base(d), { staff: code, how: v.how, note: v.note }));
         }));
@@ -234,7 +268,7 @@
             const why = reasonsAgainst(code, duty);
             if (why.length) { rejected.push({ code, why: why[0] }); return; }
 
-            eligible.push({ code, duties: dutyCount(code), hours: (baseLoad[code] || {}).hours || 0 });
+            eligible.push({ code, duties: dutyCount(code, duty.date), hours: (baseLoad[code] || {}).hours || 0 });
         });
 
         // Fewest duties first; course hours break the tie. This is the fairness
@@ -303,11 +337,13 @@
     /** This week: one row per duty, grouped under a heading per day. */
     /** This week: one table row per duty, in date and time order. */
     function renderWeek() {
-        const list = [...duties].sort((a, b) => a.date.localeCompare(b.date) ||
+        // Later weeks of an approved request stay in `duties` (they still
+        // block those dates) but belong on the board of their own week.
+        const list = duties.filter(inThisWeek).sort((a, b) => a.date.localeCompare(b.date) ||
             (SLOT_HOURS[a.slots[0]] || 0) - (SLOT_HOURS[b.slots[0]] || 0));
 
         el('dutyGrid').innerHTML = list.map(dutyRow).join('');
-        el('dutyEmpty').hidden = duties.length > 0;
+        el('dutyEmpty').hidden = list.length > 0;
     }
 
     /**
@@ -324,9 +360,11 @@
         const chips = d.assigned.map(code => {
             const why = st.problems[code];
             const s = staffByCode[code];
+            const named = d.via[code] && d.via[code].how === 'requested' ? ' (named by ' + d.requester + ')' : '';
             // Plain chip; the problem is spelled out on its own line below.
-            return codeBadge(code, 'staff', { title: (s ? s.name : code) + (why ? ' — ' + why : '') });
+            return codeBadge(code, 'staff', { title: (s ? s.name : code) + named + (why ? ' — ' + why : '') });
         }).join('');
+        const where = [d.room, d.weeks > 1 ? 'week ' + d.week_no + ' of ' + d.weeks : ''].filter(Boolean).join(' · ');
 
         const issues = st.clashes.map(code => {
             const cover = st.covers[code];
@@ -356,6 +394,7 @@
                 <td>
                     <strong>${esc(d.duty)}</strong>
                     ${d.course_name ? `<div class="duty-cell-sub">${esc(d.course_name)}</div>` : ''}
+                    ${where ? `<div class="duty-cell-sub">${esc(where)}</div>` : ''}
                 </td>
                 <td>${codeBadge(d.requester, 'lecturer', { title: d.requester_name || d.requester })}</td>
                 <td>
@@ -376,17 +415,56 @@
             </tr>`;
     }
 
+    /**
+     * Can this request be staffed, week by week? For every date it runs on:
+     * which named staff can't make it (and why), and how many places end up
+     * filled once the allocator takes the open ones. Read-only — the same
+     * probe the approve step then runs for real.
+     */
+    function checkRequest(r) {
+        const named = r.requested_staff || [];
+        return occurrences(r).map(date => {
+            const probe = { id: '_probe', date, slots: r.slots, headcount: r.headcount, assigned: named.slice() };
+            const result = evaluate(probe);
+            if (result.fatal) return { date, fatal: result.fatal, filled: 0, problems: [] };
+            const problems = named
+                .map(code => ({ code, why: reasonsAgainst(code, probe)[0] }))
+                .filter(p => p.why);
+            return { date, fatal: null, problems, filled: named.length - problems.length + result.picked.length };
+        });
+    }
+
     function renderRequests() {
         el('requestsBody').innerHTML = requests.map(r => {
             // Show up front whether this request is even fillable, so the
             // Coordinator is not approving something that cannot be staffed.
-            const probe = evaluate({ id: '_probe', date: r.date, slots: r.slots, headcount: r.headcount, assigned: [] });
-            const canFill = probe.fatal ? 0 : Math.min(probe.picked.length, r.headcount);
-            const verdict = probe.fatal
-                ? `<span class="pill pill-danger" title="${esc(probe.fatal)}">Weekend</span>`
-                : canFill >= r.headcount
-                    ? `<span class="pill pill-active">${canFill} available</span>`
-                    : `<span class="pill pill-warn" title="Only ${canFill} of ${r.headcount} staff are free">Only ${canFill} of ${r.headcount}</span>`;
+            const weeks = checkRequest(r);
+            const n = weeks.length;
+            const named = r.requested_staff || [];
+            const open = Math.max(0, r.headcount - named.length);
+            const fatal = weeks.find(w => w.fatal);
+            const short = weeks.filter(w => w.filled < r.headcount);
+
+            const verdict = fatal
+                ? `<span class="pill pill-danger" title="${esc(fatal.fatal)}">Weekend</span>`
+                : !short.length
+                    ? `<span class="pill pill-active">${n > 1 ? 'Fills all ' + n + ' weeks' : 'Fills all ' + r.headcount}</span>`
+                    : n > 1
+                        ? `<span class="pill pill-warn" title="${esc(short.map(w => prettyDate(w.date) + ': ' + w.filled + ' of ' + r.headcount).join(', '))}">${short.length} of ${n} weeks short</span>`
+                        : `<span class="pill pill-warn" title="Only ${short[0].filled} of ${r.headcount} staff are free">Only ${short[0].filled} of ${r.headcount}</span>`;
+
+            // One line per named person and reason, with the weeks it applies to.
+            const byPerson = {};
+            weeks.forEach(w => w.problems.forEach(p => {
+                (byPerson[p.code + '|' + p.why] = byPerson[p.code + '|' + p.why] || []).push(w.date);
+            }));
+            const issues = Object.entries(byPerson).map(([key, dates]) => {
+                const [code, why] = key.split('|');
+                const when = n === 1 ? '' : dates.length === n ? ' (every week)' : ' (' + dates.map(prettyDate).join(', ') + ')';
+                return `<p class="sched-req-issue">${esc(code)}: ${esc(why)}${esc(when)}</p>`;
+            }).join('');
+
+            const last = weeks[n - 1].date;
 
             return `
                 <tr data-request="${esc(r.id)}">
@@ -396,19 +474,30 @@
                     </td>
                     <td>
                         ${codeBadge(r.course, 'course', { title: r.course_name })}
-                        <p class="page-head-sub" style="margin:2px 0 0;">${esc(r.duty)}</p>
+                        <p class="page-head-sub" style="margin:2px 0 0;">${esc(r.duty)}${r.room ? ` · <span style="white-space:nowrap;">${esc(r.room)}</span>` : ''}</p>
                         ${r.note ? `<p class="sched-req-note">${esc(r.note)}</p>` : ''}
                     </td>
                     <td>
                         <strong>${esc(dayName(r.date))}</strong>
-                        <p class="page-head-sub" style="margin:0;">${esc(prettyDate(r.date))}</p>
+                        <p class="page-head-sub" style="margin:0;">${n > 1
+                            ? `<span style="white-space:nowrap;">${esc(prettyDate(r.date))} – ${esc(prettyDate(last))}</span> · <span style="white-space:nowrap;">${n} weeks</span>`
+                            : esc(prettyDate(r.date))}</p>
                     </td>
                     <td>
                         <div class="duty-item-slots">
                             ${r.slots.map(s => `<span class="slot-tag">${esc(s)}</span>`).join('')}
                         </div>
                     </td>
-                    <td style="text-align:center;"><strong>${r.headcount}</strong></td>
+                    <td>
+                        <div class="sched-req-staff">
+                            ${named.map(code => codeBadge(code, 'staff', {
+                                title: ((staffByCode[code] || {}).name || code) + ' — named by ' + r.requester,
+                            })).join('')}
+                            ${open ? `<span class="pill pill-muted" title="Left to the allocator">+${open} open</span>` : ''}
+                        </div>
+                        <p class="page-head-sub" style="margin:2px 0 0;">${r.headcount} needed</p>
+                        ${issues}
+                    </td>
                     <td>${verdict}</td>
                 </tr>`;
         }).join('');
@@ -549,20 +638,30 @@
                 (byReason[r.why] = byReason[r.why] || []).push(r.code);
             });
 
+            // Staff the lecturer named, and any of them who can't actually do it.
+            const named = duty.assigned.filter(c => duty.via[c] && duty.via[c].how === 'requested');
+            const problems = dutyProblems(duty);
+            const namedIssues = named.filter(c => problems[c]).map(c => c + ': ' + problems[c]);
+
             return `
                 <div class="alloc-result ${shortfall ? 'is-short' : 'is-ok'}">
                     <div class="alloc-result-head">
                         ${codeBadge(duty.course, 'course', { title: duty.course_name })}
                         <strong>${esc(duty.duty)}</strong>
-                        <span class="alloc-result-when">${esc(dayName(duty.date))} ${esc(slotRange(duty.slots))}</span>
+                        <span class="alloc-result-when">${esc(dayName(duty.date))} ${esc(prettyDate(duty.date))} ${esc(slotRange(duty.slots))}${duty.weeks > 1 ? ' · week ' + duty.week_no + ' of ' + duty.weeks : ''}</span>
                     </div>
                     ${result.fatal
                         ? `<p class="alloc-fatal"><i class="fa-solid fa-circle-exclamation"></i> ${esc(result.fatal)}</p>`
                         : `
+                        ${named.length ? `
+                            <p class="alloc-line">
+                                Named by ${esc(duty.requester)}: <strong>${esc(named.join(', '))}</strong>
+                                ${namedIssues.length ? `<span class="alloc-short">${esc(namedIssues.join(' · '))}</span>` : ''}
+                            </p>` : ''}
                         <p class="alloc-line">
                             ${result.picked.length
                                 ? `Picked <strong>${esc(result.picked.join(', '))}</strong> — the least-loaded staff free for every slot.`
-                                : 'Nobody could be added.'}
+                                : shortfall ? 'Nobody could be added.' : 'No open places left to fill.'}
                             ${shortfall ? `<span class="alloc-short">Still ${shortfall} short of ${need}.</span>` : ''}
                         </p>
                         ${Object.keys(byReason).length ? `
@@ -640,6 +739,7 @@
                 <p class="invite-detail"><strong>Course:</strong> ${esc(duty.course)} — ${esc(duty.course_name || '')}</p>
                 <p class="invite-detail"><strong>Date:</strong> ${esc(dayName(duty.date))}, ${esc(prettyDate(duty.date))}</p>
                 <p class="invite-detail"><strong>Time:</strong> ${esc(slotRange(duty.slots))}</p>
+                ${duty.room ? `<p class="invite-detail"><strong>Venue:</strong> ${esc(duty.room)}</p>` : ''}
                 <p class="invite-sign">Kindly meet the lecturer in advance to clarify your duties.</p>
             </div>`;
 
@@ -660,14 +760,16 @@
         // First, anyone rostered on a day they are on leave hands over to the
         // cover they named — if that cover passes the same checks. Nobody else
         // is dropped automatically; that stays a Replace click.
+        // This week's board only — later weeks are allocated when approved.
+        const current = duties.filter(inThisWeek);
         const swaps = [];
-        duties.forEach(d => d.assigned.slice().forEach(code => {
+        current.forEach(d => d.assigned.slice().forEach(code => {
             if (!onLeave(code, d.date)) return;
             const to = swapInCover(d, code);
             if (to) swaps.push(code + ' → ' + to + ' on ' + d.course);
         }));
 
-        const open = duties.filter(d => d.assigned.length < d.headcount);
+        const open = current.filter(d => d.assigned.length < d.headcount);
         if (!open.length && !swaps.length) {
             showAllocationResult('Nothing to allocate', []);
             el('allocModalBody').innerHTML = '<p class="dir-empty">Every duty this week is already fully staffed.</p>';
@@ -772,22 +874,34 @@
         const taken = requests.filter(r => selected.has(r.id));
         if (!taken.length) return;
 
-        const results = taken.map(r => {
-            const duty = {
-                id: 'duty-' + r.id,
-                requester: r.requester,
-                requester_name: r.requester_name,
-                course: r.course,
-                course_name: r.course_name || '',
-                duty: r.duty,
-                date: r.date,
-                slots: r.slots,
-                headcount: r.headcount,
-                assigned: [],
-                via: {},
-            };
-            duties.push(duty);
-            return { duty, result: allocate(duty) };
+        // One duty per week the request runs. The named staff go on first, as
+        // asked — anyone who can't make it shows up on the board with the
+        // usual Cover/Replace fix — and the allocator fills the open places.
+        const results = [];
+        taken.forEach(r => {
+            const named = r.requested_staff || [];
+            const n = Math.max(1, r.weeks || 1);
+            occurrences(r).forEach((date, k) => {
+                const duty = {
+                    id: 'duty-' + r.id + (n > 1 ? '-w' + (k + 1) : ''),
+                    series: r.id,
+                    week_no: k + 1,
+                    weeks: n,
+                    requester: r.requester,
+                    requester_name: r.requester_name,
+                    course: r.course,
+                    course_name: r.course_name || '',
+                    duty: r.duty,
+                    room: r.room || '',
+                    date,
+                    slots: r.slots,
+                    headcount: r.headcount,
+                    assigned: named.slice(),
+                    via: Object.fromEntries(named.map(c => [c, { how: 'requested', note: 'named by ' + r.requester }])),
+                };
+                duties.push(duty);
+                results.push({ duty, result: allocate(duty) });
+            });
         });
 
         requests = requests.filter(r => !selected.has(r.id));
@@ -797,7 +911,8 @@
         if (window.wmHubShow) window.wmHubShow('week');
 
         render();
-        showAllocationResult('Scheduled ' + taken.length + ' request' + (taken.length === 1 ? '' : 's'), results);
+        const sessions = results.length > taken.length ? ' — ' + results.length + ' weekly sessions' : '';
+        showAllocationResult('Scheduled ' + taken.length + ' request' + (taken.length === 1 ? '' : 's') + sessions, results);
     });
 
     el('availDaySeg').addEventListener('click', e => {

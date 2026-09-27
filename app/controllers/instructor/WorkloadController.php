@@ -56,10 +56,10 @@ class WorkloadController extends Controller
                 'year' => 1,
                 'program' => 'CS',
                 'lecturers' => [
-                    ['code' => 'DSC', 'name' => 'Dr. Sarah Chen'],
+                    ['code' => 'DSC', 'name' => 'Dr. S. Chandrasekara'],
                 ],
                 'other_instructors' => [
-                    ['code' => 'MKA', 'name' => 'Mr. Kwame Addo'],
+                    ['code' => 'MKA', 'name' => 'Mr. K. Abeywickrama'],
                 ],
                 'role' => 'Practical Support',
                 'sessions' => ['Lectures', 'Practicals', 'Lab Sessions'],
@@ -74,10 +74,10 @@ class WorkloadController extends Controller
                 'year' => 2,
                 'program' => 'CS',
                 'lecturers' => [
-                    ['code' => 'PRM', 'name' => 'Prof. Richard Mensah'],
+                    ['code' => 'PRM', 'name' => 'Prof. R. Munasinghe'],
                 ],
                 'other_instructors' => [
-                    ['code' => 'MAB', 'name' => 'Mr. Ato Baidoo'],
+                    ['code' => 'MAB', 'name' => 'Mr. A. Balasuriya'],
                 ],
                 'role' => 'Tutorial Support',
                 'sessions' => ['Lectures', 'Tutorials', 'Assignments'],
@@ -92,11 +92,11 @@ class WorkloadController extends Controller
                 'year' => 3,
                 'program' => 'CS',
                 'lecturers' => [
-                    ['code' => 'DSC', 'name' => 'Dr. Sarah Chen'],
-                    ['code' => 'PKA', 'name' => 'Prof. Kweku Asante'],
+                    ['code' => 'DSC', 'name' => 'Dr. S. Chandrasekara'],
+                    ['code' => 'PKA', 'name' => 'Prof. K. Abeysekara'],
                 ],
                 'other_instructors' => [
-                    ['code' => 'MNA', 'name' => 'Ms. Nana Ama'],
+                    ['code' => 'MNA', 'name' => 'Ms. N. Amarasinghe'],
                 ],
                 'role' => 'Lab Lead',
                 'sessions' => ['Lectures', 'Tutorials', 'Lab Sessions'],
@@ -129,9 +129,9 @@ class WorkloadController extends Controller
                 'id' => 1,
                 'code' => 'CS2203',
                 'title' => 'Operating Systems',
-                'staff_on_leave' => 'Mr. Kojo Amoah',
+                'staff_on_leave' => 'Mr. K. Obeyesekere',
                 'staff_code' => 'MKO',
-                'lecturer_name' => 'Dr. Elena Petrov',
+                'lecturer_name' => 'Dr. E. Pathirana',
                 'lecturer_code' => 'DEP',
                 'date' => '2026-09-30',
                 'time_from' => '14:00',
@@ -147,9 +147,9 @@ class WorkloadController extends Controller
                 'id' => 2,
                 'code' => 'IS1103',
                 'title' => 'Spreadsheet Applications',
-                'staff_on_leave' => 'Ms. Yaw Bediako',
+                'staff_on_leave' => 'Ms. Y. Bandara',
                 'staff_code' => 'MYB',
-                'lecturer_name' => 'Dr. Linda Osei',
+                'lecturer_name' => 'Dr. L. Obeyesekere',
                 'lecturer_code' => 'DLO',
                 'date' => '2026-10-01',
                 'time_from' => '09:00',
@@ -392,10 +392,10 @@ class WorkloadController extends Controller
         // the semester start so they stay inside it; drop this block once
         // colleagues' leave in the database names this member as cover.
         $sample = [
-            ['week' => 2, 'day' => 1, 'for_code' => 'MEM', 'for_name' => 'Ms. Efua Mensah', 'hours' => 'Full day'],
-            ['week' => 4, 'day' => 3, 'for_code' => 'MAB', 'for_name' => 'Mr. Ato Baidoo',  'hours' => '09:00 – 12:00'],
-            ['week' => 7, 'day' => 0, 'for_code' => 'MEM', 'for_name' => 'Ms. Efua Mensah', 'hours' => 'Full day'],
-            ['week' => 9, 'day' => 2, 'for_code' => 'MKO', 'for_name' => 'Mr. Kojo Amoah',  'hours' => '13:00 – 16:00'],
+            ['week' => 2, 'day' => 1, 'for_code' => 'MEM', 'for_name' => 'Ms. E. Mendis', 'hours' => 'Full day'],
+            ['week' => 4, 'day' => 3, 'for_code' => 'MAB', 'for_name' => 'Mr. A. Balasuriya',  'hours' => '09:00 – 12:00'],
+            ['week' => 7, 'day' => 0, 'for_code' => 'MEM', 'for_name' => 'Ms. E. Mendis', 'hours' => 'Full day'],
+            ['week' => 9, 'day' => 2, 'for_code' => 'MKO', 'for_name' => 'Mr. K. Obeyesekere',  'hours' => '13:00 – 16:00'],
         ];
         $taken = array_column($covering, 'date');
         foreach ($sample as $x) {

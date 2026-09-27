@@ -78,23 +78,23 @@ class MessagesController extends Controller
     {
         return [
             [
-                'id' => 1, 'name' => 'Mr. Kwame Addo', 'subtitle' => 'Coordinator · Computer Science',
+                'id' => 1, 'name' => 'Mr. K. Abeywickrama', 'subtitle' => 'Coordinator · Computer Science',
                 'avatar' => 'KA', 'color' => '#1a3a6b', 'time' => '9:20 AM',
                 'preview' => 'Can we move the CS3401 lab to Thursday afternoon?',
                 'unread' => 2, 'isGroup' => false,
-                'members' => ['T. M. Officer (You)', 'Mr. Kwame Addo'],
+                'members' => ['T. M. Officer (You)', 'Mr. K. Abeywickrama'],
                 'messages' => [
                     ['text' => 'Good morning. The published Year 1 grid has CS3401 clashing with the IS2201 practical.', 'time' => '9:02 AM', 'mine' => false],
-                    ['text' => 'Checking now — Lab A-201 is double-booked for that slot.', 'time' => '9:11 AM', 'mine' => true],
+                    ['text' => 'Checking now — LAB-A is double-booked for that slot.', 'time' => '9:11 AM', 'mine' => true],
                     ['text' => 'Can we move the CS3401 lab to Thursday afternoon?', 'time' => '9:20 AM', 'mine' => false],
                 ],
             ],
             [
-                'id' => 2, 'name' => 'Dr. Sarah Chen', 'subtitle' => 'In-Charge · Computer Science',
+                'id' => 2, 'name' => 'Dr. S. Chandrasekara', 'subtitle' => 'In-Charge · Computer Science',
                 'avatar' => 'SC', 'color' => '#4d179a', 'time' => 'Yesterday',
                 'preview' => 'Approved — please publish the revised timetable.',
                 'unread' => 0, 'isGroup' => false,
-                'members' => ['T. M. Officer (You)', 'Dr. Sarah Chen'],
+                'members' => ['T. M. Officer (You)', 'Dr. S. Chandrasekara'],
                 'messages' => [
                     ['text' => 'The Semester 1 draft is ready for your review.', 'time' => 'Yesterday · 2:40 PM', 'mine' => true],
                     ['text' => 'Looks good. One note: keep Wednesday 12–1 clear for the staff meeting.', 'time' => 'Yesterday · 3:05 PM', 'mine' => false],
@@ -119,7 +119,7 @@ class MessagesController extends Controller
                     ['text' => 'Good morning everyone. Today we\'ll cover memory allocation in C.', 'time' => '8:02 AM', 'mine' => false],
                     ['text' => 'Dr. Perera, the lab report template has been updated — please check the shared drive.', 'time' => '8:45 AM', 'mine' => false],
                     ['text' => 'Got it, thanks. I\'ll distribute it at the start of class.', 'time' => '9:10 AM', 'mine' => true],
-                    ['text' => 'Also, can someone confirm the projector in Lab A-201 is working?', 'time' => '9:35 AM', 'mine' => true],
+                    ['text' => 'Also, can someone confirm the projector in LAB-A is working?', 'time' => '9:35 AM', 'mine' => true],
                     ['text' => 'Lab report template has been updated — please use the new version.', 'time' => '9:41 AM', 'mine' => false],
                 ],
             ],

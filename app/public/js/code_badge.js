@@ -4,7 +4,7 @@
 // page scripts sit inside $content and run before dashboard.js, and they call
 // this while they render.
 //
-//   codeBadge('SCS 1308', 'course', { title: 'Foundations of Algorithms' })
+//   codeBadge('CS 1308', 'course', { title: 'Foundations of Algorithms' })
 //   codeBadge('TSR', 'staff', { inner: '<button …>&times;</button>' })
 //
 // kind: 'course' | 'lecturer' | 'staff'. `inner` is trusted HTML appended after

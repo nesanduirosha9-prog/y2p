@@ -15,7 +15,7 @@ class RoomModel
 {
     /**
      * Every room, ordered by code:
-     *   [['code' => 'LAB-A201', 'type' => 'lab', 'capacity' => 30], ...]
+     *   [['code' => 'LAB-A', 'type' => 'lab', 'capacity' => 30], ...]
      */
     public function all(): array
     {

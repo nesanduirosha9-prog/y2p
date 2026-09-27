@@ -328,6 +328,9 @@
     color: #b45309;
     font-style: italic;
 }
+/* Named staff + open places, and what stands in the way of either */
+.sched-req-staff { display: flex; flex-wrap: wrap; align-items: center; gap: 4px; }
+.sched-req-issue { margin: 4px 0 0; font-size: 11px; color: #b91c1c; }
 
 /* ---- "Who's free" grid ---- */
 .sched-avail-controls { display: flex; align-items: center; gap: 10px; }

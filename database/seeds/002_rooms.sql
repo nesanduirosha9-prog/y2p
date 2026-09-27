@@ -4,15 +4,15 @@
 -- Capacities are reasonable defaults per room type, not real UCSC data.
 
 INSERT INTO rooms (code, type, capacity) VALUES
-    ('LAB-A201', 'lab',           30),
+    ('LAB-A', 'lab',           30),
     ('LT-301',   'lecture_hall', 120),
-    ('ROOM-B105','lecture_hall',  40),
+    ('LT-105','lecture_hall',  40),
     ('LT-401',   'lecture_hall', 120),
-    ('LAB-C301', 'lab',           30),
-    ('ROOM-D201','lecture_hall',  40),
+    ('LAB-B', 'lab',           30),
+    ('LT-201','lecture_hall',  40),
     ('LT-302',   'lecture_hall', 120),
-    ('LT-201',   'lecture_hall', 100),
-    ('LAB-B101', 'lab',           30)
+    ('LT-202',   'lecture_hall', 100),
+    ('LAB-C', 'lab',           30)
 ON DUPLICATE KEY UPDATE
     type     = VALUES(type),
     capacity = VALUES(capacity);

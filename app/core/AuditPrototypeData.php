@@ -181,28 +181,28 @@ class AuditPrototypeData
 
         $roster = [
             ['code' => 'TMO', 'name' => 'T. M. Officer',        'role' => 'timetable_officer', 'rank' => null,     'position' => null],
-            ['code' => 'DSC', 'name' => 'Dr. Sarah Chen',       'role' => 'academic_staff',    'rank' => 'senior', 'position' => 'in_charge'],
-            ['code' => 'MKA', 'name' => 'Mr. Kwame Addo',       'role' => 'academic_staff',    'rank' => 'junior', 'position' => 'coordinator'],
-            ['code' => 'DLW', 'name' => 'Dr. Liu Wei',          'role' => 'academic_staff',    'rank' => 'senior', 'position' => 'coordinator'],
-            ['code' => 'PJO', 'name' => 'Prof. James Osei',     'role' => 'academic_staff',    'rank' => 'senior', 'position' => null],
-            ['code' => 'DAD', 'name' => 'Dr. Amara Diallo',     'role' => 'academic_staff',    'rank' => 'senior', 'position' => null],
-            ['code' => 'PRM', 'name' => 'Prof. Richard Mensah', 'role' => 'academic_staff',    'rank' => 'senior', 'position' => null],
-            ['code' => 'DEP', 'name' => 'Dr. Elena Petrov',     'role' => 'academic_staff',    'rank' => 'senior', 'position' => null],
-            ['code' => 'PKA', 'name' => 'Prof. Kweku Asante',   'role' => 'academic_staff',    'rank' => 'senior', 'position' => null],
-            ['code' => 'DFA', 'name' => 'Dr. Fatima Ahmed',     'role' => 'academic_staff',    'rank' => 'senior', 'position' => null],
-            ['code' => 'PDN', 'name' => 'Prof. David Nkrumah',  'role' => 'academic_staff',    'rank' => 'senior', 'position' => null],
-            ['code' => 'DKA', 'name' => 'Dr. Kofi Anning',      'role' => 'academic_staff',    'rank' => 'senior', 'position' => null],
-            ['code' => 'DLO', 'name' => 'Dr. Linda Osei',       'role' => 'academic_staff',    'rank' => 'senior', 'position' => null],
+            ['code' => 'DSC', 'name' => 'Dr. S. Chandrasekara', 'role' => 'academic_staff',    'rank' => 'senior', 'position' => 'in_charge'],
+            ['code' => 'MKA', 'name' => 'Mr. K. Abeywickrama',  'role' => 'academic_staff',    'rank' => 'junior', 'position' => 'coordinator'],
+            ['code' => 'DLW', 'name' => 'Dr. L. Weerasinghe',   'role' => 'academic_staff',    'rank' => 'senior', 'position' => 'coordinator'],
+            ['code' => 'PJO', 'name' => 'Prof. J. Opanayake',   'role' => 'academic_staff',    'rank' => 'senior', 'position' => null],
+            ['code' => 'DAD', 'name' => 'Dr. A. Dissanayake',   'role' => 'academic_staff',    'rank' => 'senior', 'position' => null],
+            ['code' => 'PRM', 'name' => 'Prof. R. Munasinghe',  'role' => 'academic_staff',    'rank' => 'senior', 'position' => null],
+            ['code' => 'DEP', 'name' => 'Dr. E. Pathirana',     'role' => 'academic_staff',    'rank' => 'senior', 'position' => null],
+            ['code' => 'PKA', 'name' => 'Prof. K. Abeysekara',  'role' => 'academic_staff',    'rank' => 'senior', 'position' => null],
+            ['code' => 'DFA', 'name' => 'Dr. F. Ariyaratne',    'role' => 'academic_staff',    'rank' => 'senior', 'position' => null],
+            ['code' => 'PDN', 'name' => 'Prof. D. Nawarathne',  'role' => 'academic_staff',    'rank' => 'senior', 'position' => null],
+            ['code' => 'DKA', 'name' => 'Dr. K. Attanayake',    'role' => 'academic_staff',    'rank' => 'senior', 'position' => null],
+            ['code' => 'DLO', 'name' => 'Dr. L. Obeyesekere',   'role' => 'academic_staff',    'rank' => 'senior', 'position' => null],
             ['code' => 'TMF', 'name' => 'Ms. Thilini Fernando', 'role' => 'academic_staff',    'rank' => 'junior', 'position' => null],
-            ['code' => 'MEM', 'name' => 'Ms. Efua Mensah',      'role' => 'academic_staff',    'rank' => 'junior', 'position' => null],
-            ['code' => 'MAB', 'name' => 'Mr. Ato Baidoo',       'role' => 'academic_staff',    'rank' => 'junior', 'position' => null],
-            ['code' => 'MYD', 'name' => 'Ms. Yaa Darko',        'role' => 'academic_staff',    'rank' => 'junior', 'position' => null],
-            ['code' => 'MKO', 'name' => 'Mr. Kojo Amoah',       'role' => 'academic_staff',    'rank' => 'junior', 'position' => null],
-            ['code' => 'MNA', 'name' => 'Ms. Nana Ama',         'role' => 'academic_staff',    'rank' => 'junior', 'position' => null],
-            ['code' => 'MAT', 'name' => 'Mr. Atta Tetteh',      'role' => 'academic_staff',    'rank' => 'junior', 'position' => null],
-            ['code' => 'MEQ', 'name' => 'Ms. Esi Quaye',        'role' => 'academic_staff',    'rank' => 'junior', 'position' => null],
-            ['code' => 'MAD', 'name' => 'Mr. Adom Boateng',     'role' => 'academic_staff',    'rank' => 'junior', 'position' => null],
-            ['code' => 'MYB', 'name' => 'Ms. Yaw Bediako',      'role' => 'academic_staff',    'rank' => 'junior', 'position' => null],
+            ['code' => 'MEM', 'name' => 'Ms. E. Mendis',        'role' => 'academic_staff',    'rank' => 'junior', 'position' => null],
+            ['code' => 'MAB', 'name' => 'Mr. A. Balasuriya',    'role' => 'academic_staff',    'rank' => 'junior', 'position' => null],
+            ['code' => 'MYD', 'name' => 'Ms. Y. Dharmasena',    'role' => 'academic_staff',    'rank' => 'junior', 'position' => null],
+            ['code' => 'MKO', 'name' => 'Mr. K. Obeyesekere',   'role' => 'academic_staff',    'rank' => 'junior', 'position' => null],
+            ['code' => 'MNA', 'name' => 'Ms. N. Amarasinghe',   'role' => 'academic_staff',    'rank' => 'junior', 'position' => null],
+            ['code' => 'MAT', 'name' => 'Mr. A. Tissera',       'role' => 'academic_staff',    'rank' => 'junior', 'position' => null],
+            ['code' => 'MEQ', 'name' => 'Ms. E. Qadir',         'role' => 'academic_staff',    'rank' => 'junior', 'position' => null],
+            ['code' => 'MAD', 'name' => 'Mr. A. Dias',          'role' => 'academic_staff',    'rank' => 'junior', 'position' => null],
+            ['code' => 'MYB', 'name' => 'Ms. Y. Bandara',       'role' => 'academic_staff',    'rank' => 'junior', 'position' => null],
         ];
 
         $out = [];
@@ -555,7 +555,7 @@ class AuditPrototypeData
         $course     = self::pick(self::COURSES);
         $courseCode = $course[0];
         $courseName = $course[1];
-        $room       = self::pick(['Lab 1', 'Lab 2', 'Lab 3', 'Hall A', 'Hall B', 'Seminar Room 2', 'Computer Lab 4']);
+        $room       = self::pick(['LAB-A', 'LAB-B', 'LAB-C', 'LT-105', 'LT-201', 'LT-301', 'LT-302', 'LT-401']);
         $slot       = self::pick(['8–9 AM', '9–10 AM', '10–11 AM', '11–12 noon', '1–2 PM', '2–3 PM', '3–4 PM']);
         $slot2      = self::pick(['8–9 AM', '10–11 AM', '1–2 PM', '2–3 PM', '3–4 PM']);
         $weekday    = self::pick(['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday']);
@@ -627,14 +627,14 @@ class AuditPrototypeData
      * screens use — see WorkloadPrototypeData::courses().
      */
     private const COURSES = [
-        ['SCS 1308', 'Foundations of Algorithms'],
-        ['SCS 1309', 'Database Management Systems'],
-        ['SCS 1310', 'Object Oriented Programming'],
-        ['SCS 1311', 'Internet and Web Technologies'],
-        ['SCS 1312', 'Operating System Concepts'],
-        ['SCS 2311', 'Cryptography and Information Security'],
-        ['SCS 2312', 'Computational Models'],
-        ['SCS 2313', 'Computer System Architecture'],
+        ['CS 1308', 'Foundations of Algorithms'],
+        ['CS 1309', 'Database Management Systems'],
+        ['CS 1310', 'Object Oriented Programming'],
+        ['CS 1311', 'Internet and Web Technologies'],
+        ['CS 1312', 'Operating System Concepts'],
+        ['CS 2311', 'Cryptography and Information Security'],
+        ['CS 2312', 'Computational Models'],
+        ['CS 2313', 'Computer System Architecture'],
         ['IS 1208', 'Systems Analysis and Design'],
         ['IS 1210', 'Database Systems'],
         ['IS 1211', 'Computer Networks'],

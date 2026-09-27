@@ -74,7 +74,7 @@ $total = count($courses);
                             data-lecturers="<?= htmlspecialchars(implode(',', $c['lecturers'])) ?>"
                             data-instructors="<?= htmlspecialchars(implode(',', $c['instructors'])) ?>"
                             data-search="<?= htmlspecialchars(strtolower($c['code'] . ' ' . $c['name'] . ' ' . implode(' ', $c['lecturers']) . ' ' . implode(' ', $c['instructors']))) ?>">
-                            <td><?= \app\core\ViewHelpers::codeBadge($c['code'], 'course', $c['name']) ?></td>
+                            <td><?= \app\core\ViewHelpers::codeBadge(preg_replace('/^([A-Z]+)(\d)/', '$1 $2', $c['code']), 'course', $c['name']) ?></td>
                             <td><?= htmlspecialchars($c['name']) ?></td>
                             <td><?= (int)$c['credits'] ?></td>
                             <td><span class="pill pill-year-<?= (int)$c['year'] ?>">Year <?= (int)$c['year'] ?></span></td>

@@ -5,13 +5,13 @@
 
 $coursesList = $coursesList ?? [
     ['code' => 'IS 4115', 'name' => 'In-class Assignment - IS4115'],
-    ['code' => 'SCS 2314', 'name' => 'Middleware Architecture Practical'],
+    ['code' => 'CS 2314', 'name' => 'Middleware Architecture Practical'],
     ['code' => 'IS 1212', 'name' => 'Probability and Statistics Lab Evaluation'],
-    ['code' => 'SCS 2313', 'name' => 'Computer Architecture In-class Quiz'],
-    ['code' => 'SCS 2312', 'name' => 'Computational Models Practical Assessment'],
-    ['code' => 'SCS 4223', 'name' => 'SE Final Year Projects Evaluation'],
+    ['code' => 'CS 2313', 'name' => 'Computer Architecture In-class Quiz'],
+    ['code' => 'CS 2312', 'name' => 'Computational Models Practical Assessment'],
+    ['code' => 'CS 4223', 'name' => 'SE Final Year Projects Evaluation'],
     ['code' => 'IS 4101', 'name' => 'IS Final Year Projects Evaluation'],
-    ['code' => 'SCS 2308', 'name' => 'Numerical Methods Practical Examination'],
+    ['code' => 'CS 2308', 'name' => 'Numerical Methods Practical Examination'],
 ];
 
 $timeSlotOptions = [
